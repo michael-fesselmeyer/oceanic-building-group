@@ -774,7 +774,10 @@ channels are on.
   [ADR 2](adr/0002-lead-email-transport.md).
 - **The email** has the visitor's address as its reply-to, so the office answers with a plain
   reply. Its text depends only on the answers, never the time, so a resend is recognised as the
-  same request.
+  same request. It is plain text, never HTML. The spam-check result is the second line, before
+  anything the visitor wrote, so a message cannot imitate it; control characters and Unicode
+  direction controls are removed from the visitor's text, and only the message keeps its line
+  breaks.
 
 ### SMS
 
