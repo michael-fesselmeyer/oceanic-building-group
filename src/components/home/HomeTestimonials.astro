@@ -1,0 +1,101 @@
+---
+// Client testimonials on the home page. The first quote is set large with
+// PullQuote; up to two more follow smaller, side by side.
+//
+//   quotes  Testimonials about the builder, in display order, as plain text.
+//           Empty quotes are skipped, and with none nothing is rendered.
+import PullQuote from '../PullQuote.astro';
+import SectionHeading from '../SectionHeading.astro';
+import type { HomeQuote } from '../../lib/home';
+
+interface Props {
+  quotes: HomeQuote[];
+}
+
+/** One large quote and two smaller ones keep the section short. */
+const LIMIT = 3;
+
+const { quotes } = Astro.props;
+const [lead, ...more] = quotes.filter((item) => item.quote.trim()).slice(0, LIMIT);
+---
+
+{lead && (
+  <section class="container home-testimonials" aria-labelledby="testimonials-heading">
+    <SectionHeading id="testimonials-heading" label="Clients">
+      In their words
+    </SectionHeading>
+    <div class="lead">
+      <PullQuote attribution={lead.attribution} source={lead.source}>
+        {lead.quote}
+      </PullQuote>
+    </div>
+    {more.length > 0 && (
+      <ul role="list" class="more">
+        {more.map((item) => (
+          <li>
+            <figure>
+              <blockquote>
+                <p>&ldquo;{item.quote.trim()}&rdquo;</p>
+              </blockquote>
+              <figcaption class="label">
+                {item.attribution}
+                {item.source?.trim() && <span class="source">{item.source.trim()}</span>}
+              </figcaption>
+            </figure>
+          </li>
+        ))}
+      </ul>
+    )}
+  </section>
+)}
+
+<style>
+  .home-testimonials {
+    margin-top: var(--section-gap);
+  }
+
+  .lead {
+    margin-top: var(--space-7);
+    padding-left: var(--hang-quote);
+  }
+
+  .more {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-7);
+    margin-top: var(--space-8);
+    padding-top: var(--space-7);
+    border-top: 1px solid var(--color-border);
+  }
+
+  figure {
+    display: grid;
+    gap: var(--space-4);
+    margin: 0;
+  }
+
+  blockquote {
+    margin: 0;
+    color: var(--color-heading);
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+    line-height: var(--leading-snug);
+  }
+
+  figcaption {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-4);
+    color: var(--color-text-muted);
+  }
+
+  .source {
+    color: var(--color-link);
+  }
+
+  @media (max-width: 800px) {
+    .more {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

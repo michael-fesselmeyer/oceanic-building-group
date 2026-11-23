@@ -1,0 +1,69 @@
+---
+// The home page's closing band: an invitation to start a project and the
+// button to /contact/. Always rendered: the contact page always exists. The
+// office's address and phone number are in the footer right below it.
+//
+// A pale ocean surface, so it reads apart from the sand process band above
+// and the navy footer below.
+import Button from '../Button.astro';
+import { contactLink } from '../../lib/site';
+---
+
+<section class="contact-band" aria-labelledby="contact-heading">
+  <div class="container inner">
+    <div class="text">
+      <p class="label kicker">Contact</p>
+      <h2 id="contact-heading">Planning a home, a renovation or a commercial building?</h2>
+      <p class="details">Tell us about the site, the timing and what you have in mind.</p>
+    </div>
+    <p class="action">
+      <Button href={contactLink.href}>{contactLink.label}</Button>
+    </p>
+  </div>
+</section>
+
+<style>
+  /* The band ends the page, so the footer meets it with no white gap between them. */
+  :global(main:has(> .contact-band:last-child) + .site-footer) {
+    margin-top: 0;
+  }
+
+  .contact-band {
+    margin-top: var(--section-gap);
+    padding-block: var(--space-9);
+    background: var(--color-ocean-050);
+  }
+
+  .inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--space-6) var(--space-8);
+    align-items: end;
+  }
+
+  .kicker {
+    color: var(--color-link);
+  }
+
+  h2 {
+    max-width: 22ch;
+    margin-top: var(--space-4);
+  }
+
+  .details {
+    max-width: var(--width-prose);
+    margin-top: var(--space-5);
+    color: var(--color-text-muted);
+  }
+
+  @media (max-width: 800px) {
+    .contact-band {
+      padding-block: var(--space-8);
+    }
+
+    .inner {
+      grid-template-columns: minmax(0, 1fr);
+      align-items: start;
+    }
+  }
+</style>
