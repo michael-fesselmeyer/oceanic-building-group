@@ -1,0 +1,81 @@
+---
+// Style guide: the top of the home page with made-up featured projects, so
+// the cases the real content does not have yet can be checked.
+//
+//   /style-guide/home/       four featured projects, one with a long title
+//                            and one with no location
+//   /style-guide/home/one/   a single featured project: the hero only
+//   /style-guide/home/none/  nothing featured: the navy hero, no section
+//
+// Development and preview builds only, like the main style guide page.
+import placeholderTall from '../../../assets/placeholders/placeholder-tall.jpg';
+import FeaturedProjects from '../../../components/home/FeaturedProjects.astro';
+import HomeHero from '../../../components/home/HomeHero.astro';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import type { Project } from '../../../lib/content';
+import { exampleProject } from '../../../lib/examples';
+import { splitFeatured } from '../../../lib/home';
+import { launched } from '../../../lib/site';
+
+const lead = exampleProject('example-riverfront-residence', {
+  title: 'Example Riverfront Residence',
+  location: 'Jupiter',
+  featured: true,
+});
+
+const four: Project[] = [
+  lead,
+  exampleProject('example-long-title', {
+    title: 'A Riverfront Renovation With a Deliberately Long Title That Has to Wrap Twice',
+    location: 'Jupiter Inlet Colony',
+    category: 'renovation',
+    status: 'under-construction',
+    cover: placeholderTall,
+    featured: true,
+  }),
+  exampleProject('example-beach-road-office', {
+    title: 'Example Beach Road Office',
+    location: '',
+    category: 'commercial',
+    featured: true,
+  }),
+  exampleProject('example-inlet-cottage', {
+    title: 'Example Inlet Cottage',
+    location: 'Tequesta',
+    featured: true,
+  }),
+];
+
+export function getStaticPaths() {
+  if (launched) return [];
+  return [
+    { params: { example: undefined }, props: { name: 'four featured', count: 4 } },
+    { params: { example: 'one' }, props: { name: 'one featured', count: 1 } },
+    { params: { example: 'none' }, props: { name: 'nothing featured', count: 0 } },
+  ];
+}
+
+const { name, count } = Astro.props;
+const { lead: heroProject, rest } = splitFeatured(four.slice(0, count));
+---
+
+<BaseLayout
+  title={`Style guide: home page, ${name}`}
+  description="The top of the home page with made-up featured projects, for checking changes during development."
+  noindex
+  overHero
+>
+  <HomeHero project={heroProject} />
+  <FeaturedProjects projects={rest} />
+  <p class="container note">
+    End of the example: the top of the home page with {name}. The real page continues with its other
+    sections.
+  </p>
+</BaseLayout>
+
+<style>
+  .note {
+    margin-block: var(--section-gap);
+    color: var(--color-text-muted);
+  }
+</style>
