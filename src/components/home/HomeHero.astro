@@ -16,6 +16,7 @@
 import { getImage } from 'astro:assets';
 import Button from '../Button.astro';
 import type { Project } from '../../lib/content';
+import { PROJECT_TRANSITION_CLASS, projectTransitionName } from '../../lib/motion';
 import { contactLink, site } from '../../lib/site';
 
 interface Props {
@@ -33,6 +34,8 @@ const formats = ['avif', 'webp'] as const;
 
 const photo = project && {
   alt: project.data.coverAlt,
+  // Shared with the project page's cover, so the photograph moves there on navigation.
+  transition: `view-transition-name: ${projectTransitionName(project.id)}; view-transition-class: ${PROJECT_TRANSITION_CLASS}`,
   sources: await Promise.all(
     crops.flatMap(({ media, widths, aspect }) =>
       formats.map(async (format) => {
@@ -55,7 +58,7 @@ const photo = project && {
 
 <section class:list={['hero', { 'no-photo': !photo }]} aria-labelledby="hero-heading">
   {photo && (
-    <picture class="hero-photo">
+    <picture class="hero-photo" style={photo.transition}>
       {photo.sources.map((source) => (
         <source media={source.media} type={source.type} srcset={source.srcset} sizes="100vw" />
       ))}
