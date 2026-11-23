@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { splitFeatured } from '../../src/lib/home';
+import { listNumber, splitFeatured } from '../../src/lib/home';
 import type { Project } from '../../src/lib/content';
 
 const project = (id: string) => ({ id }) as Project;
@@ -19,5 +19,11 @@ describe('splitFeatured', () => {
     const { lead, rest } = splitFeatured([a, b, c, d]);
     expect(lead).toBe(a);
     expect(rest).toEqual([b, c, d]);
+  });
+});
+
+describe('listNumber', () => {
+  it('numbers from one with two digits, as Our Process does', () => {
+    expect([0, 6, 9, 11].map(listNumber)).toEqual(['01', '07', '10', '12']);
   });
 });
