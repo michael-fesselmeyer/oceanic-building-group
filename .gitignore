@@ -25,3 +25,6 @@ lighthouse-reports/
 # OS and editors
 .DS_Store
 .idea/
+
+# local working notes, never committed
+/private/

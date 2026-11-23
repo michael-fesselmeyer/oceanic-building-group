@@ -39,6 +39,8 @@ requests, issues and comments.
 - **Describe the product.** Write about the site and its visitors, not about who is building it
   or why.
 - Commits use a GitHub no-reply address.
+- The `private/` folder is git-ignored working notes. Never commit it, force-add it, or copy its
+  contents into tracked files, issues or pull requests.
 
 Check the diff and the text against this list before every commit, push, pull request or issue
 edit. If something has already slipped into history, stop and report it; do not rewrite history

@@ -14,6 +14,7 @@ export default defineConfig(
     'playwright-report/',
     'test-results/',
     'lighthouse-reports/',
+    'private/',
   ]),
   js.configs.recommended,
   tseslint.configs.recommended,

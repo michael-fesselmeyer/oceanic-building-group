@@ -6,3 +6,4 @@ package-lock.json
 lighthouse-reports/
 playwright-report/
 test-results/
+private/
