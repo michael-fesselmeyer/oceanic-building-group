@@ -87,6 +87,37 @@ tokens; edit the script, never the output.
   card. Unit tests check that the manifest and the theme color match the tokens and that each file
   has the size its tag states; a browser test checks every built page's icon links and share image.
 
+## Components
+
+Shared building blocks live in [`src/components/`](../src/components/). Each file starts with a
+comment that says when to use it and what each prop does. Pages compose these instead of styling
+their own versions.
+
+| Component                  | Use it for                                                                              |
+| -------------------------- | --------------------------------------------------------------------------------------- |
+| `Button`                   | The main action of a section. `primary` or `quiet`; `<a>` with `href`, else `<button>`  |
+| `TextLink`                 | An underlined link inside or after a sentence                                           |
+| `SectionHeading`           | A section's heading with an optional small label; `level` keeps headings in order       |
+| `Photo`                    | Every photograph: AVIF and WebP, required `alt`, `widths` and `sizes`, optional caption |
+| `PullQuote`                | A testimonial or a line from a project story, with optional attribution                 |
+| `StatList`                 | Label and value facts; missing values are skipped, an empty list renders nothing        |
+| `ProjectCard`              | A project's cover, category, title and location, linking to `/portfolio/<id>/`          |
+| `Wordmark`                 | The brand wordmark in the current text color (used by the header)                       |
+| `Seo`                      | Title, description, canonical and share tags (used by the layout)                       |
+| `SiteHeader`, `SiteFooter` | The page frame (used by the layout)                                                     |
+
+Rules they share: optional data that is missing renders nothing (no empty wrappers, no
+placeholders), styles come only from tokens, and a parent spaces a component with its own layout
+rather than by styling the component's insides. [`src/lib/stats.ts`](../src/lib/stats.ts) turns a
+project's stats into the pairs `StatList` shows.
+
+### Style guide
+
+`/style-guide/` shows every component and variant, including the edge cases (no caption, partial
+and empty stats, long titles, a project with no location). Check it after changing a component. It
+exists in development and preview builds only: its `getStaticPaths` returns no pages when
+`PUBLIC_SITE_LAUNCHED` is `true`, and it is always marked `noindex`.
+
 ## Images
 
 Masters go in `src/assets/` at no more than 2400px on the long edge and are referenced from
