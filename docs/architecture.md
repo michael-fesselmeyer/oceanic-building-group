@@ -918,7 +918,7 @@ and its date in the same pull request. The business reviews both texts before la
 
 ## Security headers
 
-Every response carries the same security headers. They are defined once in
+Every response carries the same security headers, with two harmless exceptions listed below. They are defined once in
 [`src/lib/security-headers.ts`](../src/lib/security-headers.ts) and reach responses two ways:
 
 - **Static files** (every prerendered page, image, font and script) get them from
@@ -928,6 +928,15 @@ Every response carries the same security headers. They are defined once in
 - **Worker responses** (the intake endpoint's redirects, the form it sends back, its plain-text
   refusals) get them from [`src/middleware.ts`](../src/middleware.ts), because Cloudflare does not
   apply `_headers` to responses a Worker generates.
+- **Two exceptions.** Astro answers two requests before the middleware runs, so these carry only
+  `Content-Type` and `Vary` (and `Location`): the `403` refusing a cross-site form post
+  (`security.checkOrigin`) and the `308` that adds a missing trailing slash (for example
+  `/api/intake` to `/api/intake/`). Both bodies are a short line of plain text or empty, so there
+  is nothing to frame or run, and the site links to `/api/intake/` with its slash, so only a
+  hand-typed address meets the redirect. The one header they lack that matters at all is
+  `Strict-Transport-Security`, which the visitor gets from the next page they load. Moving the
+  origin check into our own middleware would close the gap; it was judged not worth the extra
+  code (issue #114).
 
 | Header                      | Value                                                              | Why                                                                                                                                                         |
 | --------------------------- | ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
