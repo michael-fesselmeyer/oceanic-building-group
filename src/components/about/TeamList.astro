@@ -1,0 +1,162 @@
+---
+// The team on the About page: one entry per person with name, role, the
+// brokerage for a real estate licensee, and the biography. A portrait is
+// shown above the name when the entry has one; without one the entry is
+// set in type alone on a rule, so a team with no portraits still reads as
+// a finished list. An empty team renders nothing.
+//
+//   members       From `teamCard()` in src/lib/team.ts, in display order.
+//   headingLevel  Level of each name, 3 by default. Use the level below
+//                 the heading of the section the list sits in.
+import Photo from '../Photo.astro';
+import { portraitAlt, type TeamCard } from '../../lib/team';
+
+interface Props {
+  members: TeamCard[];
+  headingLevel?: 3 | 4;
+}
+
+const { members, headingLevel = 3 } = Astro.props;
+const Heading = `h${headingLevel}` as const;
+const withPortraits = members.some((member) => member.photo);
+---
+
+{members.length > 0 && (
+  <ul role="list" class:list={['team-list', { 'with-portraits': withPortraits }]}>
+    {members.map((member) => (
+      <li class="member" id={member.id}>
+        {member.photo && (
+          <div class="portrait">
+            <Photo
+              src={member.photo}
+              alt={portraitAlt(member.name)}
+              widths={[320, 480, 720]}
+              sizes="(max-width: 520px) 100vw, (max-width: 1100px) 45vw, 24rem"
+              ratio="4 / 5"
+            />
+          </div>
+        )}
+        <div class="text">
+          <Heading class="name">{member.name}</Heading>
+          <p class="label role">{member.role}</p>
+          {member.brokerage && (
+            <p class="brokerage">
+              <span class="label">Brokerage</span>
+              <span>{member.brokerage}</span>
+            </p>
+          )}
+          {member.bio.length > 0 && (
+            <div class="bio">
+              {member.bio.map((paragraph) => (
+                <p>{paragraph}</p>
+              ))}
+            </div>
+          )}
+        </div>
+      </li>
+    ))}
+  </ul>
+)}
+
+<style>
+  .team-list {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: start;
+    gap: var(--space-8) var(--space-6);
+  }
+
+  .member {
+    display: grid;
+    gap: var(--space-5);
+  }
+
+  /* When anyone has a portrait, each entry spans a portrait row and a text
+     row shared with its neighbors, so names line up across the row whether
+     or not an entry has a portrait. */
+  .with-portraits {
+    row-gap: 0;
+    margin-bottom: calc(-1 * var(--space-8));
+  }
+
+  .with-portraits .member {
+    grid-row: span 2;
+    grid-template-rows: subgrid;
+    row-gap: var(--space-5);
+    margin-bottom: var(--space-8);
+  }
+
+  .with-portraits .text {
+    grid-row: 2;
+  }
+
+  .text {
+    display: grid;
+    align-content: start;
+    gap: var(--space-3);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--color-heading);
+  }
+
+  .name {
+    font-size: var(--text-2xl);
+    overflow-wrap: anywhere;
+  }
+
+  .role {
+    color: var(--color-link);
+  }
+
+  .brokerage {
+    display: grid;
+    gap: var(--space-1);
+    margin-top: var(--space-2);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .brokerage .label {
+    color: var(--color-text-muted);
+  }
+
+  .bio {
+    display: grid;
+    gap: var(--space-4);
+    margin-top: var(--space-3);
+    color: var(--color-text-muted);
+    max-width: var(--width-prose);
+  }
+
+  @media (max-width: 1100px) {
+    .team-list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 520px) {
+    .team-list {
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--space-7);
+    }
+
+    /* One column: nothing to line up with, so entries simply stack. */
+    .with-portraits {
+      margin-bottom: 0;
+    }
+
+    .with-portraits .member {
+      grid-row: auto;
+      grid-template-rows: none;
+      margin-bottom: 0;
+    }
+
+    .with-portraits .text {
+      grid-row: auto;
+    }
+
+    /* A full-width portrait would fill the screen; keep it to about half. */
+    .portrait {
+      max-width: calc(var(--space-10) * 2);
+    }
+  }
+</style>

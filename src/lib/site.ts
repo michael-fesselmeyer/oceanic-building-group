@@ -31,6 +31,11 @@ export interface SiteFacts {
   /** State contractor license number, shown wherever services are offered. */
   licenseNumber: string | null;
   /**
+   * Years of construction experience the company's principals bring, shown
+   * as "30+ years". It describes the principals, never the company's age.
+   */
+  principalsExperienceYears: number | null;
+  /**
    * Presented on /interior-design/ and credited on project pages marked
    * `interiorDesignPartner: true`. While `null`, no credit is shown anywhere
    * and the interior design page says the partner will be introduced soon.
@@ -51,6 +56,7 @@ export const site: SiteFacts = {
   },
   phone: null,
   licenseNumber: null,
+  principalsExperienceYears: 30,
   designPartner: {
     name: 'Ashley Manfred',
     url: 'https://www.ashleymanfred.com/',
