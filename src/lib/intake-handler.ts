@@ -68,7 +68,10 @@ export interface IntakeDeps {
 }
 
 /** Reads at most `limit` bytes; `null` if the body is longer. */
-async function readLimited(request: Request, limit: number): Promise<Uint8Array | null> {
+async function readLimited(
+  request: Request,
+  limit: number,
+): Promise<Uint8Array<ArrayBuffer> | null> {
   if (!request.body) return new Uint8Array();
   const reader = request.body.getReader();
   const chunks: Uint8Array[] = [];
@@ -94,7 +97,7 @@ async function readLimited(request: Request, limit: number): Promise<Uint8Array 
 
 /** The first text value of each field. Files and repeated names are ignored. */
 async function readFields(
-  body: Uint8Array,
+  body: Uint8Array<ArrayBuffer>,
   contentType: string,
   mediaType: string,
 ): Promise<Record<string, string> | null> {
