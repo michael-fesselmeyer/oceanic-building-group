@@ -30,6 +30,18 @@ export const TEST_KEYS = {
 
 export type TurnstileResult = { success: true } | { success: false; errorCodes: string[] };
 
+/**
+ * What Cloudflare answers for each test secret. These answers are fixed by
+ * Cloudflare, so the check gives them without a network call: development
+ * and the browser tests never reach Cloudflare, and a test can rely on the
+ * outcome. A real secret is always checked with Cloudflare.
+ */
+const TEST_SECRET_ANSWERS: Record<string, TurnstileResult> = {
+  [TEST_KEYS.secretAlwaysPasses]: { success: true },
+  [TEST_KEYS.secretAlwaysFails]: { success: false, errorCodes: ['invalid-input-response'] },
+  [TEST_KEYS.secretTokenSpent]: { success: false, errorCodes: ['timeout-or-duplicate'] },
+};
+
 export interface VerifyOptions {
   secret: string;
   token: string;
@@ -56,6 +68,9 @@ export async function verifyTurnstile({
   if (token.length > MAX_TOKEN_LENGTH) {
     return { success: false, errorCodes: ['invalid-input-response'] };
   }
+
+  const testAnswer = TEST_SECRET_ANSWERS[secret];
+  if (testAnswer) return testAnswer;
 
   const body = new URLSearchParams({ secret, response: token });
   if (remoteIp) body.set('remoteip', remoteIp);

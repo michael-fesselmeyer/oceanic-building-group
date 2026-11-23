@@ -15,7 +15,7 @@ describe('verifyTurnstile', () => {
   it('posts the secret, token and visitor address to siteverify', async () => {
     const fetcher = vi.fn(async () => json({ success: true }));
     const result = await verifyTurnstile({
-      secret: TEST_KEYS.secretAlwaysPasses,
+      secret: 'test-secret',
       token: 'XXXX.DUMMY.TOKEN.XXXX',
       remoteIp: '192.0.2.1',
       fetch: fetcher,
@@ -25,9 +25,32 @@ describe('verifyTurnstile', () => {
     const [url, init] = fetcher.mock.calls[0] as unknown as [string, RequestInit];
     expect(url).toBe(SITEVERIFY_URL);
     const body = init.body as URLSearchParams;
-    expect(body.get('secret')).toBe(TEST_KEYS.secretAlwaysPasses);
+    expect(body.get('secret')).toBe('test-secret');
     expect(body.get('response')).toBe('XXXX.DUMMY.TOKEN.XXXX');
     expect(body.get('remoteip')).toBe('192.0.2.1');
+  });
+
+  it('answers Cloudflare’s test secrets the way Cloudflare does, without a network call', async () => {
+    const fetcher = vi.fn();
+    const verify = (secret: string) =>
+      verifyTurnstile({ secret, token: 'XXXX.DUMMY.TOKEN.XXXX', fetch: fetcher });
+
+    expect(await verify(TEST_KEYS.secretAlwaysPasses)).toEqual({ success: true });
+    expect(await verify(TEST_KEYS.secretAlwaysFails)).toEqual({
+      success: false,
+      errorCodes: ['invalid-input-response'],
+    });
+    expect(await verify(TEST_KEYS.secretTokenSpent)).toEqual({
+      success: false,
+      errorCodes: ['timeout-or-duplicate'],
+    });
+    expect(fetcher).not.toHaveBeenCalled();
+  });
+
+  it('still refuses a missing token with a test secret', async () => {
+    expect(
+      await verifyTurnstile({ secret: TEST_KEYS.secretAlwaysPasses, token: '', fetch: vi.fn() }),
+    ).toEqual({ success: false, errorCodes: ['missing-input-response'] });
   });
 
   it('returns the error codes of a failed token', async () => {
