@@ -128,7 +128,7 @@ these pages is built for the launched site.
 | `npm run format`        | Formats every file with Prettier                               |
 | `npm test`              | Unit tests                                                     |
 | `npm run test:e2e`      | Browser and accessibility tests against the production build   |
-| `npm run hygiene`       | Checks that nothing private or off-policy is in the repository |
+| `npm run hygiene`       | Checks for private or off-policy content, and raw style values |
 | `npm run brand`         | Regenerates the wordmark, favicons, manifest and share image   |
 | `npm run launch-check`  | Says whether the site is ready to go live (see below)          |
 | `npm run photos:import` | Turns camera files into project photographs (see below)        |

@@ -100,9 +100,31 @@ the browser; the choice, its limits and what it collects are in
 
 ## Styling
 
-- [`src/styles/tokens.css`](../src/styles/tokens.css) defines every color, type size, space and
-  timing as a custom property. Brand colors were sampled from the logo; `--color-error` and
-  `--color-control-border` cover form feedback and input outlines.
+- [`src/styles/tokens.css`](../src/styles/tokens.css) defines every color, font, weight, type
+  size, space, width, radius, line thickness and timing as a custom property. Brand colors were
+  sampled from the logo; `--color-error` and `--color-control-border` cover form feedback and
+  input outlines.
+- Token names say what a value is for, not what it is: `--color-<role>` (`--color-heading`,
+  `--color-border-on-strong`) over the raw palette (`--color-navy-900`), `--text-*` sizes,
+  `--weight-*`, `--leading-*`, `--tracking-*`, `--space-*`, `--width-*` and `--size-*`,
+  `--radius-*`, `--underline-offset-*`, `--focus-offset*`, `--duration-*`. Add a token for a new
+  value only when no existing one fits, named for its role so other components can reuse it.
+- **A re-skin** (new palette, typefaces, weights or proportions) edits `tokens.css` and the
+  `fonts` list in [`astro.config.mjs`](../astro.config.mjs), with the font package in
+  `package.json`. Nothing else needs to change. If the brand marks should follow, also point
+  `scripts/build-brand.mjs` at the new font files, run `npm run brand`
+  ([Brand assets](#brand-assets)) and update the `theme-color` in `BaseLayout.astro`, which a unit
+  test keeps equal to `--color-navy-900`.
+- **The style check** (part of `npm run hygiene`, so it runs in `verify` and CI) reads the
+  `<style>` blocks of every `.astro` file under `src/` and every `.css` file there except
+  `tokens.css`. It fails, with file and line, on a raw color (hex, `rgb()` and the other color
+  functions, named colors), a `font-family` or `font` that is not a `--font-*` token, a numeric
+  `font-weight`, and any length outside a short allowlist, `STYLE_ALLOWED_LENGTHS` in
+  [`scripts/check-hygiene.mjs`](../scripts/check-hygiene.mjs): zero, the `1px` and `2px`
+  hairlines (borders, outlines, underlines, inset markers), `ch` measures, and full-screen
+  `100vh`, `100svh`, `100dvh` and `100vw`. Percentages, `fr`, unitless numbers and durations are
+  not checked. Selectors and `@media` conditions are skipped, since custom properties cannot be
+  used in a media query; `transparent` and `currentColor` are fine.
 - [`src/styles/base.css`](../src/styles/base.css) holds the reset, element defaults and three
   shared helpers (`.container`, `.label`, `.visually-hidden`).
 - Component styles are scoped inside each `.astro` file.
