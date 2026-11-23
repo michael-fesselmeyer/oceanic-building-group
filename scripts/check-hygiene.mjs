@@ -121,6 +121,30 @@ for (const file of files) {
   }
 }
 
+// CI runners. Standard GitHub-hosted runners are free on a public repository; larger runners
+// are billed even there. Every job must name a standard Ubuntu runner, so a one-line change can
+// never start charging the account. An expression is rejected too, since it cannot be checked.
+const FREE_RUNNER = /^ubuntu-(?:latest|\d{2}\.\d{2})$/;
+for (const file of files.filter((name) => /^\.github\/workflows\/[^/]+\.ya?ml$/.test(name))) {
+  readFileSync(file, 'utf8')
+    .split('\n')
+    .forEach((text, index) => {
+      const value = text.match(/^\s*runs-on:(.*)$/)?.[1];
+      if (value === undefined) return;
+      // A list, group or label set on the following lines leaves this line empty.
+      const runner = value
+        .replace(/#.*$/, '')
+        .trim()
+        .replace(/^['"]|['"]$/g, '');
+      if (!FREE_RUNNER.test(runner)) {
+        report(file, {
+          line: index + 1,
+          message: `runs-on "${runner || '(list or group)'}" is not a free standard runner; use ubuntu-latest`,
+        });
+      }
+    });
+}
+
 // Commit messages, when a range is given.
 const commitsFlag = process.argv.indexOf('--commits');
 if (commitsFlag !== -1) {
