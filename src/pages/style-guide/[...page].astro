@@ -33,6 +33,7 @@ const cards: Project[] = [
     location: 'Jupiter Inlet Colony',
     category: 'renovation',
     status: 'under-construction',
+    progress: [{ date: new Date('2026-02-10'), caption: 'Framing complete.' }],
   }),
   exampleProject('example-no-location', {
     title: 'Commercial Build-Out',
@@ -241,8 +242,12 @@ const tokens = {
       </SectionHeading>
       <p class="prose">
         The project page template has its own example pages, filled with made-up projects:{' '}
-        <TextLink href="/style-guide/project/">every part filled in, with a gallery</TextLink> and{' '}
-        <TextLink href="/style-guide/project/sparse/">only the required fields</TextLink>.
+        <TextLink href="/style-guide/project/">every part filled in, with a gallery</TextLink>,{' '}
+        <TextLink href="/style-guide/project/sparse/">only the required fields</TextLink> and{' '}
+        <TextLink href="/style-guide/project/progress/">
+          under construction with progress updates
+        </TextLink>
+        .
       </p>
     </section>
 
