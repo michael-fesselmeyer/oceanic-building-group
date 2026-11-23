@@ -340,7 +340,7 @@ the content entry is the address.
   wrap: the first project has no previous link and the last has no next, so a short portfolio
   never links a project to itself. `neighbors()` in
   [`src/lib/project-page.ts`](../src/lib/project-page.ts) does this.
-- **Empty parts.** Stats, features, construction progress, the gallery, the facts under the title
+- **Empty parts.** Stats, features, construction progress, the gallery, before and after, the facts under the title
   (location, style, year), the design partner credit and the neighbor links each disappear
   entirely when the project has nothing for them.
 - **Status.** An `under-construction` project carries an "Under construction" label next to its
@@ -369,6 +369,17 @@ the content entry is the address.
 - **Gallery.** Photographs are stacked one per row at the column width on every screen; a portrait
   one is centered and kept within the `--photo-max-height` token. The list carries `data-gallery`
   and each item `data-gallery-item`, `data-gallery-index` and an id (`photo-1`...).
+- **Before and after.** A project's optional `beforeAfter` list (up to six pairs, each with its
+  own alt text and an optional caption) appears after the gallery under "Before and after",
+  rendered by [`BeforeAfter.astro`](../src/components/project/BeforeAfter.astro). Both photographs
+  are cropped to 3:2 and load lazily. Without JavaScript they sit side by side (one above the other
+  on phones) under "Before" and "After" labels, and the range input ships `hidden`. A short script
+  stacks them, shows the range over the photograph (transparent, so a drag anywhere moves it) and
+  sets `--split` from its value; the "before" side is cut with `clip-path`, a line and knob mark
+  the split, and the frame takes the focus ring. Arrows, Home and End move it, and
+  `aria-valuetext` says how much of the before is showing. The audited fixture project carries a
+  pair, so the budget covers it. `tests/e2e/before-after.spec.ts` covers the section, keyboard
+  use, the stacking, the no-script fallback and axe.
 - **Lightbox.** Each photograph links to a large version (WebP, at most 2400px wide), so with no
   JavaScript it opens as a plain image. A short script (about sixty lines, no library) in
   `Lightbox.astro` upgrades the links: a click opens the large image in a `<dialog>` (`showModal`, so focus stays
