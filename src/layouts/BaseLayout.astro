@@ -16,6 +16,10 @@ interface Props {
   description: string;
   /** Share image address. Leave out to use the default brand card. */
   image?: string;
+  /** What the share image shows. Pass it with `image`. */
+  imageAlt?: string;
+  /** Pixel size of the share image. Pass it with `image`. */
+  imageSize?: { width: number; height: number };
   /** Keeps the page out of search engines even after launch. */
   noindex?: boolean;
   /** Breadcrumb trail from the home page to this page. Pass it on nested pages only. */
@@ -34,6 +38,8 @@ const {
   title,
   description,
   image,
+  imageAlt,
+  imageSize,
   noindex,
   breadcrumbs,
   structuredData,
@@ -50,6 +56,8 @@ const {
       title={title}
       description={description}
       image={image}
+      imageAlt={imageAlt}
+      imageSize={imageSize}
       noindex={noindex}
       breadcrumbs={breadcrumbs}
       structuredData={structuredData}
