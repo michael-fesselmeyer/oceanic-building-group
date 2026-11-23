@@ -1,0 +1,272 @@
+---
+// About: the company story and the team. The story is written here from
+// facts the business has confirmed; the office, service area and the
+// principals' experience come from src/lib/site.ts. The team is the team
+// collection, one Markdown file per person in src/content/team/. With no
+// published team member the team section is left out.
+import Button from '../components/Button.astro';
+import SectionHeading from '../components/SectionHeading.astro';
+import TextLink from '../components/TextLink.astro';
+import TeamList from '../components/about/TeamList.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getTeam } from '../lib/content';
+import { aboutFacts } from '../lib/about';
+import { contactLink, site } from '../lib/site';
+import { teamCard } from '../lib/team';
+
+const team = (await getTeam()).map((member) => teamCard(member.id, member.data, member.body));
+const facts = aboutFacts(site);
+const experience = site.principalsExperienceYears;
+---
+
+<BaseLayout
+  title="About"
+  description={`${site.name} builds homes and commercial projects in ${site.serviceArea}, from the first plan and budget to the finished interiors.`}
+>
+  <article class="about">
+    <header class="container head">
+      <div class="head-text">
+        <p class="label kicker">About {site.name}</p>
+        <h1>Building in {site.serviceArea}</h1>
+        <p class="lede">
+          {site.name} is a residential and commercial builder.{' '}
+          {experience &&
+            `Our principals bring more than ${experience} years of experience to every project we take on.`}
+        </p>
+      </div>
+      {facts.length > 0 && (
+        <dl class="facts">
+          {facts.map((fact) => (
+            <div>
+              <dt class="label">{fact.label}</dt>
+              <dd>{fact.value}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
+    </header>
+
+    <section class="container story" aria-labelledby="story-heading">
+      <h2 class="label section-label" id="story-heading">
+        What we do
+      </h2>
+      <div class="prose">
+        <p>
+          We build custom homes, renovate existing ones, take on commercial construction and work
+          with investors as their building partner.
+        </p>
+        <p>
+          We can help from the very beginning, with choosing a site and finding the right
+          architectural help, and carry a project through construction to the interior design.
+        </p>
+        <p>
+          Every project starts with a plan, a budget and a realistic timeline, so you know what to
+          expect before building begins.
+        </p>
+        <p class="more">
+          Read about <TextLink href="/services/">our services</TextLink>,{' '}
+          <TextLink href="/process/">how a build unfolds</TextLink> and{' '}
+          <TextLink href="/interior-design/">our interior design partner</TextLink>.
+        </p>
+      </div>
+    </section>
+
+    {team.length > 0 && (
+      <section class="container team" aria-labelledby="team-heading">
+        <SectionHeading id="team-heading" label="The team">
+          Who you will work with
+        </SectionHeading>
+        <div class="team-body">
+          <TeamList members={team} />
+        </div>
+      </section>
+    )}
+
+    <aside class="closing" aria-labelledby="closing-heading">
+      <div class="container closing-grid">
+        <h2 id="closing-heading">Tell us about your project</h2>
+        <p class="closing-action">
+          <Button href={contactLink.href}>{contactLink.label}</Button>
+        </p>
+      </div>
+    </aside>
+  </article>
+</BaseLayout>
+
+<style>
+  .about {
+    padding-bottom: var(--section-gap);
+  }
+
+  /* Opening: the headline and lede on the left, the facts on rules to the right. */
+  .head {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    align-items: end;
+    gap: var(--space-6);
+    padding-top: var(--space-8);
+  }
+
+  .head-text {
+    grid-column: 1 / span 8;
+  }
+
+  .kicker {
+    color: var(--color-link);
+  }
+
+  h1 {
+    max-width: 16ch;
+    margin-top: var(--space-4);
+    font-size: var(--text-4xl);
+  }
+
+  .lede {
+    max-width: var(--width-prose);
+    margin-top: var(--space-6);
+    color: var(--color-heading);
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    line-height: var(--leading-snug);
+    text-wrap: pretty;
+  }
+
+  .facts {
+    grid-column: 10 / span 3;
+    display: grid;
+    gap: var(--space-4);
+    margin: 0;
+  }
+
+  .facts div {
+    display: grid;
+    gap: var(--space-1);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .facts dt {
+    color: var(--color-text-muted);
+  }
+
+  .facts dd {
+    margin: 0;
+    color: var(--color-heading);
+    line-height: var(--leading-snug);
+  }
+
+  /* The story: a small label in the margin, the text at reading width. */
+  .story {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: var(--space-6);
+    margin-top: var(--section-gap);
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .section-label {
+    grid-column: 1 / span 3;
+    color: var(--color-link);
+    line-height: var(--leading-body);
+  }
+
+  .prose {
+    grid-column: 5 / span 7;
+    display: grid;
+    gap: var(--space-5);
+    max-width: var(--width-prose);
+  }
+
+  .prose > p:first-child {
+    color: var(--color-heading);
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    line-height: var(--leading-snug);
+  }
+
+  .more {
+    color: var(--color-text-muted);
+  }
+
+  .team {
+    margin-top: var(--section-gap);
+  }
+
+  .team-body {
+    margin-top: var(--space-7);
+  }
+
+  /* No fill: the footer keeps its own space above it, and a band would leave a gap. */
+  .closing {
+    padding-top: var(--section-gap);
+  }
+
+  .closing-grid {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-5) var(--space-6);
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--color-heading);
+  }
+
+  .closing h2 {
+    font-size: var(--text-2xl);
+  }
+
+  @media (max-width: 1100px) {
+    .head-text {
+      grid-column: 1 / span 8;
+    }
+
+    .facts {
+      grid-column: 9 / span 4;
+    }
+
+    .section-label {
+      grid-column: 1 / span 4;
+    }
+
+    .prose {
+      grid-column: 5 / span 8;
+    }
+  }
+
+  @media (max-width: 800px) {
+    .head {
+      padding-top: var(--space-7);
+    }
+
+    .head-text,
+    .facts,
+    .section-label,
+    .prose {
+      grid-column: 1 / -1;
+    }
+
+    .facts {
+      grid-template-columns: repeat(auto-fit, minmax(var(--space-10), 1fr));
+      margin-top: var(--space-2);
+    }
+
+    .story {
+      gap: var(--space-4);
+    }
+
+    .team-body {
+      margin-top: var(--space-6);
+    }
+  }
+
+  @media (max-width: 520px) {
+    .head {
+      padding-top: var(--space-6);
+    }
+
+    .facts {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>
