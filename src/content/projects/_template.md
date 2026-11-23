@@ -31,6 +31,8 @@ features: # optional, up to 8
 #   - photo: optional; put the photograph in the project's photos folder
 #   - alt: what the photograph shows, in plain words (needed with a photo)
 # The order in the file does not matter; the page sorts by date.
+# Keep the updates when the project is finished: with three or more photographs
+# they become its "How it was built" story, oldest first.
 progress: # optional
   - date: 2026-03-04
     caption: Foundation poured and the first floor walls framed.

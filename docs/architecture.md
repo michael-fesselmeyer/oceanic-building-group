@@ -144,6 +144,12 @@ project-photo`). A name must be unique on a page, so a page shows each project a
   browser test checks the home, portfolio and interior design pages.
 - **The header** has its own scroll-driven animation (see [Header](#header)); the reveals use a
   different keyframe name and do not touch it.
+- **The build story** on project pages has its own, scoped to
+  [`ProjectBuildStory`](../src/components/project/ProjectBuildStory.astro) (see
+  [Project pages](#project-pages)): sticky photographs that come forward as their captions scroll
+  past, on named view timelines. Like the reveals it sits inside
+  `prefers-reduced-motion: no-preference` and an `@supports` check, changes only opacity and uses
+  longhands; without either it is a plain sequence of photographs and captions.
 
 ## Brand assets
 
@@ -219,8 +225,8 @@ their own versions.
 | `SiteHeader`, `SiteFooter` | The page frame (used by the layout); see [Header](#header)                                                        |
 
 Components used by a single page type live in a subfolder named after it. `project/` holds the
-project page's parts: `ProjectArticle` (the whole page body), `ProjectGallery` and
-`ProjectPager`; see [Project pages](#project-pages). `design-partner/` holds
+project page's parts: `ProjectArticle` (the whole page body), `ProjectGallery`,
+`ProjectProgress`, `ProjectBuildStory` and `ProjectPager`; see [Project pages](#project-pages). `design-partner/` holds
 `DesignPartnerArticle`, the body of the interior design page; see
 [Interior design page](#interior-design-page). `home/` holds the home page's sections, from
 `HomeHero` to `ContactBand`; see [Home page](#home-page). `about/` holds `TeamList`, the team on
@@ -268,10 +274,12 @@ in CSS:
 
 `/style-guide/` shows every component and variant, including the edge cases (no caption, partial
 and empty stats, long titles, a project with no location). Check it after changing a component.
-`/style-guide/project/` shows the project page with every part filled in (gallery, design partner
-credit, both neighbors), `/style-guide/project/sparse/` shows one with only the required fields,
-and `/style-guide/project/progress/` shows an under-construction project with four progress
-updates written out of order, one of them without a photograph. `/style-guide/interior-design/` shows the interior design page with a made-up partner,
+`/style-guide/project/` shows the project page with every part filled in (gallery, the story of
+how it was built, design partner credit, both neighbors), `/style-guide/project/sparse/` shows one
+with only the required fields, `/style-guide/project/progress/` shows an under-construction
+project with four progress updates written out of order, one of them without a photograph, and
+`/style-guide/project/short-story/` a finished project with only two progress photographs, which
+gets no build story. `/style-guide/interior-design/` shows the interior design page with a made-up partner,
 credited projects, testimonials and a long biography, and `/style-guide/interior-design/no-partner/`
 shows it with no partner set. `/style-guide/home/` shows every home page section filled with
 made-up content (four featured projects, one with a long title and one with no location, and three
@@ -346,7 +354,7 @@ the content entry is the address.
   wrap: the first project has no previous link and the last has no next, so a short portfolio
   never links a project to itself. `neighbors()` in
   [`src/lib/project-page.ts`](../src/lib/project-page.ts) does this.
-- **Empty parts.** Stats, features, construction progress, the gallery, the facts under the title
+- **Empty parts.** Stats, features, construction progress, the gallery, the build story, the facts under the title
   (location, style, year), the design partner credit and the neighbor links each disappear
   entirely when the project has nothing for them.
 - **Status.** An `under-construction` project carries an "Under construction" label next to its
@@ -363,9 +371,29 @@ the content entry is the address.
   with the date and caption under them; an update without a photograph is text only. Dates are
   formatted in UTC ("March 4, 2026") so they never shift a day with the build machine's time zone.
   Once the project is `completed`, the section is no longer shown and the updates stay in the file;
-  the gallery takes over. Project cards in the portfolio (including the "Under construction"
+  the gallery takes over, and the photographed updates may tell how it was built (below). Project cards in the portfolio (including the "Under construction"
   filter) and on the home page add "Updated" and that date. How to add an update, in plain words,
   is in `src/content/projects/_template.md`.
+- **How it was built.** A `completed` project with at least three progress updates that have a
+  photograph (`BUILD_STORY_MIN_STAGES`) shows a "How it was built" section after the gallery.
+  `buildStoryStages()` in [`src/lib/project-page.ts`](../src/lib/project-page.ts) picks the
+  photographed updates, oldest first (same-day updates keep their order in the file), and returns
+  none for fewer than three or while the project is under construction.
+  [`ProjectBuildStory`](../src/components/project/ProjectBuildStory.astro) renders them as a list
+  of figures, each photograph (3:2, lazy, the same `widths` and `sizes` as the progress list)
+  captioned by its date and words. The base styles are a plain sequence: photograph beside
+  caption on wide screens, photograph above caption below 800px. On screens wider than 800px,
+  without reduced motion and where `@supports (animation-timeline: view()) and (timeline-scope:
+--stage)` passes, the story is told in place: each list item spans the whole list and passes
+  its rows down with `subgrid`, so the photographs stack in the first column, `position: sticky`
+  below the header, while each caption has its own row (70svh) in the second. Each caption
+  declares a view timeline, `--stage`, which `timeline-scope` on its figure keeps to its own
+  photograph; every photograph after the first fades in (opacity only, linear, `cover 35%` to
+  `cover 55%`) as its caption rises to the middle of the photograph and fades out again when
+  scrolled back. The photographs are not lightbox links: the story is a sequence to scroll, and
+  the gallery above is where photographs open large. `tests/e2e/build-story.spec.ts` covers
+  presence and absence, order, alt text and sources, axe, the in-place behavior, the phone and
+  reduced-motion sequences, and that the motion rules sit behind both conditions.
 - **Lightbox, shared.** The dialog and its script live in
   [`Lightbox.astro`](../src/components/project/Lightbox.astro), placed right after any list
   that carries `data-gallery`; the gallery and the progress list both use it.
@@ -937,7 +965,8 @@ practices and SEO. A page that misses the budget is fixed, never excused.
   project page. The Lighthouse build also sets `PUBLIC_AUDIT_FIXTURES=true`, which adds one
   made-up, non-draft project at `/portfolio/audit-example/` (`auditProject` in
   [`src/lib/examples.ts`](../src/lib/examples.ts): a cover, stats, features, a three-photograph
-  gallery and the design partner credit). No deployment sets the variable, and no real project
+  gallery, a five-stage "How it was built" story and the design partner credit), so the audit
+  measures every part a finished project can have. No deployment sets the variable, and no real project
   is published for the audit.
 - **One run per page.** Twelve pages at one run each keep the job to a few minutes. Scores sit at
   99 to 100, well clear of the budget; if a page starts to hover near 95, raise `numberOfRuns`

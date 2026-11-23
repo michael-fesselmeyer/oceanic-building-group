@@ -161,8 +161,6 @@ down without deleting it, set it back to `true`.
 
 ### Add a progress update to a project under construction
 
-_Available once pull request #65 (progress updates) is merged._
-
 The project's `status` must be `under-construction`. Add a `progress:` list to its file, or add to
 the end of the one that is there. Each update starts with a dash and has a date, a caption and,
 usually, a photograph with its description:
@@ -180,8 +178,30 @@ progress:
 - Write the date as year-month-day. The page shows the newest update first, whatever order they
   are in the file, and the project's card says "Updated" and the latest date.
 - The photograph is optional; a caption alone is fine.
-- When the project is finished, change `status` to `completed`. The updates stay in the file but
-  are no longer shown, and the gallery takes over.
+- When the project is finished, change `status` to `completed` and keep the updates in the file.
+  The "Construction progress" section goes away and the gallery takes over. If three or more of
+  the updates have a photograph, the page also gets a "How it was built" section after the
+  gallery (see below).
+
+### Show how a finished project was built
+
+A finished project's page tells the story of its construction when it has the photographs for
+it. Nothing to switch on: the section appears by itself when both are true:
+
+- the project's `status` is `completed`, and
+- at least three of its progress updates have a photograph.
+
+The section is called "How it was built" and comes after the photographs. It shows the updates
+that have a photograph, oldest first (slab to handover), each with its date and caption. Updates
+without a photograph are left out of it. With fewer than three photographs the section is not
+shown at all. On a computer the photograph stays in place while the captions scroll past beside
+it, and each caption brings its own photograph forward; on a phone, and for visitors who turn
+motion off, the photographs and captions simply follow one another.
+
+To get the most from it, write each caption as the stage it shows ("Slab poured", "Roof dried
+in", "Keys handed over") and pick photographs taken from similar angles, so one stage gives way
+to the next. The photographs are cropped to 3:2, so keep the subject away from the top and bottom
+edges.
 
 What the check prints:
 
