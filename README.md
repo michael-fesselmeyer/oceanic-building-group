@@ -75,14 +75,14 @@ Planned work is tracked in [docs/roadmap.md](docs/roadmap.md).
 
 ## Tech stack
 
-| Layer     | Choice                                                                     |
-| --------- | -------------------------------------------------------------------------- |
-| Framework | [Astro](https://astro.build) 7, TypeScript (strict)                        |
-| Hosting   | Cloudflare Workers with static assets                                      |
-| Content   | Markdown content collections validated with Zod                            |
-| Images    | Masters in the repo, responsive WebP/AVIF generated at build time          |
-| Styling   | Plain CSS: design tokens as custom properties, component-scoped styles     |
-| Tests     | Vitest (unit), Playwright with axe (browser and accessibility), Lighthouse |
+| Layer     | Choice                                                                 |
+| --------- | ---------------------------------------------------------------------- |
+| Framework | [Astro](https://astro.build) 7, TypeScript (strict)                    |
+| Hosting   | Cloudflare Workers with static assets                                  |
+| Content   | Markdown content collections validated with Zod                        |
+| Images    | Masters in the repo, responsive WebP/AVIF generated at build time      |
+| Styling   | Plain CSS: design tokens as custom properties, component-scoped styles |
+| Tests     | Vitest (unit), Playwright with axe in Chromium and WebKit, Lighthouse  |
 
 The reasoning behind these choices is in [docs/adr](docs/adr) and
 [docs/architecture.md](docs/architecture.md).

@@ -51,7 +51,8 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
+      # Chromium and WebKit (Safari's engine), each on a desktop and a phone profile.
+      - run: npx playwright install --with-deps chromium webkit
       - run: npm run build
       - run: npm run test:e2e
       - name: Save report
