@@ -142,6 +142,21 @@ edits:
 
    Check the folder name, the file name and the ending (`.jpg` or `.jpeg`).
 
+6. **Before and after (optional).** A renovation reads best as a pair: the same view before and
+   after. Take both from the same spot so they line up; the page crops both to the same 3:2
+   shape and lets the visitor drag a line across to compare them. Add up to six pairs:
+
+   ```yaml
+   beforeAfter:
+     - before: ../../assets/projects/river-house/kitchen-before.jpg
+       beforeAlt: The kitchen before, with its closed-off galley layout
+       after: ../../assets/projects/river-house/kitchen-after.jpg
+       afterAlt: The same view after, opened up to the family room
+       caption: The kitchen, opened up to the family room
+   ```
+
+   `caption` is optional. Leave `beforeAfter` out and the section does not appear.
+
 _Coming:_ an import command, `npm run photos:import -- <folder> <project-file-name>` (issue #67),
 will resize a folder of camera files, strip their location, save them in the right place and print
 the `cover` and `gallery` lines to paste. Until it is merged, ask the assistant to do these steps.
