@@ -17,7 +17,7 @@
         "http://localhost/privacy/",
         "http://localhost/terms/"
       ],
-      "numberOfRuns": 1,
+      "numberOfRuns": 3,
       "settings": {
         "chromeFlags": "--no-sandbox --headless=new",
         "blockedUrlPatterns": ["*cloudflareinsights.com/cdn-cgi/rum*"]
