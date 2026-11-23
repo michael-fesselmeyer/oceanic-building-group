@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { messages, notices } from '../../src/lib/intake';
+import { messages, notices, townChoices } from '../../src/lib/intake';
 import { readIntakeConfig } from '../../src/lib/intake-config';
 import {
   MAX_BODY_BYTES,
@@ -135,6 +135,44 @@ describe('handleIntake', () => {
     expect(sent[0]!.idempotencyKey).toMatch(/^lead-[0-9a-f]{40}$/);
     expect(sent[1]!.idempotencyKey).toBe(sent[0]!.idempotencyKey);
     expect(sent[2]!.idempotencyKey).not.toBe(sent[0]!.idempotencyKey);
+  });
+
+  it('sends the follow-up answers for the chosen type and logs only which were answered', async () => {
+    const { deps, sent, lines } = setup();
+    deps.towns = townChoices([{ id: 'harbor-point', data: { name: 'Harbor Point' } }]);
+    const fields = {
+      ...visitor,
+      town: 'harbor-point',
+      lot: 'yes',
+      building: 'Corner shop with flats above',
+      'cf-turnstile-response': TOKEN,
+    };
+    expect(await handleIntake(post(fields), deps)).toEqual({ kind: 'sent' });
+
+    const [email] = sent;
+    expect(email!.text).toContain('About the project:\nWhere: Harbor Point\nOwns the lot: Yes\n');
+    // The building question belongs to commercial projects, not custom homes.
+    expect(email!.text).not.toContain('Corner shop');
+    expect(lines.some((line) => line.endsWith('spam check passed, follow-ups town lot'))).toBe(
+      true,
+    );
+    expect(lines.join('\n')).not.toContain('Harbor Point');
+
+    // Different follow-up answers are a different enquiry, not a resend.
+    await handleIntake(post({ ...fields, lot: 'looking' }), deps);
+    expect(sent[1]!.idempotencyKey).not.toBe(email!.idempotencyKey);
+  });
+
+  it('keeps the follow-up answers when the form comes back', async () => {
+    const { deps } = setup();
+    const outcome = await handleIntake(
+      post({ ...visitor, message: 'Too short', start: 'later', plans: 'not-yet' }),
+      deps,
+    );
+    expect(outcome).toMatchObject({
+      kind: 'invalid',
+      values: { start: 'later', plans: 'not-yet' },
+    });
   });
 
   it('returns invalid fields with their messages and keeps what was typed', async () => {

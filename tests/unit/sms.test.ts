@@ -23,6 +23,7 @@ const intake: Intake = {
   phone: '(561) 555-0142',
   projectType: 'commercial',
   message: 'An office build-out on the second floor.',
+  followUps: [{ field: 'building', answer: 'Two-storey offices' }],
 };
 const lead: Lead = { intake, spamCheck: 'passed', key: 'lead-test-1' };
 
@@ -145,7 +146,10 @@ describe('formatLeadText', () => {
   it('names the project type and nothing personal', () => {
     const text = formatLeadText(lead);
     expect(text).toBe('New website enquiry: Commercial. The details are in the office email.');
-    for (const value of Object.values(intake)) expect(text).not.toContain(value);
+    const { name, email, phone, message, followUps } = intake;
+    for (const value of [name, email, phone!, message, ...followUps.map((item) => item.answer)]) {
+      expect(text).not.toContain(value);
+    }
   });
 
   it('says when the spam check did not run', () => {

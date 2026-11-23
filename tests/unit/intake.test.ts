@@ -1,12 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import {
+  ELSEWHERE,
   HONEYPOT_FIELD,
   PHONE_PATTERN,
+  followUps,
+  followUpsFor,
   isHoneypotFilled,
   limits,
   messages,
   parseIntake,
   projectTypes,
+  townChoices,
 } from '../../src/lib/intake';
 
 const valid = {
@@ -16,6 +20,9 @@ const valid = {
   projectType: 'custom-home',
   message: 'A four bedroom home on a corner lot, starting next spring.',
 };
+
+/** What a successful parse returns for `valid`: the answers, trimmed, and no follow-ups. */
+const parsed = { ...valid, followUps: [] };
 
 function errorsFor(input: Record<string, unknown>) {
   const result = parseIntake(input);
@@ -31,13 +38,13 @@ describe('parseIntake', () => {
       email: ' dana.rivera@example.test ',
       message: `  ${valid.message}  `,
     });
-    expect(result).toEqual({ success: true, data: valid });
+    expect(result).toEqual({ success: true, data: parsed });
   });
 
   it('accepts FormData, as the endpoint receives it', () => {
     const form = new FormData();
     for (const [key, value] of Object.entries(valid)) form.set(key, value);
-    expect(parseIntake(form)).toEqual({ success: true, data: valid });
+    expect(parseIntake(form)).toEqual({ success: true, data: parsed });
   });
 
   it('treats a blank phone number as not given', () => {
@@ -50,7 +57,7 @@ describe('parseIntake', () => {
   it('drops fields the form does not know about, including the honeypot', () => {
     const result = parseIntake({ ...valid, [HONEYPOT_FIELD]: '', extra: 'x' });
     expect(result.success && Object.keys(result.data).sort()).toEqual(
-      ['email', 'message', 'name', 'phone', 'projectType'].sort(),
+      ['email', 'followUps', 'message', 'name', 'phone', 'projectType'].sort(),
     );
   });
 
@@ -115,6 +122,119 @@ describe('parseIntake', () => {
 
   it('rejects values that are not text', () => {
     expect(errorsFor({ ...valid, name: 42 })).toEqual({ name: messages.nameRequired });
+  });
+});
+
+describe('follow-up questions', () => {
+  // Synthetic towns, as townChoices would build them from the towns collection.
+  const towns = townChoices([
+    { id: 'harbor-point', data: { name: 'Harbor Point' } },
+    { id: 'pine-ridge', data: { name: 'Pine Ridge' } },
+  ]);
+
+  function followUpsOf(input: Record<string, unknown>) {
+    const result = parseIntake({ ...valid, ...input }, { towns });
+    if (!result.success) throw new Error('expected the submission to be accepted');
+    return result.data.followUps;
+  }
+
+  it('lists the towns in order, then somewhere else', () => {
+    expect(towns).toEqual([
+      { value: 'harbor-point', label: 'Harbor Point' },
+      { value: 'pine-ridge', label: 'Pine Ridge' },
+      { value: ELSEWHERE, label: 'Somewhere else' },
+    ]);
+  });
+
+  it('asks where and when for every project type', () => {
+    for (const { value } of projectTypes) {
+      const fields = followUpsFor(value).map((question) => question.field);
+      expect(fields, value).toEqual(expect.arrayContaining(['town', 'start']));
+    }
+  });
+
+  it('asks each type its own questions, and the other types none of them', () => {
+    const own = (type: Parameters<typeof followUpsFor>[0]) =>
+      followUpsFor(type)
+        .filter((question) => question.types !== 'every')
+        .map((question) => question.field);
+    expect(own('custom-home')).toEqual(['lot', 'plans']);
+    expect(own('renovation')).toEqual(['renovation']);
+    expect(own('commercial')).toEqual(['building']);
+    expect(own('investor-partnership')).toEqual(['interest']);
+    expect(own('other')).toEqual([]);
+  });
+
+  it('keeps allowed answers for the chosen type, in plain words and form order', () => {
+    expect(
+      followUpsOf({
+        projectType: 'custom-home',
+        plans: 'not-yet',
+        lot: 'looking',
+        start: '6-to-12-months',
+        town: 'pine-ridge',
+      }),
+    ).toEqual([
+      { field: 'town', answer: 'Pine Ridge' },
+      { field: 'start', answer: '6 to 12 months' },
+      { field: 'lot', answer: 'Looking for one' },
+      { field: 'plans', answer: 'Not yet' },
+    ]);
+    expect(followUpsOf({ projectType: 'renovation', renovation: 'whole-home' })).toEqual([
+      { field: 'renovation', answer: 'The whole home' },
+    ]);
+    expect(followUpsOf({ projectType: 'investor-partnership', interest: 'selling-land' })).toEqual([
+      { field: 'interest', answer: 'Selling land' },
+    ]);
+    expect(followUpsOf({ projectType: 'other', town: ELSEWHERE })).toEqual([
+      { field: 'town', answer: 'Somewhere else' },
+    ]);
+  });
+
+  it('ignores answers to another type’s questions, left over from a changed choice', () => {
+    expect(
+      followUpsOf({
+        projectType: 'renovation',
+        lot: 'yes',
+        plans: 'yes',
+        building: 'Offices',
+        interest: 'joint-venture',
+      }),
+    ).toEqual([]);
+  });
+
+  it('drops values that are not on the list, without rejecting the enquiry', () => {
+    expect(
+      followUpsOf({
+        projectType: 'custom-home',
+        town: 'atlantis',
+        start: 'yesterday',
+        lot: 'Yes',
+        plans: '<b>yes</b>',
+      }),
+    ).toEqual([]);
+  });
+
+  it('knows only somewhere else when no towns are given', () => {
+    const result = parseIntake({ ...valid, town: 'pine-ridge' });
+    expect(result.success && result.data.followUps).toEqual([]);
+  });
+
+  it('keeps the building as one trimmed line, up to its limit', () => {
+    const building = followUps.find((question) => question.field === 'building')!;
+    const limit = building.kind === 'text' ? building.maxLength : 0;
+    expect(limit).toBe(80);
+    expect(
+      followUpsOf({ projectType: 'commercial', building: '  Two-storey\r\noffices ' }),
+    ).toEqual([{ field: 'building', answer: 'Two-storey offices' }]);
+    expect(followUpsOf({ projectType: 'commercial', building: 'a'.repeat(limit) })).toHaveLength(1);
+    expect(followUpsOf({ projectType: 'commercial', building: 'a'.repeat(limit + 1) })).toEqual([]);
+  });
+
+  it('treats blank and non-text answers as not given', () => {
+    expect(followUpsOf({ projectType: 'commercial', building: '   ', town: '', start: 3 })).toEqual(
+      [],
+    );
   });
 });
 

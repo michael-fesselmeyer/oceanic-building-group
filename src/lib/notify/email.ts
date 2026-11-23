@@ -1,6 +1,6 @@
 // The email to the office: what it says, and the channel that sends it
 // through a transport (Resend in production, a log line locally and in CI).
-import { projectTypes } from '../intake';
+import { followUps, projectTypes, type FollowUpAnswer } from '../intake';
 import { redactEmail, redactName, redactPhone } from '../redact';
 import type { Channel, Lead, SendResult } from './types';
 
@@ -22,6 +22,19 @@ export interface EmailTransport {
 
 export function projectTypeLabel(value: string): string {
   return projectTypes.find((type) => type.value === value)?.label ?? value;
+}
+
+/** The follow-up answers, one per line, each under its short label. */
+function followUpLines(answers: readonly FollowUpAnswer[]): string[] {
+  if (answers.length === 0) return [];
+  return [
+    '',
+    'About the project:',
+    ...answers.map(({ field, answer }) => {
+      const label = followUps.find((question) => question.field === field)?.summary ?? field;
+      return `${label}: ${answer}`;
+    }),
+  ];
 }
 
 /** Line breaks would let a visitor's text break out of a header line. */
@@ -52,6 +65,7 @@ export function formatLeadEmail(lead: Lead): { subject: string; text: string } {
     '',
     'Message:',
     intake.message,
+    ...followUpLines(intake.followUps),
     '',
     '--',
     spamCheck === 'passed'
@@ -74,6 +88,10 @@ export function summarizeLead(lead: Lead): string {
     projectTypeLabel(intake.projectType),
     `message ${intake.message.length} characters`,
     `spam check ${lead.spamCheck}`,
+    // Which questions were answered, not the answers: the building text is the visitor's own.
+    intake.followUps.length > 0
+      ? `follow-ups ${intake.followUps.map((answer) => answer.field).join(' ')}`
+      : 'no follow-ups',
   ].join(', ');
 }
 
