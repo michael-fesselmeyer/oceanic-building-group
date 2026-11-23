@@ -1,20 +1,29 @@
 ---
-// Style guide: the top of the home page with made-up featured projects, so
-// the cases the real content does not have yet can be checked.
+// Style guide: the home page's sections filled with made-up content, so the
+// cases the real content does not have yet can be checked.
 //
-//   /style-guide/home/       four featured projects, one with a long title
-//                            and one with no location
-//   /style-guide/home/one/   a single featured project: the hero only
-//   /style-guide/home/none/  nothing featured: the navy hero, no section
+//   /style-guide/home/       four featured projects (one with a long title,
+//                            one with no location), three services, three
+//                            stages, the design partner and three
+//                            testimonials, one of them naming a project
+//   /style-guide/home/one/   one featured project (the hero only) and a
+//                            single testimonial
+//   /style-guide/home/none/  every collection empty and no design partner:
+//                            the navy hero and the contact band only
 //
 // Development and preview builds only, like the main style guide page.
 import placeholderTall from '../../../assets/placeholders/placeholder-tall.jpg';
+import ContactBand from '../../../components/home/ContactBand.astro';
 import FeaturedProjects from '../../../components/home/FeaturedProjects.astro';
 import HomeHero from '../../../components/home/HomeHero.astro';
+import HomePartner from '../../../components/home/HomePartner.astro';
+import HomeProcess from '../../../components/home/HomeProcess.astro';
+import HomeServices from '../../../components/home/HomeServices.astro';
+import HomeTestimonials from '../../../components/home/HomeTestimonials.astro';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import type { Project } from '../../../lib/content';
-import { exampleProject } from '../../../lib/examples';
-import { splitFeatured } from '../../../lib/home';
+import { exampleDesignPartner, exampleProject } from '../../../lib/examples';
+import { splitFeatured, type HomeQuote, type HomeService, type HomeStep } from '../../../lib/home';
 import { launched } from '../../../lib/site';
 
 const lead = exampleProject('example-riverfront-residence', {
@@ -46,36 +55,77 @@ const four: Project[] = [
   }),
 ];
 
+const services: HomeService[] = [
+  {
+    title: 'Example Homes',
+    summary: 'A made-up service line, used on the style guide to show the services list.',
+    href: '/services/custom-homes/',
+  },
+  {
+    title: 'An Example Service Line With a Long Name',
+    summary: 'A made-up service with a title long enough to wrap onto a second line.',
+    href: '/services/renovations/',
+  },
+  {
+    title: 'Example Buildings',
+    summary: 'A made-up service line, used on the style guide to show the services list.',
+    href: '/services/commercial/',
+  },
+];
+
+const steps: HomeStep[] = [
+  { title: 'Example first stage' },
+  { title: 'Example stage with a length', duration: '2 to 3 weeks' },
+  { title: 'Example last stage' },
+];
+
+const quotes: HomeQuote[] = [
+  {
+    quote: 'A made-up testimonial, set large, to show how the first quote reads on the page.',
+    attribution: 'Homeowner, Example Beach',
+    source: 'Example Riverfront Residence',
+  },
+  {
+    quote: 'A second made-up testimonial, shown smaller beside the third.',
+    attribution: 'Homeowner, Tequesta',
+  },
+  {
+    quote: 'A third made-up testimonial, which is the last one the home page shows.',
+    attribution: 'Business owner, Jupiter',
+  },
+];
+
+const full = { services, steps, partner: exampleDesignPartner };
+
 export function getStaticPaths() {
   if (launched) return [];
   return [
-    { params: { example: undefined }, props: { name: 'four featured', count: 4 } },
-    { params: { example: 'one' }, props: { name: 'one featured', count: 1 } },
-    { params: { example: 'none' }, props: { name: 'nothing featured', count: 0 } },
+    { params: { example: undefined }, props: { name: 'every section filled', count: 4 } },
+    { params: { example: 'one' }, props: { name: 'one featured project', count: 1 } },
+    { params: { example: 'none' }, props: { name: 'nothing to show', count: 0 } },
   ];
 }
 
 const { name, count } = Astro.props;
 const { lead: heroProject, rest } = splitFeatured(four.slice(0, count));
+const filled = count > 0;
 ---
 
 <BaseLayout
   title={`Style guide: home page, ${name}`}
-  description="The top of the home page with made-up featured projects, for checking changes during development."
+  description="The home page's sections filled with made-up content, for checking changes during development."
   noindex
   overHero
 >
   <HomeHero project={heroProject} />
   <FeaturedProjects projects={rest} />
-  <p class="container note">
-    End of the example: the top of the home page with {name}. The real page continues with its other
-    sections.
-  </p>
+  <HomeServices services={filled ? full.services : []} />
+  <HomeProcess steps={filled ? full.steps : []} />
+  <HomePartner
+    partner={filled ? full.partner : null}
+    summary="A made-up interior designer, used on the style guide to show the partner section."
+    basedIn="Example City"
+  />
+  <HomeTestimonials quotes={quotes.slice(0, count === 1 ? 1 : count > 0 ? 3 : 0)} />
+  <ContactBand />
 </BaseLayout>
-
-<style>
-  .note {
-    margin-block: var(--section-gap);
-    color: var(--color-text-muted);
-  }
-</style>
