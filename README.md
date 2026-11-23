@@ -57,6 +57,7 @@ The site is served at `http://localhost:4321`.
 | `npm test`         | Unit tests                                                     |
 | `npm run test:e2e` | Browser and accessibility tests against the production build   |
 | `npm run hygiene`  | Checks that nothing private or off-policy is in the repository |
+| `npm run brand`    | Regenerates the wordmark, favicons, manifest and share image   |
 | `npm run verify`   | Everything CI runs except the browser tests and Lighthouse     |
 
 ## Configuration
@@ -75,6 +76,8 @@ src/
   lib/           Business facts, content access and pure helpers
   pages/         One file per address
   styles/        Design tokens and element defaults
+public/          Files served as they are: favicons, web manifest, share image
+scripts/         Repository checks and the brand asset generator
 tests/
   unit/          Vitest
   e2e/           Playwright
