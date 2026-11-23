@@ -56,8 +56,8 @@ describe('formatLeadEmail', () => {
   });
 
   it('says when no phone number was given', () => {
-    const { phone: _phone, ...rest } = intake;
-    expect(formatLeadEmail({ ...lead, intake: rest }).text).toContain('Phone: not given');
+    const withoutPhone = { ...intake, phone: undefined };
+    expect(formatLeadEmail({ ...lead, intake: withoutPhone }).text).toContain('Phone: not given');
   });
 
   it('keeps line breaks out of the subject', () => {
