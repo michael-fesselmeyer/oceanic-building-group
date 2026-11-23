@@ -23,14 +23,15 @@ Content lives in `src/content/<collection>/`, one Markdown file per item. Schema
 [`src/content.config.ts`](../src/content.config.ts) and are strict: an unknown or misspelled
 field fails the build.
 
-| Collection     | Holds                                     | Used by                               |
-| -------------- | ----------------------------------------- | ------------------------------------- |
-| `projects`     | Photographs, stats, story, category, town | Portfolio, project pages, home, towns |
-| `services`     | One page per service line                 | Services pages, home                  |
-| `towns`        | One page per service-area town            | Town pages, project filters           |
-| `team`         | Name, role, photo, biography              | About                                 |
-| `testimonials` | Quote and attribution                     | Home, project pages                   |
-| `processSteps` | The stages of a build, in order           | Our Process, home                     |
+| Collection      | Holds                                                          | Used by                               |
+| --------------- | -------------------------------------------------------------- | ------------------------------------- |
+| `projects`      | Photographs, stats, story, category, town                      | Portfolio, project pages, home, towns |
+| `services`      | One page per service line                                      | Services pages, home                  |
+| `towns`         | One page per service-area town                                 | Town pages, project filters           |
+| `team`          | Name, role, photo, biography                                   | About                                 |
+| `testimonials`  | Quote and attribution; `aboutDesignPartner` marks partner ones | Home, project pages, Interior Design  |
+| `processSteps`  | The stages of a build, in order                                | Our Process, home                     |
+| `designPartner` | One file: the partner's summary, places, biography             | Interior Design                       |
 
 Rules that apply to all of them:
 
@@ -139,7 +140,9 @@ their own versions.
 
 Components used by a single page type live in a subfolder named after it. `project/` holds the
 project page's parts: `ProjectArticle` (the whole page body), `ProjectGallery` and
-`ProjectPager`; see [Project pages](#project-pages).
+`ProjectPager`; see [Project pages](#project-pages). `design-partner/` holds
+`DesignPartnerArticle`, the body of the interior design page; see
+[Interior design page](#interior-design-page).
 
 Rules they share: optional data that is missing renders nothing (no empty wrappers, no
 placeholders), styles come only from tokens, and a parent spaces a component with its own layout
@@ -178,7 +181,9 @@ in CSS:
 and empty stats, long titles, a project with no location). Check it after changing a component.
 `/style-guide/project/` shows the project page with every part filled in (gallery, design partner
 credit, both neighbors) and `/style-guide/project/sparse/` shows one with only the required
-fields. Their made-up data is in [`src/lib/examples.ts`](../src/lib/examples.ts). These pages exist
+fields. `/style-guide/interior-design/` shows the interior design page with a made-up partner,
+credited projects, testimonials and a long biography, and `/style-guide/interior-design/no-partner/`
+shows it with no partner set. Their made-up data is in [`src/lib/examples.ts`](../src/lib/examples.ts). These pages exist
 in development and preview builds only: their `getStaticPaths` return no pages when
 `PUBLIC_SITE_LAUNCHED` is `true`, and they are always marked `noindex`.
 
@@ -277,6 +282,34 @@ collection in order. One Markdown file per stage in `src/content/process/`: the 
 - **Layout.** A numeral column, a vertical rule with a marker at each stage, and the stage text.
   The rule and markers drop out at 520px, where the stages become a plain ordered list.
 - **No JavaScript.**
+
+## Interior design page
+
+`/interior-design/` ([`src/pages/interior-design.astro`](../src/pages/interior-design.astro))
+presents the builder's interior design partner. The layout is in
+[`DesignPartnerArticle`](../src/components/design-partner/DesignPartnerArticle.astro); helpers
+for its facts and description are in [`src/lib/design-partner.ts`](../src/lib/design-partner.ts).
+
+- **Where each part comes from.** The name and website are business facts in `site.designPartner`
+  ([`src/lib/site.ts`](../src/lib/site.ts)). The summary, search description, where the partner is
+  based and works, and the biography (the Markdown body) are in the one file in
+  `src/content/design-partner/`. A second published file there stops the build with a plain
+  message, so it is never silently ignored. Credited projects are those with
+  `interiorDesignPartner: true`, in portfolio order. Testimonials with `aboutDesignPartner: true`
+  appear here and are left out of `getTestimonials()`, so a quote about the designer is never
+  shown as one about the builder.
+- **Why a collection and a field.** The biography is long text the business will edit, so it
+  belongs in a Markdown body like every other piece of prose; a one-file collection gives it that
+  without a new kind of loader. Partner quotes are still testimonials (same attribution, project
+  link, order and draft rules), so one boolean marks them instead of a second collection.
+- **Sections without content render nothing.** No credited project, no partner testimonial or an
+  empty biography each leave their section out, heading included. No part of the page needs a
+  photograph: the opening band carries the name, summary and facts in type alone.
+- **No partner set.** When `site.designPartner` is `null`, the page says the partner will be
+  introduced soon, keeps the contact link and is marked `noindex`.
+- **Closing.** The page ends with a link to the partner's website and the contact button.
+- **Credit on project pages.** The project page credit links here; see
+  [Project pages](#project-pages).
 
 ## Intake form
 

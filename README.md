@@ -19,6 +19,10 @@ into enquiries through a short intake form that notifies the office straight awa
 - **A process page that reads like a sequence.** The stages of a build are one Markdown file
   each, shown in order with large numerals on a vertical rule (a plain ordered list on phones). A
   typical duration appears only on a stage whose file supplies one.
+- **An interior design partner page.** `/interior-design/` introduces the builder's interior
+  designer from a Markdown file, adds the projects and client quotes credited to the partner once
+  they are marked, and ends with links to the partner's website and the contact page. Project
+  pages credit the partner and link there.
 - **Built for search.** Static HTML, a unique title and description on every page, structured
   data (the business on every page, breadcrumbs on nested pages, each project with its main
   photograph) built by tested functions, and a performance budget enforced in CI.
@@ -63,8 +67,9 @@ npm run dev
 ```
 
 The site is served at `http://localhost:4321`. Every shared component and its variants are shown
-at `http://localhost:4321/style-guide/`, and the project page template with made-up projects at
-`/style-guide/project/`. Neither is built for the launched site.
+at `http://localhost:4321/style-guide/`. The project page template with made-up projects is at
+`/style-guide/project/` and the interior design page with a made-up partner at
+`/style-guide/interior-design/`. None of these pages is built for the launched site.
 
 | Command            | What it does                                                   |
 | ------------------ | -------------------------------------------------------------- |
