@@ -8,9 +8,11 @@ into enquiries through a short intake form that notifies the office straight awa
 
 ## What it does
 
-- **Portfolio first.** Projects are content files with photographs, stats and a story, shown as
-  full-bleed, fast-loading pages. The portfolio index lays them out editorially and filters by
-  category and status through plain links, so filtering works without JavaScript.
+- **Portfolio first.** Projects are content files with photographs, stats and a story. The
+  portfolio index lays them out editorially and filters by category and status through plain
+  links, so filtering works without JavaScript. Each project has its own page at
+  `/portfolio/<project>/`: a full-bleed cover, the facts, the story and features, a stacked
+  gallery, and links to the previous and next project.
 - **Built for search.** Static HTML, a unique title and description on every page, structured
   data, and a performance budget enforced in CI.
 - **Desktop and phone as equals.** The wide layout is designed for large screens; media queries
@@ -47,7 +49,8 @@ npm run dev
 ```
 
 The site is served at `http://localhost:4321`. Every shared component and its variants are shown
-at `http://localhost:4321/style-guide/`, which is never built for the launched site.
+at `http://localhost:4321/style-guide/`, and the project page template with made-up projects at
+`/style-guide/project/`. Neither is built for the launched site.
 
 | Command            | What it does                                                   |
 | ------------------ | -------------------------------------------------------------- |

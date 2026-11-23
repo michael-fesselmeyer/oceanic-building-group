@@ -42,8 +42,8 @@ Rules that apply to all of them:
   the first quote is added.
 - Files whose names start with `_` are templates and are never loaded.
 
-Business facts that appear in many places (name, address, phone, license number, navigation) live
-in [`src/lib/site.ts`](../src/lib/site.ts).
+Business facts that appear in many places (name, address, phone, license number, the interior
+design partner, navigation) live in [`src/lib/site.ts`](../src/lib/site.ts).
 
 ## Launch switch
 
@@ -106,6 +106,10 @@ their own versions.
 | `Seo`                      | Title, description, canonical and share tags (used by the layout)                       |
 | `SiteHeader`, `SiteFooter` | The page frame (used by the layout)                                                     |
 
+Components used by a single page type live in a subfolder named after it. `project/` holds the
+project page's parts: `ProjectArticle` (the whole page body), `ProjectGallery` and
+`ProjectPager`; see [Project pages](#project-pages).
+
 Rules they share: optional data that is missing renders nothing (no empty wrappers, no
 placeholders), styles come only from tokens, and a parent spaces a component with its own layout
 rather than by styling the component's insides. [`src/lib/stats.ts`](../src/lib/stats.ts) turns a
@@ -114,9 +118,38 @@ project's stats into the pairs `StatList` shows.
 ### Style guide
 
 `/style-guide/` shows every component and variant, including the edge cases (no caption, partial
-and empty stats, long titles, a project with no location). Check it after changing a component. It
-exists in development and preview builds only: its `getStaticPaths` returns no pages when
-`PUBLIC_SITE_LAUNCHED` is `true`, and it is always marked `noindex`.
+and empty stats, long titles, a project with no location). Check it after changing a component.
+`/style-guide/project/` shows the project page with every part filled in (gallery, design partner
+credit, both neighbors) and `/style-guide/project/sparse/` shows one with only the required
+fields. Their made-up data is in [`src/lib/examples.ts`](../src/lib/examples.ts). These pages exist
+in development and preview builds only: their `getStaticPaths` return no pages when
+`PUBLIC_SITE_LAUNCHED` is `true`, and they are always marked `noindex`.
+
+## Project pages
+
+`/portfolio/<project>/` is built from
+[`src/pages/portfolio/[project].astro`](../src/pages/portfolio/[project].astro) for every project
+`getProjects()` returns, so drafts get pages only in development and previews. The file name of
+the content entry is the address.
+
+- **Order.** Previous and next follow portfolio order (`order`, lowest first). The list does not
+  wrap: the first project has no previous link and the last has no next, so a short portfolio
+  never links a project to itself. `neighbors()` in
+  [`src/lib/project-page.ts`](../src/lib/project-page.ts) does this.
+- **Empty parts.** Stats, features, the gallery, the facts under the title (location, style, year),
+  the design partner credit and the neighbor links each disappear entirely when the project has
+  nothing for them.
+- **Status.** An `under-construction` project carries an "Under construction" label next to its
+  category.
+- **Design partner.** The credit appears only when the project sets `interiorDesignPartner: true`
+  and `site.designPartner` in [`src/lib/site.ts`](../src/lib/site.ts) is not `null`. It links to
+  `/interior-design/`.
+- **Gallery.** Photographs are stacked one per row at the column width on every screen; a portrait
+  one is centered and kept within the `--photo-max-height` token. The list carries `data-gallery`
+  and each item `data-gallery-item`, `data-gallery-index` and an id (`photo-1`...), for the
+  lightbox to build on.
+- **Sharing.** The cover, cropped to 1200 x 630, is the page's share image. The description is
+  `seoDescription`, or the summary when that is not set.
 
 ## Images
 
