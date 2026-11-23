@@ -116,14 +116,14 @@ these pages is built for the launched site.
 and prints one `PASS` or `FAIL` line per gate, with what to do next for each failure. It exits
 with code 1 if any gate fails, so it can also run in a script.
 
-| Gate                          | Passes when                                                                                                      |
-| ----------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| Contractor license number     | `licenseNumber` is set in `src/lib/site.ts` (the footer and contact page then show it)                           |
-| Office phone number           | `phone` is set in `src/lib/site.ts`, as ten digits                                                               |
-| Domain                        | `site` in `astro.config.mjs` names the same host as a custom domain in `routes` in `wrangler.jsonc`              |
-| Team brokerage details        | Every published team member described as a real-estate licensee has a `Brokerage: <firm>` line in the text       |
-| No draft or sample content    | No published content file uses a placeholder image, placeholder alt text, lorem ipsum or `example.test`          |
-| Lighthouse on every page type | `lighthouserc.json` audits an address of every page type, and the Lighthouse job passed on the latest `main` run |
+| Gate                          | Passes when                                                                                                                                     |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Contractor license number     | `licenseNumber` is set in `src/lib/site.ts` (the footer and contact page then show it)                                                          |
+| Office phone number           | `phone` is set in `src/lib/site.ts`, as ten digits                                                                                              |
+| Domain                        | `site` in `astro.config.mjs` names the same host as a custom domain in `routes` in `wrangler.jsonc`                                             |
+| Team brokerage details        | Every published team member described as a real-estate licensee has a `Brokerage: <firm>` line in the text                                      |
+| No draft or sample content    | No published content file uses a placeholder image, placeholder alt text, lorem ipsum or `example.test`                                         |
+| Lighthouse on every page type | `lighthouserc.json` and `lighthouserc.noindex.json` audit an address of every page type, and the Lighthouse job passed on the latest `main` run |
 
 Drafts do not fail the content gate, because the launched build hides them; the report counts them.
 The Lighthouse gate reads the latest CI run on `main` with the GitHub CLI, so `gh` must be
