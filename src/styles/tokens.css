@@ -28,6 +28,9 @@
   --color-ink-900: #14202e;
   --color-ink-600: #4a5766;
 
+  /* Feedback: a brick red that keeps 4.5:1 contrast on white and sand. */
+  --color-red-700: #a3261f;
+
   /* Roles. Components should prefer these over the raw palette. */
   --color-page: var(--color-white);
   --color-surface: var(--color-sand-050);
@@ -39,6 +42,9 @@
   --color-link: var(--color-ocean-600);
   --color-border: var(--color-sand-300);
   --color-focus: var(--color-ocean-600);
+  /* Form controls need a 3:1 outline against the page; text-muted gives it. */
+  --color-control-border: var(--color-ink-600);
+  --color-error: var(--color-red-700);
 
   /* Typography. The font variables are defined in astro.config.mjs. */
   --font-display: var(--font-newsreader), Georgia, serif;
