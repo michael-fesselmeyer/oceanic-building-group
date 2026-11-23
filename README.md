@@ -8,6 +8,10 @@ into enquiries through a short intake form that notifies the office straight awa
 
 ## What it does
 
+- **A photographic first impression.** The home page opens on a full-bleed photograph of a
+  featured project, with the headline, one call to action and a caption linking to that project.
+  Phones get a portrait crop of the same photograph. The other featured projects follow in a
+  staggered, magazine-style layout. With nothing featured the page opens on a navy band instead.
 - **Portfolio first.** Projects are content files with photographs, stats and a story. The
   portfolio index lays them out editorially and filters by category and status through plain
   links, so filtering works without JavaScript. Each project has its own page at
@@ -68,8 +72,10 @@ npm run dev
 
 The site is served at `http://localhost:4321`. Every shared component and its variants are shown
 at `http://localhost:4321/style-guide/`. The project page template with made-up projects is at
-`/style-guide/project/` and the interior design page with a made-up partner at
-`/style-guide/interior-design/`. None of these pages is built for the launched site.
+`/style-guide/project/`, the interior design page with a made-up partner at
+`/style-guide/interior-design/`, and the top of the home page with four, one and no featured
+projects at `/style-guide/home/`, `/style-guide/home/one/` and `/style-guide/home/none/`. None of
+these pages is built for the launched site.
 
 | Command            | What it does                                                   |
 | ------------------ | -------------------------------------------------------------- |
