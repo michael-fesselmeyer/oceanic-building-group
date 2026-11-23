@@ -58,6 +58,8 @@ into enquiries through a short intake form that notifies the office straight awa
   with no JavaScript; with it, plain-language messages appear under each field, in a summary, and
   focus moves to the first answer to fix. One schema in `src/lib/intake.ts` holds the rules and
   wording for the page and the server alike, and a hidden honeypot field catches spam programs.
+  A few optional follow-up questions (where, when, and one or two about the chosen project type)
+  appear under the project type with CSS alone, and the office email lists the answers.
 - **Enquiries reach the office by email, and nothing is stored.** The form posts to a small
   server endpoint (`/api/intake/`) that checks the answers with the same schema, verifies a
   Cloudflare Turnstile spam check and emails the office through Resend. Without JavaScript the form
