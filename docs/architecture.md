@@ -264,8 +264,17 @@ the content entry is the address.
   `/interior-design/`.
 - **Gallery.** Photographs are stacked one per row at the column width on every screen; a portrait
   one is centered and kept within the `--photo-max-height` token. The list carries `data-gallery`
-  and each item `data-gallery-item`, `data-gallery-index` and an id (`photo-1`...), for the
-  lightbox to build on.
+  and each item `data-gallery-item`, `data-gallery-index` and an id (`photo-1`...).
+- **Lightbox.** Each photograph links to a large version (WebP, at most 2400px wide), so with no
+  JavaScript it opens as a plain image. A short script (about sixty lines, no library) in `ProjectGallery.astro`
+  upgrades the links: a click opens the large image in a `<dialog>` (`showModal`, so focus stays
+  inside and Escape closes it) with previous, next and close buttons at 48px, the arrow keys and a
+  horizontal swipe, and focus returns to the photograph that opened it. The large image gets its
+  address only on open and loses it on close, so nothing large loads until asked. Alt text comes
+  from the thumbnail and a caption from the item's `<figcaption>` when it has one; the gallery
+  schema has no caption field yet, so none appears today. Modified clicks (new tab) are left alone.
+  `tests/e2e/lightbox.spec.ts` covers the no-script links, open, arrow keys, buttons, Escape and
+  focus, swipe, captions and axe, against the style guide's project example.
 - **Sharing.** The cover, cropped to 1200 x 630, is the page's share image. The description is
   `seoDescription`, or the summary when that is not set.
 
