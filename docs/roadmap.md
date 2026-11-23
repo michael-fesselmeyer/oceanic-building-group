@@ -98,4 +98,5 @@ The site must not go live until each of these is true:
 - Team biographies and portraits.
 - Interior design partner: biography, photographs of shared projects, client quotes.
 - Client testimonials: three to five to start.
-- Typical timelines for the process page.
+- Typical timelines for the stages of the process page. Only construction has one so far (11 to
+  12 months for a typical new home); add a `duration` to any other stage once the business confirms it.

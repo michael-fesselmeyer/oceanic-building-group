@@ -231,6 +231,23 @@ heading starts a ruled section.
 - **Adding a service** means adding a Markdown file with a related category in
   `src/lib/services.ts` (or `null`), and adding it to the list in `tests/e2e/services.spec.ts`.
 
+## Process page
+
+`/process/` ([`src/pages/process.astro`](../src/pages/process.astro)) lists the `processSteps`
+collection in order. One Markdown file per stage in `src/content/process/`: the title and the
+`order` number are in the fields, the description is the body. Copy `_template.md` to add one.
+
+- **Numbers come from the order.** The large numerals are the stage's position in the sorted list,
+  not a field, so inserting a stage renumbers the rest. Leave gaps in `order` (10, 20, 30).
+- **Durations are optional.** A stage shows "Typical length" only when its file has a `duration`;
+  otherwise nothing is rendered. Only construction has one, a fact the business supplied. Do not
+  add a duration to another stage until the business provides it.
+- **Empty state.** With no published stage the page shows a short message and still ends with the
+  link to `/contact/`.
+- **Layout.** A numeral column, a vertical rule with a marker at each stage, and the stage text.
+  The rule and markers drop out at 520px, where the stages become a plain ordered list.
+- **No JavaScript.**
+
 ## Intake form
 
 `/contact/` ([`src/pages/contact.astro`](../src/pages/contact.astro)) holds the form beside the
