@@ -702,9 +702,29 @@ length ([`src/lib/redact.ts`](../src/lib/redact.ts)). Failures name the provider
 
 Unit tests cover the handler with a fake transport, the Resend and log transports, the notifier,
 the settings and the Turnstile check. In the browser tests, `tests/e2e/contact.spec.ts` covers the
-page on the static build, and `tests/e2e/intake.spec.ts` posts to the real endpoint in the built
-Worker, run by `astro preview` with the log transport and the always-pass test secret (see
-`playwright.config.ts`).
+page on the static build, and two specs run against the built Worker in the same CI job:
+
+- **The Workers under test** ([`tests/e2e/worker-under-test.ts`](../tests/e2e/worker-under-test.ts)).
+  `playwright.config.ts` starts two copies of the built Worker with `astro preview`, both with the
+  log transport: one with Cloudflare's always-pass Turnstile test secret (the `worker` project's
+  base address) and one with the always-fail secret. Each copy's output is written to a log file
+  in the system's temporary folder, which the tests read to see what the office would have been
+  sent.
+- **No network.** The Turnstile check answers Cloudflare's three test secrets itself, with the
+  answers Cloudflare documents for them, so the Worker never calls Cloudflare in development or
+  tests; a real secret is always checked with Cloudflare. In the browser, every host but the site
+  is blocked and Turnstile's script is replaced by a stand-in that adds Cloudflare's dummy token,
+  the way the real widget does. A test fails if the page tries to reach any other host.
+- **`tests/e2e/intake-flow.spec.ts`** follows an enquiry end to end: with JavaScript on it passes
+  the spam check, reaches the thank-you page and appears in the log as a redacted email (recipient,
+  reply-to, length and idempotency key, which the test recomputes from the answers); with the
+  always-fail secret it is refused and the form comes back with every answer and a fresh token;
+  with JavaScript off it is sent flagged as unchecked, an answer only the server rejects comes back
+  with everything kept and then goes through, and a filled spam trap shows a thank-you while
+  nothing is sent. Every test also checks that no name, address, phone number or message appears
+  in full in the log.
+- **`tests/e2e/intake.spec.ts`** covers the endpoint's other answers: `GET`, wrong content type,
+  cross-site posts and the accessibility of the form it sends back.
 
 The office address comes from [`src/lib/site.ts`](../src/lib/site.ts); the phone number and
 license number appear only once they are set there. The directions link opens Google Maps with
