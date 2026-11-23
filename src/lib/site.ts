@@ -10,7 +10,10 @@ export interface PostalAddress {
   postalCode: string;
 }
 
-/** The interior design firm the company works with on selected projects. */
+/**
+ * The interior designer the company works with on selected projects. Her
+ * introduction and biography are in src/content/design-partner/.
+ */
 export interface DesignPartner {
   name: string;
   /** The partner's own website. */
@@ -28,8 +31,9 @@ export interface SiteFacts {
   /** State contractor license number, shown wherever services are offered. */
   licenseNumber: string | null;
   /**
-   * Credited on project pages marked `interiorDesignPartner: true`. While
-   * `null`, no credit is shown anywhere.
+   * Presented on /interior-design/ and credited on project pages marked
+   * `interiorDesignPartner: true`. While `null`, no credit is shown anywhere
+   * and the interior design page says the partner will be introduced soon.
    */
   designPartner: DesignPartner | null;
 }
@@ -47,7 +51,10 @@ export const site: SiteFacts = {
   },
   phone: null,
   licenseNumber: null,
-  designPartner: null,
+  designPartner: {
+    name: 'Ashley Manfred',
+    url: 'https://www.ashleymanfred.com/',
+  },
 };
 
 /**

@@ -1,0 +1,384 @@
+---
+// Everything on the interior design page below the site header: a navy
+// opening band with the partner's name, summary and facts, the biography,
+// the projects credited to the partner, testimonials about the partner and
+// a closing with links to the partner's website and the contact page. Used
+// by src/pages/interior-design.astro, and by the style guide with made-up
+// data to show the edge cases.
+//
+//   partner       From `site.designPartner`. While `null`, the page says
+//                 the partner will be introduced soon and keeps the
+//                 contact link.
+//   intro         The fields of the partner's content file, or `null`.
+//   projects      Projects with `interiorDesignPartner: true`.
+//   testimonials  Quotes about the partner, already in display order.
+//
+// The biography (the content file's Markdown body) goes in the default
+// slot. The biography, projects and testimonials sections are each left
+// out entirely when they have nothing to show, and nothing on the page
+// depends on a photograph.
+import Button from '../Button.astro';
+import ProjectCard from '../ProjectCard.astro';
+import PullQuote from '../PullQuote.astro';
+import SectionHeading from '../SectionHeading.astro';
+import TextLink from '../TextLink.astro';
+import type { Project } from '../../lib/content';
+import { partnerFacts, websiteLabel, type DesignPartnerIntro } from '../../lib/design-partner';
+import { contactLink, type DesignPartner } from '../../lib/site';
+
+export interface PartnerQuote {
+  quote: string;
+  attribution: string;
+  /** Optional context after the attribution, for example the project name. */
+  source?: string;
+}
+
+interface Props {
+  partner: DesignPartner | null;
+  intro: DesignPartnerIntro | null;
+  projects: Project[];
+  testimonials: PartnerQuote[];
+}
+
+const { partner, intro, projects, testimonials } = Astro.props;
+const summary = intro?.summary.trim();
+const facts = partner ? partnerFacts(partner, intro) : [];
+const quotes = testimonials.filter((item) => item.quote.trim());
+// Rendered here so a missing or empty biography leaves no empty section.
+const bio = partner ? (await Astro.slots.render('default')).trim() : '';
+---
+
+<article class="design-partner">
+  <header class="opening">
+    <div class="container opening-grid">
+      <div class="opening-text">
+        <p class="label kicker">Interior design partner</p>
+        {partner ? (
+          <>
+            <h1>{partner.name}</h1>
+            {summary && <p class="lede">{summary}</p>}
+          </>
+        ) : (
+          <>
+            <h1>Interior Design</h1>
+            <p class="lede">Our interior design partner will be introduced here soon.</p>
+          </>
+        )}
+      </div>
+      {facts.length > 0 && (
+        <dl class="facts">
+          {facts.map((fact) => (
+            <div>
+              <dt class="label">{fact.label}</dt>
+              <dd>{fact.href ? <a href={fact.href}>{fact.value}</a> : fact.value}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
+    </div>
+  </header>
+
+  {bio && (
+    <section class="container about" aria-labelledby="about-heading">
+      <h2 class="label section-label" id="about-heading">
+        Biography
+      </h2>
+      <div class="prose" set:html={bio} />
+    </section>
+  )}
+
+  {partner && projects.length > 0 && (
+    <section class="container projects" aria-labelledby="projects-heading">
+      <SectionHeading id="projects-heading" label="From the portfolio">
+        Projects with {partner.name}
+      </SectionHeading>
+      <ul role="list" class="project-list">
+        {projects.map((project) => (
+          <li>
+            <ProjectCard project={project} />
+          </li>
+        ))}
+      </ul>
+    </section>
+  )}
+
+  {partner && quotes.length > 0 && (
+    <section class="testimonials" aria-labelledby="testimonials-heading">
+      <div class="container">
+        <SectionHeading id="testimonials-heading" label="Testimonials">
+          In clients’ words
+        </SectionHeading>
+        <ul role="list" class="quote-list">
+          {quotes.map((item) => (
+            <li>
+              <PullQuote attribution={item.attribution} source={item.source}>
+                {item.quote}
+              </PullQuote>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  )}
+
+  <aside class="closing" aria-labelledby="closing-heading">
+    <div class="container closing-grid">
+      <div class="closing-text">
+        <h2 id="closing-heading">Tell us about your project</h2>
+        {partner && (
+          <p>
+            See more of {partner.name}’s work at{' '}
+            <TextLink href={partner.url}>{websiteLabel(partner.url)}</TextLink>, or start with a
+            conversation about the home you have in mind.
+          </p>
+        )}
+      </div>
+      <p class="closing-action">
+        <Button href={contactLink.href}>{contactLink.label}</Button>
+      </p>
+    </div>
+  </aside>
+</article>
+
+<style>
+  .design-partner {
+    padding-bottom: var(--section-gap);
+  }
+
+  /* Opening band: the name and summary on the left, the facts on rules to the right. */
+  .opening {
+    padding-block: var(--space-9) var(--space-8);
+    background: var(--color-surface-strong);
+    color: var(--color-text-on-strong);
+  }
+
+  .opening-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: var(--space-6);
+    align-items: end;
+  }
+
+  .opening-text {
+    grid-column: 1 / span 7;
+  }
+
+  .kicker {
+    color: var(--color-ocean-300);
+  }
+
+  h1 {
+    margin-top: var(--space-4);
+    color: var(--color-text-on-strong);
+    font-size: var(--text-4xl);
+    overflow-wrap: anywhere;
+  }
+
+  .lede {
+    max-width: var(--width-prose);
+    margin-top: var(--space-5);
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    line-height: var(--leading-snug);
+    text-wrap: pretty;
+  }
+
+  .facts {
+    grid-column: 9 / span 4;
+    display: grid;
+    gap: var(--space-4);
+    margin: 0;
+  }
+
+  .facts div {
+    display: grid;
+    gap: var(--space-1);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--color-navy-700);
+  }
+
+  .facts dt {
+    color: var(--color-ocean-300);
+  }
+
+  .facts dd {
+    margin: 0;
+    line-height: var(--leading-snug);
+    overflow-wrap: anywhere;
+  }
+
+  .facts a {
+    color: var(--color-text-on-strong);
+    text-decoration-line: underline;
+    text-decoration-color: var(--color-ocean-300);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.25em;
+    transition: color var(--duration-fast) var(--ease-out);
+  }
+
+  .facts a:hover {
+    color: var(--color-ocean-300);
+  }
+
+  /* Biography: a small label in the margin, the text at reading width. */
+  .about {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: var(--space-6);
+    padding-top: var(--section-gap);
+  }
+
+  .section-label {
+    grid-column: 1 / span 3;
+    color: var(--color-link);
+    line-height: var(--leading-body);
+  }
+
+  .prose {
+    grid-column: 5 / span 7;
+    max-width: var(--width-prose);
+  }
+
+  /* The first paragraph opens the text; the rest is set at body size. */
+  .prose > :global(p:first-child) {
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    line-height: var(--leading-snug);
+    color: var(--color-heading);
+  }
+
+  .prose > :global(*) {
+    margin-block: 0;
+  }
+
+  .prose > :global(* + *) {
+    margin-top: var(--space-5);
+  }
+
+  .prose > :global(:is(h2, h3, h4)) {
+    margin-top: var(--space-7);
+    font-size: var(--text-xl);
+    line-height: var(--leading-snug);
+  }
+
+  .projects {
+    padding-top: var(--section-gap);
+  }
+
+  .project-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-7) var(--space-6);
+    margin-top: var(--space-6);
+  }
+
+  .testimonials {
+    margin-top: var(--section-gap);
+    padding-block: var(--space-8);
+    background: var(--color-surface);
+  }
+
+  .quote-list {
+    display: grid;
+    gap: var(--space-8);
+    margin-top: var(--space-7);
+    padding-left: var(--space-9);
+  }
+
+  /* No fill: the footer keeps its own space above it, and a band would leave a gap. */
+  .closing {
+    padding-top: var(--section-gap);
+  }
+
+  .closing-grid {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    justify-content: space-between;
+    gap: var(--space-5) var(--space-6);
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--color-heading);
+  }
+
+  .closing-text {
+    display: grid;
+    gap: var(--space-4);
+    max-width: var(--width-prose);
+  }
+
+  .closing h2 {
+    font-size: var(--text-2xl);
+  }
+
+  .closing p {
+    color: var(--color-text-muted);
+  }
+
+  @media (max-width: 1100px) {
+    .opening-text {
+      grid-column: 1 / span 8;
+    }
+
+    .section-label {
+      grid-column: 1 / span 4;
+    }
+
+    .prose {
+      grid-column: 5 / span 8;
+    }
+
+    .quote-list {
+      padding-left: var(--space-7);
+    }
+  }
+
+  @media (max-width: 800px) {
+    .opening {
+      padding-block: var(--space-8) var(--space-7);
+    }
+
+    .opening-text,
+    .facts,
+    .section-label,
+    .prose {
+      grid-column: 1 / -1;
+    }
+
+    .facts {
+      grid-template-columns: repeat(auto-fit, minmax(var(--space-10), 1fr));
+      margin-top: var(--space-5);
+    }
+
+    .about {
+      gap: var(--space-4);
+    }
+
+    .project-list {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .testimonials {
+      padding-block: var(--space-7);
+    }
+
+    .quote-list {
+      gap: var(--space-7);
+      padding-left: 0;
+    }
+  }
+
+  @media (max-width: 520px) {
+    .opening {
+      padding-block: var(--space-7) var(--space-6);
+    }
+
+    .opening-grid {
+      gap: var(--space-5);
+    }
+
+    .facts {
+      grid-template-columns: minmax(0, 1fr);
+      margin-top: 0;
+    }
+  }
+</style>
