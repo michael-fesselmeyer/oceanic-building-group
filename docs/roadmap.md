@@ -20,7 +20,7 @@ one or a few issues.
 | `/about/`                      | About             | The company story and team                                                   |
 | `/areas/` and `/areas/<town>/` | Areas We Serve    | One page per town with its local projects                                    |
 | `/contact/`                    | Contact           | Intake form, office details, map                                             |
-| `/privacy/`, `/terms/`         | Legal             |                                                                              |
+| `/privacy/`, `/terms/`         | Legal             | Plain-language privacy policy and terms of use, linked from the footer       |
 
 ## Phases
 
@@ -50,7 +50,7 @@ Project setup, design tokens, page shell, content schemas, tests, CI and reposit
 2. Our Process.
 3. About, with the team.
 4. Interior Design partner page.
-5. Privacy and terms.
+5. Privacy and terms (drafted; the business reviews both texts before launch).
 
 ### 4. Intake form
 
