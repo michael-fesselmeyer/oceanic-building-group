@@ -55,6 +55,85 @@ test.describe('areas index', () => {
     expect(await noSidewaysScroll(page)).toBeLessThanOrEqual(0);
   });
 
+  test('draws a map with a labeled link to every town, beside the list', async ({
+    page,
+    isMobile,
+  }) => {
+    const map = page.locator('.map svg');
+    if (isMobile) {
+      // On a phone the list carries the links on its own.
+      await expect(map).toBeHidden();
+      return;
+    }
+    await expect(map).toBeVisible();
+    await expect(map.locator('title')).toHaveText('Map of the towns we serve');
+    await expect(map.locator('desc')).toContainText('Intracoastal Waterway');
+    await expect(map).toHaveAttribute('aria-labelledby', 'areas-map-title areas-map-desc');
+
+    for (const id of townIds) {
+      const name = (await page.locator(`.row a[href="/areas/${id}/"]`).textContent())?.trim();
+      const link = map.locator(`a[href="/areas/${id}/"]`);
+      await expect(link).toHaveCount(1);
+      await expect(link).toContainText(name ?? '');
+    }
+    await expect(map.locator(`a[href="/areas/${withProjects}/"]`)).toContainText(/\d+ projects?$/);
+    await expect(map.locator(`a[href="/areas/${withoutProjects}/"]`)).not.toContainText(/project/);
+  });
+
+  test('keeps the map labels clear of each other', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'The map is left out on phones.');
+    const boxes = await page
+      .locator('.map .town text')
+      .evaluateAll((labels) => labels.map((label) => label.getBoundingClientRect().toJSON()));
+    expect(boxes.length).toBe(townIds.length);
+    for (const [i, a] of boxes.entries()) {
+      for (const b of boxes.slice(i + 1)) {
+        // Text boxes take the full line height, above the capitals and below the descenders,
+        // so boxes that touch by a pixel are still clear of each other on screen.
+        const apart =
+          a.right <= b.left + 1 ||
+          b.right <= a.left + 1 ||
+          a.bottom <= b.top + 1 ||
+          b.bottom <= a.top + 1;
+        expect(apart, `labels overlap: ${JSON.stringify([a, b])}`).toBe(true);
+      }
+    }
+  });
+
+  test('shows the same state on a map mark for hover and keyboard focus', async ({
+    page,
+    isMobile,
+  }) => {
+    test.skip(isMobile, 'The map is left out on phones.');
+    // Without motion the colors change at once, so end states are compared, not midway colors.
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    const link = page.locator(`.map a[href="/areas/${withProjects}/"]`);
+    const look = () =>
+      link.evaluate((element) => {
+        const style = (selector: string) => getComputedStyle(element.querySelector(selector)!);
+        return {
+          halo: style('.halo').stroke,
+          mark: style('.mark').fill,
+          name: style('.name').fill,
+          underline: style('.name').textDecorationLine,
+        };
+      });
+    const resting = await look();
+
+    await page.keyboard.press('Shift');
+    await link.focus();
+    expect(await link.evaluate((element) => element.matches(':focus-visible'))).toBe(true);
+    const focused = await look();
+    await link.evaluate((element) => (element as HTMLElement).blur());
+
+    expect(focused).not.toEqual(resting);
+    expect(focused.underline).toBe('underline');
+
+    // The browser applies hover on its next frame after the pointer moves.
+    await link.locator('.mark').hover();
+    await expect.poll(look).toEqual(focused);
+  });
+
   test('is linked from the footer', async ({ page }) => {
     await expect(
       page.getByRole('contentinfo').getByRole('link', { name: 'Areas We Serve' }),

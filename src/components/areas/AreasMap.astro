@@ -1,0 +1,220 @@
+---
+// The drawn map on /areas/: the coast from Hobe Sound to Wellington, with a linked, labeled
+// mark for each town. Worked out at build time and inlined as SVG; no tiles, no map service,
+// no script. The town list on the same page carries the same links, so nothing depends on the
+// picture. Geography and the projection are in src/lib/areas-map.ts.
+import {
+  COUNT_LEADING,
+  LABEL_STYLE,
+  MAP_BOUNDS,
+  NAME_DROP,
+  createProjection,
+  mapOutlines,
+  milesToUnits,
+  placeTowns,
+  type MapTown,
+} from '../../lib/areas-map';
+import { projectCountLabel } from '../../lib/towns';
+
+interface Props {
+  towns: MapTown[];
+}
+
+const { towns } = Astro.props;
+
+const projection = createProjection(MAP_BOUNDS);
+const width = projection.width;
+const height = Math.round(projection.height);
+const outlines = mapOutlines(projection);
+const placed = placeTowns(towns, projection);
+
+const scaleMiles = 5;
+const scaleLength = Math.round(milesToUnits(scaleMiles, projection) * 10) / 10;
+
+// The sea label runs down the open water south of Juno Beach.
+const seaLabel = projection.project([-79.985, 26.74]);
+
+const nameDrop = Math.round(LABEL_STYLE.nameSize * NAME_DROP * 10) / 10;
+const countDrop = Math.round(LABEL_STYLE.countSize * COUNT_LEADING * 10) / 10;
+
+const list = towns.map((town) => town.name);
+const named =
+  list.length > 1 ? `${list.slice(0, -1).join(', ')} and ${list.at(-1)}` : (list[0] ?? '');
+const description =
+  'A drawn map of the coast of northern Palm Beach and southern Martin counties, with the ' +
+  'Atlantic shore, the Intracoastal Waterway and the Loxahatchee River. ' +
+  `Each town we serve is marked and links to its page: ${named}. ` +
+  'The same towns are listed on this page.';
+---
+
+<figure class="map">
+  <svg
+    class="drawing"
+    viewBox={`0 0 ${width} ${height}`}
+    aria-labelledby="areas-map-title areas-map-desc"
+  >
+    <title id="areas-map-title">Map of the towns we serve</title>
+    <desc id="areas-map-desc">{description}</desc>
+
+    <rect class="sea" width={width} height={height}></rect>
+    <path class="land" d={outlines.land}></path>
+    <path class="water" d={outlines.intracoastal + outlines.river}></path>
+    <path class="coast" d={outlines.coast}></path>
+
+    <text
+      class="sea-label"
+      aria-hidden="true"
+      text-anchor="middle"
+      transform={`translate(${Math.round(seaLabel.x)} ${Math.round(seaLabel.y)}) rotate(90)`}
+    >
+      Atlantic Ocean
+    </text>
+
+    <g class="scale" aria-hidden="true" transform="translate(16 24)">
+      <path d={`M0 -4V0H${scaleLength}V-4`}></path>
+      <text x="0" y="18">
+        {scaleMiles} miles
+      </text>
+    </g>
+
+    {placed.map((town) => (
+      <a class="town" href={town.href}>
+        <circle class="halo" cx={town.x.toFixed(1)} cy={town.y.toFixed(1)} r="8" />
+        <circle class="mark" cx={town.x.toFixed(1)} cy={town.y.toFixed(1)} r="4.5" />
+        <text
+          x={town.labelX.toFixed(1)}
+          y={(town.y + nameDrop).toFixed(1)}
+          text-anchor={town.side === 'right' ? 'start' : 'end'}
+        >
+          <tspan class="name">{town.name}</tspan>
+          {town.count > 0 && (
+            <tspan class="count" x={town.labelX.toFixed(1)} dy={countDrop}>
+              {projectCountLabel(town.count)}
+            </tspan>
+          )}
+        </text>
+      </a>
+    ))}
+  </svg>
+  <figcaption class="credit">Coast and waterways from US Census Bureau data.</figcaption>
+</figure>
+
+<style>
+  .map {
+    margin: 0;
+  }
+
+  .drawing {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--color-border);
+  }
+
+  .sea {
+    fill: var(--color-ocean-050);
+  }
+
+  .land {
+    fill: var(--color-sand-100);
+  }
+
+  .water {
+    fill: var(--color-ocean-050);
+    stroke: var(--color-ocean-300);
+    stroke-width: 0.75;
+    stroke-linejoin: round;
+  }
+
+  .coast {
+    fill: none;
+    stroke: var(--color-ocean-300);
+    stroke-width: 1.25;
+    stroke-linejoin: round;
+  }
+
+  .sea-label,
+  .scale text {
+    font-family: var(--font-body);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    fill: var(--color-text-muted);
+  }
+
+  .scale path {
+    fill: none;
+    stroke: var(--color-text-muted);
+    stroke-width: 1.5;
+  }
+
+  /* Labels get a halo in the page color so they stay legible over the coast and the water. */
+  .town text {
+    font-family: var(--font-body);
+    paint-order: stroke;
+    stroke: var(--color-page);
+    stroke-width: 4;
+    stroke-linejoin: round;
+  }
+
+  .name {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    fill: var(--color-heading);
+  }
+
+  .count {
+    font-size: var(--text-xs);
+    fill: var(--color-text-muted);
+  }
+
+  .mark {
+    fill: var(--color-heading);
+    stroke: var(--color-page);
+    stroke-width: 1.5;
+  }
+
+  .halo {
+    fill: none;
+    stroke: transparent;
+    stroke-width: 2;
+  }
+
+  /* Hover and keyboard focus look the same: a ring around the mark and the name underlined. */
+  .town:focus {
+    outline: none;
+  }
+
+  .town:hover .halo,
+  .town:focus-visible .halo {
+    stroke: var(--color-focus);
+  }
+
+  .town:hover .mark,
+  .town:focus-visible .mark {
+    fill: var(--color-link);
+  }
+
+  .town:hover .name,
+  .town:focus-visible .name {
+    fill: var(--color-link);
+    text-decoration: underline;
+  }
+
+  .credit {
+    margin-top: var(--space-2);
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .halo,
+    .mark,
+    .name {
+      transition:
+        stroke var(--duration-fast) var(--ease-out),
+        fill var(--duration-fast) var(--ease-out);
+    }
+  }
+</style>
