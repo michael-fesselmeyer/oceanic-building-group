@@ -358,8 +358,6 @@ src/lib/site.ts:57:3 - error ts(2322): Type 'number' is not assignable to type '
 
 ### Turn on text-message alerts for new enquiries
 
-_Available once pull request #55 (SMS) is merged._
-
 Every enquiry from the contact form is emailed to the office. A text message to a phone as well is
 built in but switched off, because it costs money (a small charge per message plus a monthly
 number) and needs a messaging account that takes some days to be approved. It is switched on in
