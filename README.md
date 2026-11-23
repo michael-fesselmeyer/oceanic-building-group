@@ -13,6 +13,9 @@ into enquiries through a short intake form that notifies the office straight awa
   links, so filtering works without JavaScript. Each project has its own page at
   `/portfolio/<project>/`: a full-bleed cover, the facts, the story and features, a stacked
   gallery, and links to the previous and next project.
+- **Four service pages.** An overview and one page each for custom homes, renovations, commercial
+  construction and investor partnerships, written in Markdown. Each shows related projects from
+  the portfolio by category and leaves that section out when there are none.
 - **Built for search.** Static HTML, a unique title and description on every page, structured
   data, and a performance budget enforced in CI.
 - **Desktop and phone as equals.** The wide layout is designed for large screens; media queries
