@@ -51,6 +51,50 @@ const projects = defineCollection({
       /** Short highlights shown as a list, for example "Infinity edge pool". */
       features: z.array(z.string().max(80)).max(8).default([]),
       completedYear: z.number().int().min(1980).max(2100).optional(),
+      /**
+       * Construction progress, shown on the page of an under-construction
+       * project, newest first. Each update has a date, a short caption and,
+       * usually, a photograph with its description. See _template.md.
+       */
+      progress: z
+        .array(
+          z
+            .strictObject({
+              date: z.coerce.date({
+                error: 'Write the date as year-month-day, for example 2026-03-04.',
+              }),
+              caption: z
+                .string()
+                .trim()
+                .min(3, { error: 'The caption is missing: say in a few words what changed.' })
+                .max(200, { error: 'The caption is too long: keep it to 200 characters.' }),
+              photo: image().optional(),
+              /** What the photograph shows, in plain words. Needed with a photo. */
+              alt: z
+                .string()
+                .min(10, { error: 'Describe the photograph in at least 10 characters.' })
+                .max(160, { error: 'The description is too long: keep it to 160 characters.' })
+                .optional(),
+            })
+            .superRefine((update, context) => {
+              if (update.photo && !update.alt) {
+                context.addIssue({
+                  code: 'custom',
+                  path: ['alt'],
+                  message: 'A progress photograph needs an alt line that says what it shows.',
+                });
+              }
+              if (update.alt && !update.photo) {
+                context.addIssue({
+                  code: 'custom',
+                  path: ['alt'],
+                  message:
+                    'This update has an alt line but no photo. Add the photo, or remove alt.',
+                });
+              }
+            }),
+        )
+        .default([]),
       /** Shows the interior design partner credit on the project page. */
       interiorDesignPartner: z.boolean().default(false),
       /** Featured projects appear on the home page. */
