@@ -1,0 +1,116 @@
+---
+// Links to the previous and next project in portfolio order, at the foot
+// of a project page.
+//
+//   previous  The project before this one. Left out for the first project.
+//   next      The project after this one. Left out for the last project.
+//
+// The list does not wrap around, so a side with no project is left empty,
+// and with neither the component renders nothing. Get both from
+// `neighbors()` in src/lib/project-page.ts.
+import type { Project } from '../../lib/content';
+
+interface Props {
+  previous?: Project;
+  next?: Project;
+}
+
+const { previous, next } = Astro.props;
+const href = (project: Project) => `/portfolio/${project.id}/`;
+---
+
+{(previous || next) && (
+  <nav class="pager" aria-label="More projects">
+    {previous && (
+      <a class="link previous" href={href(previous)}>
+        <span class="label direction">
+          <span aria-hidden="true">&larr;</span> Previous project
+        </span>
+        <span class="title">{previous.data.title}</span>
+      </a>
+    )}
+    {next && (
+      <a class="link next" href={href(next)}>
+        <span class="label direction">
+          Next project <span aria-hidden="true">&rarr;</span>
+        </span>
+        <span class="title">{next.data.title}</span>
+      </a>
+    )}
+  </nav>
+)}
+
+<style>
+  .pager {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    border-top: 1px solid var(--color-border);
+  }
+
+  .link {
+    display: grid;
+    align-content: start;
+    gap: var(--space-3);
+    padding-top: var(--space-6);
+    color: var(--color-heading);
+    text-decoration: none;
+  }
+
+  .next {
+    grid-column: 2;
+    justify-items: end;
+    padding-left: var(--space-6);
+    text-align: end;
+  }
+
+  .previous {
+    padding-right: var(--space-6);
+  }
+
+  .direction {
+    color: var(--color-link);
+  }
+
+  .title {
+    max-width: var(--measure-heading);
+    font-family: var(--font-display);
+    font-size: var(--text-2xl);
+    line-height: var(--leading-snug);
+    text-wrap: balance;
+    text-decoration-line: underline;
+    text-decoration-color: transparent;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+    transition: text-decoration-color var(--duration-fast) var(--ease-out);
+  }
+
+  .link:hover .title,
+  .link:focus-visible .title {
+    text-decoration-color: currentColor;
+  }
+
+  /* Phone: one above the other, previous first, each with its own rule. */
+  @media (max-width: 520px) {
+    .pager {
+      grid-template-columns: 1fr;
+      border-top: 0;
+    }
+
+    .link,
+    .next {
+      grid-column: 1;
+      justify-items: start;
+      padding: var(--space-5) 0 0;
+      border-top: 1px solid var(--color-border);
+      text-align: start;
+    }
+
+    .link + .link {
+      margin-top: var(--space-6);
+    }
+
+    .title {
+      font-size: var(--text-xl);
+    }
+  }
+</style>

@@ -1,0 +1,360 @@
+---
+// Everything on a project page below the site header: title and facts, the
+// full-bleed cover photograph, stats, story and features, the gallery, the
+// interior design credit and the links to the neighboring projects. Used by
+// src/pages/portfolio/[project].astro, and by the style guide with made-up
+// projects to show the edge cases.
+//
+//   project        A projects collection entry, from src/lib/content.ts.
+//   previous/next  The neighboring projects in portfolio order, from
+//                  `neighbors()` in src/lib/project-page.ts.
+//   designPartner  Credited when the project has `interiorDesignPartner`
+//                  set. Defaults to `site.designPartner`; while that is
+//                  `null` no credit is shown.
+//
+// The project's story (its Markdown body) goes in the default slot. An
+// empty story is left out.
+//
+// Every optional part (stats, features, gallery, credit, neighbors) is left
+// out entirely when the project has nothing for it.
+import Photo from '../Photo.astro';
+import StatList from '../StatList.astro';
+import TextLink from '../TextLink.astro';
+import ProjectGallery from './ProjectGallery.astro';
+import ProjectPager from './ProjectPager.astro';
+import { PROJECT_CATEGORY_LABELS, type Project } from '../../lib/content';
+import { projectFacts } from '../../lib/project-page';
+import { site, type DesignPartner } from '../../lib/site';
+import { projectStats, visibleStats } from '../../lib/stats';
+
+interface Props {
+  project: Project;
+  previous?: Project;
+  next?: Project;
+  designPartner?: DesignPartner | null;
+}
+
+const { project, previous, next, designPartner = site.designPartner } = Astro.props;
+const {
+  title,
+  category,
+  status,
+  summary,
+  cover,
+  coverAlt,
+  gallery,
+  stats,
+  features,
+  interiorDesignPartner,
+} = project.data;
+
+const facts = projectFacts(project.data);
+const statRows = projectStats(stats);
+const hasStats = visibleStats(statRows).length > 0;
+const featureList = features.map((feature) => feature.trim()).filter(Boolean);
+const partner = interiorDesignPartner ? designPartner : null;
+const hasAside = featureList.length > 0 || partner !== null;
+const underConstruction = status === 'under-construction';
+// Rendered here so a project with an empty body leaves no empty wrapper.
+const story = (await Astro.slots.render('default')).trim();
+/** Titles past this length drop a size, so the headline stays within about three lines. */
+const LONG_TITLE = 48;
+---
+
+<article class="project">
+  <header class="hero">
+    <div class="container intro">
+      <p class="label kicker">
+        <span>{PROJECT_CATEGORY_LABELS[category]}</span>
+        {underConstruction && <span class="status">Under construction</span>}
+      </p>
+      <h1 class:list={{ long: title.length > LONG_TITLE }}>{title}</h1>
+      {facts.length > 0 && (
+        <dl class="facts">
+          {facts.map((fact) => (
+            <div>
+              <dt class="label">{fact.label}</dt>
+              <dd>{fact.value}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
+    </div>
+    <div class="cover">
+      <Photo src={cover} alt={coverAlt} widths={[640, 960, 1280, 1920, 2400]} sizes="100vw" eager />
+    </div>
+  </header>
+
+  {hasStats && (
+    <div class="container stats">
+      <StatList stats={statRows} label="Project facts" />
+    </div>
+  )}
+
+  <div class:list={['container', 'body', { 'has-aside': hasAside }]}>
+    <section class="story" aria-labelledby="story-heading">
+      <h2 class="label section-label" id="story-heading">
+        The project
+      </h2>
+      <p class="lede">{summary}</p>
+      {story && <div class="prose" set:html={story} />}
+    </section>
+
+    {hasAside && (
+      <aside class="aside" aria-label="Project details">
+        {featureList.length > 0 && (
+          <section aria-labelledby="features-heading">
+            <h2 class="label section-label" id="features-heading">
+              Features
+            </h2>
+            <ul role="list" class="features">
+              {featureList.map((feature) => (
+                <li>{feature}</li>
+              ))}
+            </ul>
+          </section>
+        )}
+        {partner && (
+          <section class="credit" aria-labelledby="credit-heading">
+            <h2 class="label section-label" id="credit-heading">
+              Interiors
+            </h2>
+            <p>
+              Interior design by <TextLink href="/interior-design/">{partner.name}</TextLink>, our
+              interior design partner.
+            </p>
+          </section>
+        )}
+      </aside>
+    )}
+  </div>
+
+  {gallery.length > 0 && (
+    <section class="gallery-band" aria-labelledby="gallery-heading">
+      <div class="container">
+        <h2 class="label section-label" id="gallery-heading">
+          Photographs
+        </h2>
+        <ProjectGallery photos={gallery} label={`Photographs of ${title}`} />
+      </div>
+    </section>
+  )}
+
+  {(previous || next) && (
+    <div class="container pager">
+      <ProjectPager previous={previous} next={next} />
+    </div>
+  )}
+</article>
+
+<style>
+  .project {
+    padding-bottom: var(--section-gap);
+  }
+
+  /* Title block: the headline on the left, the facts on a rule to the right. */
+  .intro {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'kicker kicker'
+      'title facts';
+    align-items: end;
+    gap: var(--space-5) var(--space-8);
+    padding-block: var(--space-8) var(--space-7);
+  }
+
+  .kicker {
+    grid-area: kicker;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3) var(--space-4);
+    color: var(--color-link);
+  }
+
+  .status {
+    padding: var(--space-1) var(--space-3);
+    border: 1px solid currentColor;
+    color: var(--color-heading);
+  }
+
+  h1 {
+    grid-area: title;
+    max-width: 18ch;
+    font-size: var(--text-4xl);
+  }
+
+  h1.long {
+    max-width: 22ch;
+    font-size: var(--text-3xl);
+  }
+
+  .facts {
+    grid-area: facts;
+    display: grid;
+    gap: var(--space-3);
+    min-width: var(--space-10);
+    margin: 0;
+    padding-bottom: var(--space-2);
+  }
+
+  .facts div {
+    display: grid;
+    align-content: start;
+    gap: var(--space-1);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .facts dt {
+    color: var(--color-text-muted);
+  }
+
+  .facts dd {
+    margin: 0;
+    color: var(--color-heading);
+  }
+
+  /* Full bleed, cropped to a wide band so the title and photograph share the first screen. */
+  .cover :global(img) {
+    aspect-ratio: 21 / 9;
+    object-fit: cover;
+  }
+
+  .stats {
+    margin-top: var(--space-7);
+  }
+
+  .body {
+    display: grid;
+    grid-template-columns: minmax(0, var(--width-prose));
+    margin-top: var(--section-gap);
+  }
+
+  .body.has-aside {
+    grid-template-columns: minmax(0, var(--width-prose)) minmax(0, 1fr);
+    gap: var(--space-9);
+  }
+
+  /* Section headings are set as small labels; .label gives the face and size. */
+  .section-label {
+    color: var(--color-link);
+    line-height: var(--leading-body);
+  }
+
+  .lede {
+    margin-top: var(--space-5);
+    color: var(--color-heading);
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    line-height: var(--leading-snug);
+  }
+
+  .prose {
+    margin-top: var(--space-6);
+  }
+
+  /* The story is rendered Markdown, so its elements are styled from here. */
+  .prose > :global(*) {
+    margin-block: 0;
+  }
+
+  .prose > :global(* + *) {
+    margin-top: var(--space-5);
+  }
+
+  .prose > :global(:is(h2, h3, h4)) {
+    margin-top: var(--space-7);
+    font-size: var(--text-xl);
+    line-height: var(--leading-snug);
+  }
+
+  .aside {
+    display: grid;
+    align-content: start;
+    gap: var(--space-7);
+  }
+
+  .features {
+    margin-top: var(--space-4);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .features li {
+    padding-block: var(--space-3);
+    border-top: 1px solid var(--color-border);
+    line-height: var(--leading-snug);
+  }
+
+  .credit p {
+    margin-top: var(--space-4);
+  }
+
+  .gallery-band {
+    margin-top: var(--section-gap);
+    padding-block: var(--space-8);
+    background: var(--color-surface);
+  }
+
+  .gallery-band .section-label {
+    margin-bottom: var(--space-5);
+  }
+
+  .pager {
+    margin-top: var(--section-gap);
+  }
+
+  @media (max-width: 1100px) {
+    .body.has-aside {
+      grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+      gap: var(--space-7);
+    }
+  }
+
+  @media (max-width: 800px) {
+    .intro {
+      grid-template-columns: 1fr;
+      grid-template-areas:
+        'kicker'
+        'title'
+        'facts';
+      gap: var(--space-5);
+      padding-block: var(--space-7) var(--space-6);
+    }
+
+    .facts {
+      grid-template-columns: repeat(auto-fit, minmax(var(--space-9), 1fr));
+      gap: var(--space-4);
+      min-width: 0;
+      padding-bottom: 0;
+    }
+
+    .cover :global(img) {
+      aspect-ratio: 3 / 2;
+    }
+
+    .body.has-aside {
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--space-8);
+    }
+
+    .gallery-band {
+      padding-block: var(--space-7);
+    }
+  }
+
+  @media (max-width: 520px) {
+    .intro {
+      padding-block: var(--space-6) var(--space-5);
+    }
+
+    .stats {
+      margin-top: var(--space-5);
+    }
+
+    .cover :global(img) {
+      aspect-ratio: 4 / 3;
+    }
+  }
+</style>
