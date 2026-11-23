@@ -17,7 +17,8 @@
     "test:e2e": "playwright test",
     "hygiene": "node scripts/check-hygiene.mjs",
     "verify": "npm run format:check && npm run lint && npm run check && npm test && npm run build && npm run hygiene",
-    "brand": "node scripts/build-brand.mjs"
+    "brand": "node scripts/build-brand.mjs",
+    "launch-check": "node scripts/launch-check.mjs"
   },
   "dependencies": {
     "@astrojs/cloudflare": "14.4.9",
