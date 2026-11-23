@@ -33,8 +33,15 @@ export async function getFeaturedProjects(): Promise<Project[]> {
   return (await getProjects()).filter((project) => project.data.featured);
 }
 
-export async function getServices() {
+export type Service = CollectionEntry<'services'>;
+
+export async function getServices(): Promise<Service[]> {
   return (await getCollection('services', isVisible)).sort(byOrder);
+}
+
+/** A service's Markdown description, as a component to place on the page. */
+export async function renderServiceBody(service: Service) {
+  return (await render(service)).Content;
 }
 
 export async function getTowns() {
