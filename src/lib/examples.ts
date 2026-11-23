@@ -24,6 +24,7 @@ export function exampleProject(id: string, data: Partial<Project['data']>): Proj
       gallery: [],
       stats: {},
       features: [],
+      progress: [],
       interiorDesignPartner: false,
       featured: false,
       order: 100,
@@ -60,6 +61,44 @@ export const exampleFullProject = exampleProject('example-full-project', {
     { src: placeholder, alt: 'Placeholder for a wide photograph of the kitchen and family room' },
   ],
   interiorDesignPartner: true,
+});
+
+/**
+ * An under-construction project with progress updates, written out of order
+ * on purpose: two from the same day (the later one in the file comes first
+ * on the page) and one without a photograph.
+ */
+export const exampleProgressProject = exampleProject('example-progress-project', {
+  title: 'Example Beach Road Residence',
+  location: 'Juno Beach',
+  style: 'Coastal Modern',
+  status: 'under-construction',
+  summary:
+    'A made-up house under construction, used on the style guide to show dated progress updates on a project page.',
+  progress: [
+    {
+      date: new Date('2026-01-12'),
+      caption: 'Site cleared and the foundation poured.',
+      photo: placeholder,
+      alt: 'Placeholder for a photograph of the poured foundation',
+    },
+    {
+      date: new Date('2026-03-20'),
+      caption: 'Roof dried in and the impact windows set.',
+      photo: placeholder,
+      alt: 'Placeholder for a photograph of the finished roof',
+    },
+    {
+      date: new Date('2026-02-14'),
+      caption: 'Block walls up on both floors and the roof trusses delivered.',
+    },
+    {
+      date: new Date('2026-03-20'),
+      caption: 'Pool shell excavated beside the covered loggia.',
+      photo: placeholderTall,
+      alt: 'Placeholder for a tall photograph of the pool excavation',
+    },
+  ],
 });
 
 /** A project with nothing optional: no stats, features, gallery, location or neighbors. */
