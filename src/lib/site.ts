@@ -69,7 +69,9 @@ export const site: SiteFacts = {
  * for review. Set PUBLIC_SITE_LAUNCHED=true in the production build
  * settings to launch.
  */
-export const launched: boolean = import.meta.env.PUBLIC_SITE_LAUNCHED === 'true';
+// `?.` because browser tests import modules that import this one outside Vite, where
+// import.meta.env does not exist; there the site counts as not launched.
+export const launched: boolean = import.meta.env?.PUBLIC_SITE_LAUNCHED === 'true';
 
 /** Main navigation, in display order. Paths always end in "/". */
 export const navigation = [

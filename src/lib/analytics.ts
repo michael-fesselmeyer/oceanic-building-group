@@ -39,4 +39,4 @@ export function analyticsBeacon(token: string | undefined, isLaunched: boolean):
 }
 
 /** The beacon for this build. */
-export const beacon = analyticsBeacon(import.meta.env.PUBLIC_CF_ANALYTICS_TOKEN, launched);
+export const beacon = analyticsBeacon(import.meta.env?.PUBLIC_CF_ANALYTICS_TOKEN, launched);
