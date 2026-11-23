@@ -105,7 +105,7 @@ their own versions.
 | `ProjectCard`              | A project's cover, category, title and location, linking to `/portfolio/<id>/`          |
 | `Wordmark`                 | The brand wordmark in the current text color (used by the header)                       |
 | `Seo`                      | Title, description, canonical and share tags (used by the layout)                       |
-| `SiteHeader`, `SiteFooter` | The page frame (used by the layout)                                                     |
+| `SiteHeader`, `SiteFooter` | The page frame (used by the layout); see [Header](#header)                              |
 
 Components used by a single page type live in a subfolder named after it. `project/` holds the
 project page's parts: `ProjectArticle` (the whole page body), `ProjectGallery` and
@@ -115,6 +115,32 @@ Rules they share: optional data that is missing renders nothing (no empty wrappe
 placeholders), styles come only from tokens, and a parent spaces a component with its own layout
 rather than by styling the component's insides. [`src/lib/stats.ts`](../src/lib/stats.ts) turns a
 project's stats into the pairs `StatList` shows.
+
+### Header
+
+[`SiteHeader`](../src/components/SiteHeader.astro) is the frame's one piece of behavior, all of it
+in CSS:
+
+- **Solid by default.** Pages without a photograph at the top keep a solid, sticky header.
+- **Over a hero.** A page opts in with `<BaseLayout overHero>`, and its first element inside
+  `<main>` must be the photograph section. The header then leaves the flow and floats over the
+  photograph with white text, a white contact button and a navy scrim behind the text
+  (`--header-scrim-strength`; a unit test keeps white text on the worst case, a white photograph,
+  at 4.5:1).
+- **Turning solid.** `BaseLayout` gives that first element a named view timeline (`--hero`) and
+  shares it with the header through `timeline-scope` on `<body>`. The header animates one
+  registered custom property, `--header-solid`, from 0 to 1 over the last header-height of
+  scrolling before the photograph ends; every color, the scrim and the blur derive from it. The
+  whole block sits behind `@supports (animation-timeline: --hero)`, and `--header-solid` is 1 by
+  default, so a browser without scroll-driven animations gets the solid header from the start.
+  With reduced motion the change is a single step instead of a fade.
+- **Phone menu.** The navigation is a `popover`: it opens, and closes on Escape or an outside tap,
+  with no JavaScript. Opening it makes the bar solid (`:has(:popover-open)`) so the bar and the
+  sheet read as one piece over a photograph.
+- **Current page.** [`currentState`](../src/lib/nav.ts) compares paths with a trailing slash: the
+  exact page gets `aria-current="page"` and a section link gets `aria-current="true"` (Portfolio
+  while viewing a project). The home link matches only the home page. The marker is a thicker
+  underline, so it does not rely on color.
 
 ### Style guide
 

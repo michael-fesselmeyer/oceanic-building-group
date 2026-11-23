@@ -21,6 +21,9 @@ into enquiries through a short intake form that notifies the office straight awa
   with no JavaScript; with it, plain-language messages appear under each field, in a summary, and
   focus moves to the first answer to fix. One schema in `src/lib/intake.ts` holds the rules and
   wording for the page and the server alike, and a hidden honeypot field catches spam programs.
+- **A header that gets out of the way.** On pages that open with a full-bleed photograph it floats
+  transparent over the image and turns solid once the page scrolls past it, in CSS alone. The
+  current page and its section are marked in the navigation.
 - **Plain-language legal pages.** A privacy policy and terms of use, in their own reading layout
   and linked from every footer. The privacy text describes the site as built (no cookies, no
   stored submissions), so it changes whenever that does.
