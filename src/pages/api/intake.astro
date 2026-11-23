@@ -20,6 +20,7 @@ import { getTowns } from '../../lib/content';
 import { townChoices } from '../../lib/intake';
 import { INTAKE_ENV_NAMES } from '../../lib/intake-config';
 import { createIntakeSetup, handleIntake } from '../../lib/intake-handler';
+import { launched } from '../../lib/site';
 import { allowTurnstile } from '../../lib/security-headers';
 import { formSiteKey } from '../../lib/turnstile';
 
@@ -37,7 +38,7 @@ if (request.method !== 'POST') {
 
 const env = Object.fromEntries(INTAKE_ENV_NAMES.map((name) => [name, getSecret(name)]));
 const logger = console;
-const setup = createIntakeSetup(env, { dev: import.meta.env.DEV, logger });
+const setup = createIntakeSetup(env, { dev: import.meta.env.DEV, launched, logger });
 const towns = townChoices(await getTowns());
 const outcome = await handleIntake(request, { setup, towns, logger });
 
