@@ -251,41 +251,124 @@ collection in order. One Markdown file per stage in `src/content/process/`: the 
 ## Intake form
 
 `/contact/` ([`src/pages/contact.astro`](../src/pages/contact.astro)) holds the form beside the
-office details. The server endpoint is planned (see the roadmap); until it exists the form's POST
-to `/api/intake/` gets a 404.
+office details. The page body is
+[`src/components/contact/ContactPage.astro`](../src/components/contact/ContactPage.astro), shared
+with the endpoint so it can show the form again, filled in.
 
 1. **One schema.** [`src/lib/intake.ts`](../src/lib/intake.ts) defines the fields (name, email,
    optional phone, project type, message), their length limits, the project types with their
-   display labels, and every error message a visitor can see. The page renders its inputs and
-   `required`, `maxlength`, `minlength` and `pattern` attributes from these values, and the
-   endpoint validates with `parseIntake()`, which returns one message per field. The messages are
-   plain sentences grouped in one object so the business can reword them.
+   display labels, and every message a visitor can see: the per-field errors and the `notices`
+   shown above a form that comes back. The page renders its inputs and `required`, `maxlength`,
+   `minlength` and `pattern` attributes from these values, and the endpoint validates with
+   `parseIntake()`, which returns one message per field. The messages are plain sentences grouped
+   in objects so the business can reword them.
 2. **Works without JavaScript.** The form posts to `/api/intake/` with `method="post"`, and the
-   browser's own validation stops an incomplete form.
-3. **Enhanced with a small script** (in the page, no dependencies, no schema library shipped to the
-   browser). It turns off the browser's bubbles, writes the message under each field, ties it to
-   the control with `aria-describedby` and `aria-invalid`, lists every problem in a summary at the
-   top of the form, and moves focus to the first answer to fix. After the first attempt, each
-   message clears as the answer is corrected. It reads the messages from `data-` attributes
-   rendered from the schema, so wording lives in one place.
+   browser's own validation stops an incomplete form. The endpoint answers with a redirect to
+   `/contact/thanks/` or with the form again; nothing needs a script.
+3. **Enhanced with a small script** (in the component, no dependencies, no schema library shipped
+   to the browser). It turns off the browser's bubbles, writes the message under each field, ties
+   it to the control with `aria-describedby` and `aria-invalid`, lists every problem in a summary
+   at the top of the form, and moves focus to the first answer to fix. After the first attempt,
+   each message clears as the answer is corrected. It reads the messages from `data-` attributes
+   rendered from the schema, so wording lives in one place. It also stops a second click from
+   posting the same enquiry twice.
 4. **Honeypot.** A text field named `website` sits off-screen inside an `aria-hidden` wrapper with
    `tabindex="-1"` and `autocomplete="off"`. It is moved off-screen rather than hidden with
    `display: none`, because some programs skip undisplayed fields. It is hidden from assistive
    technology and the tab order instead of labelled "leave this empty", so no visitor, sighted or
    not, ever meets an instruction that makes no sense to them. The endpoint drops any submission
-   where `isHoneypotFilled()` is true.
-5. **Spam check slot.** A comment in the form marks where the endpoint work adds the Cloudflare
-   Turnstile widget. No third-party script loads on the page until then.
-6. The endpoint verifies the Turnstile token and validates with the shared schema. A notifier
-   sends the lead through each enabled channel. Email is always on; SMS sits behind `SMS_ENABLED`
-   and stays off until the messaging account is approved.
-7. Leads are not stored. The email to the office is the record.
+   where `isHoneypotFilled()` is true and answers it like a success, so the sender learns nothing.
+5. **Turnstile.** The form carries Cloudflare's Turnstile widget, whose script loads on the contact
+   page only. It adds a `cf-turnstile-response` token that the endpoint verifies with Cloudflare
+   ([`src/lib/turnstile.ts`](../src/lib/turnstile.ts)). The site key is
+   `PUBLIC_TURNSTILE_SITE_KEY`, read at build time; development and preview builds fall back to
+   Cloudflare's always-pass test key, and a launched build without a key renders no widget (a
+   test key would fail every visitor against a real secret).
+6. **No JavaScript, no token.** Without JavaScript the widget never runs, so the post has no
+   token. By default the endpoint still sends it, relying on the honeypot, and marks the email's
+   subject `[spam check not run]`. If spam arrives that way, set `TURNSTILE_REQUIRED=true`: posts
+   without a token then get the form back with a notice asking the visitor to turn JavaScript on
+   or use the office details. A token that is present and fails (forged, expired or already used)
+   is always refused, with the form kept and a fresh widget.
+7. **Leads are not stored.** The email to the office is the record.
+
+### The endpoint
+
+[`src/pages/api/intake.astro`](../src/pages/api/intake.astro) is the only on-demand route
+(`export const prerender = false`). It is an `.astro` page rather than a `.ts` endpoint so it can
+render the form with what the visitor typed, without putting their answers in an address or a
+cookie. The work happens in [`src/lib/intake-handler.ts`](../src/lib/intake-handler.ts), which is
+unit tested without a server:
+
+| Request                                   | Answer                                                    |
+| ----------------------------------------- | --------------------------------------------------------- |
+| Sent, or the honeypot was filled          | `303` to `/contact/thanks/` (prerendered, `noindex`)      |
+| An answer needs fixing                    | `422`, the form with every answer and a message per field |
+| Spam-check token refused                  | `400`, the form with a notice                             |
+| Email failed, spam check down, not set up | `503`, the form with a notice and the office details      |
+| Not form data / over 64 KB / unreadable   | `415` / `413` / `400`, one line of text                   |
+| `GET` (someone opens the address)         | `303` to `/contact/`                                      |
+
+- **Body limit.** A declared `Content-Length` over 64 KB is refused before reading, and a body
+  without one is read only up to the limit. The longest legitimate form is about 35 KB.
+- **Cross-site posts.** Astro's `security.checkOrigin` (on by default) refuses form posts to
+  on-demand pages whose `Origin` is another site, with `403`.
+- **Repeated submissions.** The script ignores a second click while the first post is on its
+  way. Each lead also gets a key hashed from its answers, sent to the email provider as its
+  idempotency key, so an identical enquiry within 24 hours (a double click without JavaScript, a
+  resent form) is delivered once. The handler keeps no memory of its own.
+
+### Notifier
+
+[`src/lib/notify/`](../src/lib/notify/) sends a lead through a list of channels. The endpoint
+calls only `notifier.notify(lead)`; [`notify/index.ts`](../src/lib/notify/index.ts) decides which
+channels are on.
+
+- **Channels** have a name, a `required` flag and `send(lead)`, which returns a result instead of
+  throwing. A lead counts as delivered when every required channel succeeds. Email is the one
+  required channel. SMS (issue #22) joins the list in `notify/index.ts` behind `SMS_ENABLED` as an
+  optional channel, so its failures are logged without failing the enquiry, and the endpoint does
+  not change.
+- **Email transports.** `resend` calls Resend's API with `fetch` (no SDK), with an 8-second
+  timeout and one retry on a passing failure. `log` sends nothing and writes one redacted line.
+  `EMAIL_TRANSPORT` picks one; the development server defaults to `log`, a built site to
+  `resend`. Why Resend, its free-tier limits and what the site does near them are in
+  [ADR 2](adr/0002-lead-email-transport.md).
+- **The email** has the visitor's address as its reply-to, so the office answers with a plain
+  reply. Its text depends only on the answers, never the time, so a resend is recognised as the
+  same request.
+
+### Settings and logs
+
+[`src/lib/intake-config.ts`](../src/lib/intake-config.ts) reads the settings listed by name in
+[`.env.example`](../.env.example): from `.dev.vars` locally and the Worker's encrypted settings in
+production, through `getSecret()` from `astro:env/server`. A built site gets no defaults, so a
+missing secret logs `[intake] not configured:` with the variable names (never values) and the
+visitor gets the form back instead of a silent loss.
+
+Every log line starts with `[intake]` and holds no personal data: names shortened to an initial,
+email addresses to `d***@***.test`, phone numbers to their last two digits, messages to their
+length ([`src/lib/redact.ts`](../src/lib/redact.ts)). Failures name the provider's error code.
+
+### Free-tier limits
+
+| Service           | Free limit                                  | Near the limit                                       |
+| ----------------- | ------------------------------------------- | ---------------------------------------------------- |
+| Resend            | 100 emails a day, 3,000 a month             | Form comes back with a notice; log records `quota`   |
+| Cloudflare Worker | 100,000 requests a day, 10 ms CPU a request | Only `/api/intake/` counts; static pages do not      |
+| Turnstile         | Free                                        | If Cloudflare cannot be reached, the form comes back |
+
+### Testing
+
+Unit tests cover the handler with a fake transport, the Resend and log transports, the notifier,
+the settings and the Turnstile check. In the browser tests, `tests/e2e/contact.spec.ts` covers the
+page on the static build, and `tests/e2e/intake.spec.ts` posts to the real endpoint in the built
+Worker, run by `astro preview` with the log transport and the always-pass test secret (see
+`playwright.config.ts`).
 
 The office address comes from [`src/lib/site.ts`](../src/lib/site.ts); the phone number and
 license number appear only once they are set there. The directions link opens Google Maps with
-the address; there is no embedded map, so the page loads nothing from a third party.
-
-Recipients and keys are secrets, listed by name in [`.env.example`](../.env.example).
+the address; there is no embedded map.
 
 ## Legal pages
 
@@ -295,8 +378,9 @@ Recipients and keys are secrets, listed by name in [`.env.example`](../.env.exam
 [`src/lib/site.ts`](../src/lib/site.ts); a phone number that is `null` is left out.
 
 The privacy text states facts about how the site behaves: the intake form is the only personal
-data collected, it is emailed and not stored, no cookies are set, analytics (if added) are
-cookieless, and Cloudflare Turnstile checks the form. A change that makes any of these untrue,
+data collected, it is emailed through Resend (which keeps sent messages for 30 days) and not
+stored by the site, no cookies are set, analytics (if added) are cookieless, and Cloudflare
+Turnstile checks the form. A change that makes any of these untrue,
 such as storing leads, setting a cookie or adding a third-party script, updates the privacy page
 and its date in the same pull request. The business reviews both texts before launch.
 
