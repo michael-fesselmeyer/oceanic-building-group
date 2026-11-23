@@ -66,8 +66,10 @@ or force-push without the repository owner's say-so.
   modules outside Vite, where `import.meta.env` does not exist; a lint rule enforces this.
 - **Business facts come from `src/lib/site.ts`.** A fact that is not known yet is `null` and is
   left out of the page; never render a placeholder for it.
-- **Tokens only.** Colors, type sizes and spacing come from `src/styles/tokens.css`. No raw
-  values in components.
+- **Tokens only.** Colors, fonts, weights, type sizes, spacing, widths and radii come from
+  `src/styles/tokens.css`; add a role-named token when none fits. `npm run hygiene` fails on a
+  raw color or a length outside its allowlist (zero, `1px` and `2px` hairlines, `ch`, full-screen
+  viewport units) in any style but `tokens.css`. Media query lengths may stay raw.
 - **Desktop-first CSS.** Base styles describe the wide layout; `max-width` media queries at
   1100px, 800px and 520px simplify it. Styles are scoped to their component.
 - **No client-side JavaScript by default.** Reach for HTML and CSS first (popover, details,
