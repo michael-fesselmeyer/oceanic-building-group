@@ -15,6 +15,30 @@ import { z } from 'astro/zod';
 const markdown = (folder: string) =>
   glob({ pattern: '**/[^_]*.md', base: `./src/content/${folder}` });
 
+const DATE_MESSAGE = 'Write the date as year-month-day, for example 2026-03-04.';
+
+/**
+ * A calendar day written year-month-day. YAML reads 2026-03-04 as a date
+ * already; anything else written as text ("March 4", "2026-02-30") is
+ * refused rather than guessed at.
+ */
+const progressDate = z
+  .union([z.date(), z.string()], { error: DATE_MESSAGE })
+  .transform((value, context) => {
+    if (value instanceof Date && !Number.isNaN(value.getTime())) return value;
+    const text = String(value).trim();
+    const date = new Date(text);
+    if (
+      !/^\d{4}-\d{2}-\d{2}$/.test(text) ||
+      Number.isNaN(date.getTime()) ||
+      date.toISOString().slice(0, 10) !== text
+    ) {
+      context.addIssue({ code: 'custom', message: DATE_MESSAGE });
+      return z.NEVER;
+    }
+    return date;
+  });
+
 /** Text shown in search results: long enough to be useful, short enough not to be cut off. */
 const seoDescription = z.string().min(50).max(160);
 
@@ -60,9 +84,7 @@ const projects = defineCollection({
         .array(
           z
             .strictObject({
-              date: z.coerce.date({
-                error: 'Write the date as year-month-day, for example 2026-03-04.',
-              }),
+              date: progressDate,
               caption: z
                 .string()
                 .trim()
