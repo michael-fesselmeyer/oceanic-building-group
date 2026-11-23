@@ -1,0 +1,8 @@
+---
+import PortfolioLayout from '../../layouts/PortfolioLayout.astro';
+import { getPortfolioFilter } from '../../lib/portfolio';
+
+const filter = getPortfolioFilter('renovations')!;
+---
+
+<PortfolioLayout filter={filter} />

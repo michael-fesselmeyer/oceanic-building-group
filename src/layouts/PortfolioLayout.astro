@@ -1,0 +1,270 @@
+---
+// The portfolio index and its filter pages: heading, filter bar and an
+// editorial layout of project cards. /portfolio/ passes no filter; each of
+// the static pages next to it (custom-homes.astro, renovations.astro, ...)
+// passes its own. Filters are plain links, so they work without JavaScript.
+//
+//   filter  The filter this page shows. Leave out for the whole portfolio.
+import Button from '../components/Button.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import TextLink from '../components/TextLink.astro';
+import BaseLayout from './BaseLayout.astro';
+import { getProjects } from '../lib/content';
+import {
+  availableFilters,
+  filterProjects,
+  portfolioPath,
+  showsFilterBar,
+  type PortfolioFilter,
+} from '../lib/portfolio';
+import { contactLink } from '../lib/site';
+
+interface Props {
+  filter?: PortfolioFilter;
+}
+
+const { filter } = Astro.props;
+
+const all = await getProjects();
+const projects = filter ? filterProjects(all, filter) : all;
+const filters = availableFilters(all);
+const bar = showsFilterBar(all);
+const current = portfolioPath(filter);
+
+const title = filter ? filter.title : 'Portfolio';
+const intro = filter
+  ? filter.intro
+  : 'Custom homes, renovations and commercial buildings along the coast, from Jupiter to the Palm Beaches.';
+const description = filter
+  ? filter.description
+  : 'Custom homes, renovations and commercial projects built by Oceanic Building Group in Jupiter and the Palm Beaches.';
+
+// A filter page with nothing to show stays out of search results.
+const noindex = Boolean(filter) && projects.length === 0;
+
+// Cards repeat a pattern of four: a wide one, a narrow one, a narrow one, a wide one.
+// Each pattern entry is the card's width in columns of the 12-column grid, and
+// `sizes` tells the browser how wide the cover will be.
+const slots = [
+  { span: 8, sizes: '(max-width: 800px) 100vw, (max-width: 1100px) 66vw, 50rem' },
+  { span: 4, sizes: '(max-width: 800px) 100vw, (max-width: 1100px) 33vw, 24rem' },
+  { span: 5, sizes: '(max-width: 800px) 100vw, (max-width: 1100px) 41vw, 31rem' },
+  { span: 7, sizes: '(max-width: 800px) 100vw, (max-width: 1100px) 58vw, 44rem' },
+];
+
+const countLabel = `${projects.length} ${projects.length === 1 ? 'project' : 'projects'}`;
+---
+
+<BaseLayout title={title} description={description} noindex={noindex}>
+  <div class="container portfolio">
+    <header class="head">
+      <p class="label kicker">{filter ? <a href={portfolioPath()}>Portfolio</a> : 'Our work'}</p>
+      <h1>{title}</h1>
+      <p class="intro">{intro}</p>
+    </header>
+
+    {bar && (
+      <nav class="filters" aria-label="Filter projects">
+        <ul role="list">
+          <li>
+            <a
+              href={portfolioPath()}
+              aria-current={current === portfolioPath() ? 'page' : undefined}
+            >
+              All projects
+            </a>
+          </li>
+          {filters.map((item) => (
+            <li>
+              <a
+                href={portfolioPath(item)}
+                aria-current={current === portfolioPath(item) ? 'page' : undefined}
+              >
+                {item.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    )}
+
+    {projects.length > 0 ? (
+      <>
+        <p class="count">{countLabel}</p>
+        <ul role="list" class="projects">
+          {projects.map((project, index) => {
+            const slot = slots[index % slots.length];
+            return (
+              <li class={`slot-${(index % slots.length) + 1}`}>
+                <ProjectCard
+                  project={project}
+                  headingLevel={2}
+                  sizes={slot.sizes}
+                  eager={index === 0}
+                />
+              </li>
+            );
+          })}
+        </ul>
+      </>
+    ) : (
+      <div class="empty">
+        <p class="empty-text">
+          {filter && all.length > 0 ? filter.empty : 'Projects will be published here soon.'}
+        </p>
+        <p class="empty-action">
+          {filter && all.length > 0 ? (
+            <TextLink href={portfolioPath()}>See every project</TextLink>
+          ) : (
+            <Button href={contactLink.href}>{contactLink.label}</Button>
+          )}
+        </p>
+      </div>
+    )}
+  </div>
+</BaseLayout>
+
+<style>
+  .portfolio {
+    padding-block: var(--space-8) var(--section-gap);
+  }
+
+  .head {
+    max-width: var(--width-prose);
+  }
+
+  .kicker {
+    color: var(--color-link);
+  }
+
+  .kicker a {
+    text-decoration-line: underline;
+    text-decoration-color: transparent;
+    text-underline-offset: 0.25em;
+    transition: text-decoration-color var(--duration-fast) var(--ease-out);
+  }
+
+  .kicker a:hover {
+    text-decoration-color: currentColor;
+  }
+
+  h1 {
+    margin-top: var(--space-4);
+    font-size: var(--text-3xl);
+  }
+
+  .intro {
+    margin-top: var(--space-5);
+    font-size: var(--text-lg);
+    line-height: var(--leading-snug);
+    color: var(--color-text-muted);
+  }
+
+  .filters {
+    margin-top: var(--space-7);
+    padding-block: var(--space-4);
+    border-block: 1px solid var(--color-border);
+  }
+
+  .filters ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3) var(--space-6);
+  }
+
+  .filters a {
+    display: inline-block;
+    padding-block: var(--space-1);
+    color: var(--color-text-muted);
+    text-decoration-line: underline;
+    text-decoration-color: transparent;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.5em;
+    transition:
+      color var(--duration-fast) var(--ease-out),
+      text-decoration-color var(--duration-fast) var(--ease-out);
+  }
+
+  .filters a:hover {
+    color: var(--color-heading);
+  }
+
+  .filters a[aria-current='page'] {
+    color: var(--color-heading);
+    font-weight: 600;
+    text-decoration-color: var(--color-link);
+    text-decoration-thickness: 2px;
+  }
+
+  .count {
+    margin-top: var(--space-5);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+
+  .projects {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    align-items: start;
+    gap: var(--space-8) var(--space-6);
+    margin-top: var(--space-6);
+  }
+
+  .slot-1 {
+    grid-column: span 8;
+  }
+
+  .slot-2 {
+    grid-column: span 4;
+    align-self: end;
+  }
+
+  .slot-3 {
+    grid-column: span 5;
+  }
+
+  .slot-4 {
+    grid-column: span 7;
+  }
+
+  .empty {
+    max-width: var(--width-prose);
+    margin-top: var(--space-8);
+  }
+
+  .empty-text {
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    line-height: var(--leading-snug);
+    color: var(--color-heading);
+  }
+
+  .empty-action {
+    margin-top: var(--space-5);
+  }
+
+  @media (max-width: 1100px) {
+    .projects {
+      gap: var(--space-7) var(--space-5);
+    }
+  }
+
+  @media (max-width: 800px) {
+    .portfolio {
+      padding-top: var(--space-7);
+    }
+
+    .projects {
+      grid-template-columns: 1fr;
+    }
+
+    .projects > li {
+      grid-column: auto;
+      align-self: auto;
+    }
+
+    .filters {
+      margin-top: var(--space-6);
+    }
+  }
+</style>
