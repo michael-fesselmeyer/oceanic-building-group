@@ -45,7 +45,8 @@ npm install
 npm run dev
 ```
 
-The site is served at `http://localhost:4321`.
+The site is served at `http://localhost:4321`. Every shared component and its variants are shown
+at `http://localhost:4321/style-guide/`, which is never built for the launched site.
 
 | Command            | What it does                                                   |
 | ------------------ | -------------------------------------------------------------- |
@@ -70,7 +71,7 @@ go in a git-ignored `.dev.vars` file locally and in Cloudflare's encrypted setti
 ```
 src/
   assets/        Photographs and brand files (optimized at build time)
-  components/    Reusable pieces of a page
+  components/    Reusable pieces of a page (shown together on /style-guide/)
   content/       One folder per content type, one Markdown file per item
   layouts/       The page shell and the legal reading layout
   lib/           Business facts, content access and pure helpers
