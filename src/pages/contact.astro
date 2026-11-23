@@ -1,0 +1,670 @@
+---
+// Contact page: the project intake form beside the office details.
+//
+// The form's fields, limits and messages come from src/lib/intake.ts, which
+// the server endpoint also uses, so the browser and the server check the same
+// rules. Without JavaScript the browser's own validation stops an incomplete
+// form; the script at the bottom replaces it with messages written under each
+// field, a summary at the top and focus on the first answer to fix.
+import Button from '../components/Button.astro';
+import TextLink from '../components/TextLink.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import {
+  HONEYPOT_FIELD,
+  INTAKE_ENDPOINT,
+  PHONE_PATTERN,
+  limits,
+  messages,
+  projectTypes,
+} from '../lib/intake';
+import { formatPhone } from '../lib/seo';
+import { site } from '../lib/site';
+
+const { address } = site;
+const oneLineAddress = `${address.street}, ${address.city}, ${address.region} ${address.postalCode}`;
+const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+  `${site.name}, ${oneLineAddress}`,
+)}`;
+
+// A loose email shape for the browser: something@something.something. The
+// schema runs the stricter check on the server.
+const EMAIL_PATTERN = '[^@\\s]+@[^@\\s]+\\.[^@\\s]+';
+---
+
+<BaseLayout
+  title="Contact"
+  description={`Tell ${site.name} about your custom home, renovation or commercial project, or visit the office in ${address.city}.`}
+>
+  <div class="container contact">
+    <header class="intro">
+      <p class="label kicker">Contact</p>
+      <h1>Start a project</h1>
+      <p class="lede">
+        Tell us what you have in mind, whether it is a new home, a renovation or a commercial
+        building. A few lines are enough to begin the conversation.
+      </p>
+    </header>
+
+    <form
+      class="intake"
+      action={INTAKE_ENDPOINT}
+      method="post"
+      aria-label="Project enquiry"
+      data-intake
+    >
+      <p class="note">All fields are required unless marked optional.</p>
+
+      {/* Filled in and shown by the script when an answer needs fixing. */}
+      <div class="summary" aria-labelledby="summary-heading" data-error-summary hidden>
+        <h2 id="summary-heading" class="summary-heading">
+          Please check your answers
+        </h2>
+        <ul role="list"></ul>
+      </div>
+
+      <div class="fields">
+        <div class="field wide" data-field>
+          <label for="name">Name</label>
+          <input
+            class="control"
+            id="name"
+            name="name"
+            type="text"
+            autocomplete="name"
+            required
+            maxlength={limits.name.max}
+            aria-describedby="name-error"
+            data-required={messages.nameRequired}
+            data-too-long={messages.nameTooLong}
+          />
+          <p class="error" id="name-error" data-error hidden></p>
+        </div>
+
+        <div class="field" data-field>
+          <label for="email">Email</label>
+          <input
+            class="control"
+            id="email"
+            name="email"
+            type="email"
+            autocomplete="email"
+            required
+            maxlength={limits.email.max}
+            pattern={EMAIL_PATTERN}
+            aria-describedby="email-error"
+            data-required={messages.emailRequired}
+            data-invalid={messages.emailInvalid}
+            data-too-long={messages.emailTooLong}
+          />
+          <p class="error" id="email-error" data-error hidden></p>
+        </div>
+
+        <div class="field" data-field>
+          <label for="phone">
+            Phone <span class="optional">(optional)</span>
+          </label>
+          <input
+            class="control"
+            id="phone"
+            name="phone"
+            type="tel"
+            autocomplete="tel"
+            maxlength={limits.phone.max}
+            pattern={PHONE_PATTERN}
+            aria-describedby="phone-error"
+            data-invalid={messages.phoneInvalid}
+            data-too-long={messages.phoneInvalid}
+          />
+          <p class="error" id="phone-error" data-error hidden></p>
+        </div>
+
+        <fieldset class="field wide choices" data-field>
+          <legend>Type of project</legend>
+          <div class="options">
+            {projectTypes.map((type) => (
+              <label class="option">
+                <input
+                  id={`projectType-${type.value}`}
+                  type="radio"
+                  name="projectType"
+                  value={type.value}
+                  required
+                  aria-describedby="projectType-error"
+                  data-required={messages.projectTypeRequired}
+                />
+                <span>{type.label}</span>
+              </label>
+            ))}
+          </div>
+          <p class="error" id="projectType-error" data-error hidden></p>
+        </fieldset>
+
+        <div class="field wide" data-field>
+          <label for="message">About your project</label>
+          <p class="hint" id="message-hint">
+            Where it is, roughly when you would like to start, and anything you already know.
+          </p>
+          <textarea
+            class="control"
+            id="message"
+            name="message"
+            rows="7"
+            required
+            minlength={limits.message.min}
+            maxlength={limits.message.max}
+            aria-describedby="message-hint message-error"
+            data-required={messages.messageRequired}
+            data-too-short={messages.messageTooShort}
+            data-too-long={messages.messageTooLong}
+          ></textarea>
+          <p class="error" id="message-error" data-error hidden></p>
+        </div>
+      </div>
+
+      {/*
+       * Spam trap. Moved off-screen rather than set to display: none, because
+       * some programs skip fields that are not displayed. It is hidden from
+       * assistive technology and taken out of the tab order, so no visitor
+       * ever reaches it; programs that fill in every field do, and the
+       * endpoint drops their submissions.
+       */}
+      <div class="visually-hidden" aria-hidden="true">
+        <label for={HONEYPOT_FIELD}>Website</label>
+        <input
+          id={HONEYPOT_FIELD}
+          name={HONEYPOT_FIELD}
+          type="text"
+          tabindex="-1"
+          autocomplete="off"
+        />
+      </div>
+
+      {/*
+       * Spam check slot. The endpoint work adds the Cloudflare Turnstile
+       * widget here (its script loads on this page only), together with a
+       * line in the privacy policy, which already describes it. No
+       * third-party script loads until then.
+       */}
+
+      <div class="actions">
+        <Button type="submit">Send enquiry</Button>
+        <p class="privacy">
+          We use your details only to reply to you. See our <a href="/privacy/">privacy policy</a>.
+        </p>
+      </div>
+    </form>
+
+    <aside class="office" aria-labelledby="office-heading">
+      <h2 id="office-heading" class="office-heading">
+        The office
+      </h2>
+      <address>
+        <p>{site.legalName}</p>
+        <p>{address.street}</p>
+        <p>
+          {address.city}, {address.region} {address.postalCode}
+        </p>
+      </address>
+      <p class="directions">
+        <TextLink href={directionsUrl}>Get directions</TextLink>
+      </p>
+      {(site.phone || site.licenseNumber) && (
+        <dl class="facts">
+          {site.phone && (
+            <div>
+              <dt class="label">Phone</dt>
+              <dd>
+                <a href={`tel:+1${site.phone}`}>{formatPhone(site.phone)}</a>
+              </dd>
+            </div>
+          )}
+          {site.licenseNumber && (
+            <div>
+              <dt class="label">License</dt>
+              <dd>{site.licenseNumber}</dd>
+            </div>
+          )}
+        </dl>
+      )}
+      <p class="area">Building across {site.serviceArea}.</p>
+    </aside>
+  </div>
+</BaseLayout>
+
+<script>
+  // Inline validation. Runs only where JavaScript is available; without it
+  // the browser's built-in checks still stop an incomplete form. Messages
+  // are read from data attributes rendered from src/lib/intake.ts.
+  type Control = HTMLInputElement | HTMLTextAreaElement;
+  type Problem = { message: string; target: Control };
+
+  const form = document.querySelector<HTMLFormElement>('form[data-intake]');
+  if (form) enhance(form);
+
+  function enhance(form: HTMLFormElement) {
+    const fields = [...form.querySelectorAll<HTMLElement>('[data-field]')];
+    const summary = form.querySelector<HTMLElement>('[data-error-summary]');
+    const summaryHeading = summary?.querySelector('h2');
+    const summaryList = summary?.querySelector('ul');
+    if (!summary || !summaryHeading || !summaryList) return;
+
+    let attempted = false;
+    form.noValidate = true;
+
+    const controlsOf = (field: HTMLElement) => [
+      ...field.querySelectorAll<Control>('input, textarea'),
+    ];
+
+    // Mirrors the schema: answers are trimmed before their length is judged.
+    function messageFor(control: Control): string {
+      const { validity, dataset } = control;
+      const length = control.value.trim().length;
+      if (validity.valueMissing || (control.required && length === 0)) {
+        return dataset.required ?? control.validationMessage;
+      }
+      if (validity.typeMismatch || validity.patternMismatch) {
+        return dataset.invalid ?? control.validationMessage;
+      }
+      if (control.minLength > 0 && length < control.minLength) {
+        return dataset.tooShort ?? control.validationMessage;
+      }
+      if (validity.tooLong) return dataset.tooLong ?? control.validationMessage;
+      return validity.valid ? '' : control.validationMessage;
+    }
+
+    function check(field: HTMLElement): Problem | null {
+      const controls = controlsOf(field);
+      const message = controls.map(messageFor).find(Boolean) ?? '';
+      const error = field.querySelector<HTMLElement>('[data-error]');
+      if (error) {
+        error.textContent = message;
+        error.hidden = !message;
+      }
+      for (const control of controls) {
+        if (message) control.setAttribute('aria-invalid', 'true');
+        else control.removeAttribute('aria-invalid');
+      }
+      return message && controls[0] ? { message, target: controls[0] } : null;
+    }
+
+    function showSummary(problems: Problem[]) {
+      summaryList!.replaceChildren(
+        ...problems.map(({ message, target }) => {
+          const link = document.createElement('a');
+          link.href = `#${target.id}`;
+          link.textContent = message;
+          link.addEventListener('click', (event) => {
+            event.preventDefault();
+            target.focus();
+          });
+          const item = document.createElement('li');
+          item.append(link);
+          return item;
+        }),
+      );
+      summaryHeading!.textContent =
+        problems.length === 1
+          ? 'Please fix one answer before sending'
+          : `Please fix ${problems.length} answers before sending`;
+      summary!.hidden = problems.length === 0;
+    }
+
+    const checkAll = () => fields.map(check).filter((problem) => problem !== null);
+
+    form.addEventListener('submit', (event) => {
+      attempted = true;
+      const problems = checkAll();
+      showSummary(problems);
+      if (problems.length > 0) {
+        event.preventDefault();
+        problems[0].target.focus();
+      }
+    });
+
+    // After the first attempt, messages update as each answer is corrected.
+    const recheck = (event: Event) => {
+      if (!attempted || !(event.target instanceof Element)) return;
+      const field = event.target.closest<HTMLElement>('[data-field]');
+      if (!field) return;
+      check(field);
+      showSummary(checkAll());
+    };
+    form.addEventListener('input', recheck);
+    form.addEventListener('change', recheck);
+  }
+</script>
+
+<style>
+  .contact {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    grid-template-areas:
+      'intro form'
+      'office form';
+    grid-template-rows: auto 1fr;
+    column-gap: var(--space-9);
+    row-gap: var(--space-7);
+    padding-block: var(--space-8) var(--section-gap);
+  }
+
+  /* Intro */
+
+  .intro {
+    grid-area: intro;
+  }
+
+  .kicker {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    color: var(--color-link);
+  }
+
+  .kicker::before {
+    content: '';
+    width: var(--space-6);
+    border-top: 1px solid currentColor;
+  }
+
+  h1 {
+    margin-top: var(--space-4);
+    font-size: var(--text-3xl);
+  }
+
+  .lede {
+    margin-top: var(--space-5);
+    max-width: 30rem;
+    font-size: var(--text-lg);
+    line-height: var(--leading-snug);
+    color: var(--color-text-muted);
+  }
+
+  /* Office */
+
+  .office {
+    grid-area: office;
+    align-self: start;
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .office-heading {
+    font-size: var(--text-xl);
+    line-height: var(--leading-snug);
+  }
+
+  address {
+    margin-top: var(--space-4);
+    font-style: normal;
+  }
+
+  .directions,
+  .area {
+    margin-top: var(--space-4);
+  }
+
+  .facts {
+    display: grid;
+    gap: var(--space-3);
+    margin: var(--space-5) 0 0;
+  }
+
+  .facts dt {
+    color: var(--color-text-muted);
+  }
+
+  .facts dd {
+    margin: 0;
+  }
+
+  .area {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
+
+  /* Form */
+
+  .intake {
+    grid-area: form;
+    align-self: start;
+    padding: var(--space-7);
+    background: var(--color-surface);
+    border-top: 2px solid var(--color-heading);
+  }
+
+  .note {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
+
+  .summary {
+    margin-top: var(--space-5);
+    padding: var(--space-5);
+    background: var(--color-white);
+    border-left: 3px solid var(--color-error);
+  }
+
+  .summary-heading {
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    font-weight: 600;
+    line-height: var(--leading-snug);
+    letter-spacing: normal;
+    color: var(--color-text);
+  }
+
+  .summary ul {
+    margin-top: var(--space-3);
+  }
+
+  /* The list items are written by the script, so they need :global. */
+  .summary :global(li + li) {
+    margin-top: var(--space-2);
+  }
+
+  .summary :global(a) {
+    color: var(--color-error);
+  }
+
+  .fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-6) var(--space-5);
+    margin-top: var(--space-6);
+  }
+
+  .field {
+    display: grid;
+    align-content: start;
+    gap: var(--space-2);
+    min-width: 0;
+  }
+
+  .wide {
+    grid-column: 1 / -1;
+  }
+
+  label,
+  legend {
+    color: var(--color-heading);
+    font-size: var(--text-sm);
+    font-weight: 600;
+  }
+
+  .optional {
+    color: var(--color-text-muted);
+    font-weight: 400;
+  }
+
+  .hint {
+    margin-top: calc(-1 * var(--space-1));
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
+
+  .control {
+    width: 100%;
+    min-height: var(--space-7);
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--color-control-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-white);
+    line-height: var(--leading-snug);
+  }
+
+  textarea.control {
+    resize: vertical;
+    line-height: var(--leading-body);
+  }
+
+  .control:hover {
+    border-color: var(--color-heading);
+  }
+
+  .control:focus-visible {
+    outline-offset: 0;
+    border-color: var(--color-focus);
+  }
+
+  .control[aria-invalid='true'] {
+    border-color: var(--color-error);
+    box-shadow: inset 0 0 0 1px var(--color-error);
+  }
+
+  .error {
+    color: var(--color-error);
+    font-size: var(--text-sm);
+    font-weight: 600;
+  }
+
+  .error[hidden] {
+    display: none;
+  }
+
+  /* Project type */
+
+  .choices {
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  legend {
+    float: left;
+    width: 100%;
+    margin-bottom: var(--space-2);
+    padding: 0;
+  }
+
+  .options {
+    clear: both;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+
+  .option {
+    flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-height: var(--space-7);
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-white);
+    color: var(--color-text);
+    font-size: var(--text-base);
+    font-weight: 400;
+    cursor: pointer;
+    transition: border-color var(--duration-fast) var(--ease-out);
+  }
+
+  .option:hover {
+    border-color: var(--color-heading);
+  }
+
+  .option:has(:checked) {
+    border-color: var(--color-heading);
+    background: var(--color-ocean-050);
+    color: var(--color-heading);
+  }
+
+  .option:has([aria-invalid='true']) {
+    border-color: var(--color-error);
+  }
+
+  .option input {
+    flex-shrink: 0;
+    width: var(--space-4);
+    height: var(--space-4);
+    margin: 0;
+    accent-color: var(--color-heading);
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-4) var(--space-6);
+    margin-top: var(--space-7);
+  }
+
+  .privacy {
+    flex: 1 1 16rem;
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
+
+  @media (max-width: 1100px) {
+    .contact {
+      column-gap: var(--space-7);
+    }
+
+    .intake {
+      padding: var(--space-6);
+    }
+  }
+
+  @media (max-width: 800px) {
+    .contact {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-areas:
+        'intro'
+        'form'
+        'office';
+      grid-template-rows: auto;
+      padding-top: var(--space-7);
+    }
+  }
+
+  @media (max-width: 520px) {
+    .contact {
+      row-gap: var(--space-6);
+    }
+
+    /* The form runs edge to edge so the fields get the full width. */
+    .intake {
+      margin-inline: calc(-1 * var(--page-gutter));
+      padding: var(--space-5) var(--page-gutter);
+    }
+
+    .fields {
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--space-5);
+    }
+
+    .options {
+      flex-direction: column;
+    }
+
+    .actions {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .privacy {
+      flex-basis: auto;
+    }
+  }
+</style>
