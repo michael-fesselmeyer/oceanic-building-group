@@ -1,0 +1,220 @@
+---
+// The full-screen photograph viewer shared by the project gallery and the
+// progress updates. Place it immediately after a list that carries
+// `data-gallery`, whose items carry `data-gallery-item` and whose photograph
+// links carry `data-gallery-link` and point at a large version of the image.
+//
+// Without JavaScript the links simply open the large image. With it, a click
+// opens that image here, with previous, next and close buttons, the arrow
+// keys, Escape and a swipe. The large image is only given its address when
+// the dialog opens and loses it when it closes, so nothing large downloads
+// until a visitor asks. The alt text comes from the thumbnail and the
+// caption from the item's <figcaption>, when it has one; focus returns to
+// the photograph that opened the dialog.
+//
+//   label  Accessible name for the dialog, for example "Photographs of
+//          River House".
+interface Props {
+  label: string;
+}
+
+const { label } = Astro.props;
+---
+
+<dialog class="lightbox" aria-label={label} data-lightbox>
+  <div class="stage" data-lightbox-stage>
+    <img class="large" alt="" draggable="false" />
+  </div>
+  <div class="bar">
+    <p class="caption" data-lightbox-caption hidden></p>
+    <p class="count" aria-live="polite" data-lightbox-count></p>
+    <div class="buttons">
+      <button type="button" class="control" aria-label="Previous photograph" data-lightbox-prev>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M15 5l-7 7 7 7" />
+        </svg>
+      </button>
+      <button type="button" class="control" aria-label="Next photograph" data-lightbox-next>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+      <button type="button" class="control" aria-label="Close" data-lightbox-close>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M6 6l12 12M18 6L6 18" />
+        </svg>
+      </button>
+    </div>
+  </div>
+</dialog>
+
+<script>
+  // Opens a gallery's photographs in its <dialog>. Without this script the
+  // links open the large image instead, so nothing here is required.
+  document.querySelectorAll<HTMLDialogElement>('dialog[data-lightbox]').forEach((dialog) => {
+    const gallery = dialog.previousElementSibling;
+    if (!gallery?.matches('[data-gallery]')) return;
+    const links = [...gallery.querySelectorAll<HTMLAnchorElement>('[data-gallery-link]')];
+    const part = (name: string) => dialog.querySelector<HTMLElement>(`[data-lightbox-${name}]`)!;
+    const image = dialog.querySelector('img')!;
+    const [caption, count, stage] = [part('caption'), part('count'), part('stage')];
+    let index = 0;
+    let opener: HTMLElement | undefined;
+
+    const show = (next: number) => {
+      index = (next + links.length) % links.length;
+      const link = links[index]!;
+      const text = link.closest('[data-gallery-item]')?.querySelector('figcaption')?.textContent;
+      image.alt = link.querySelector('img')?.alt ?? '';
+      image.src = link.href;
+      caption.textContent = text?.trim() ?? '';
+      caption.hidden = !caption.textContent;
+      count.textContent = `Photo ${index + 1} of ${links.length}`;
+    };
+
+    links.forEach((link, i) => {
+      link.setAttribute('aria-haspopup', 'dialog');
+      link.addEventListener('click', (event) => {
+        const plain = !event.button && !(event.metaKey || event.ctrlKey || event.shiftKey);
+        if (!plain || event.defaultPrevented) return;
+        event.preventDefault();
+        opener = link;
+        show(i);
+        dialog.showModal();
+      });
+    });
+
+    if (links.length < 2) {
+      part('prev').hidden = part('next').hidden = true;
+    }
+    part('prev').addEventListener('click', () => show(index - 1));
+    part('next').addEventListener('click', () => show(index + 1));
+    part('close').addEventListener('click', () => dialog.close());
+
+    dialog.addEventListener('keydown', (event) => {
+      if (links.length < 2 || (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight')) return;
+      show(index + (event.key === 'ArrowRight' ? 1 : -1));
+    });
+
+    // A horizontal swipe on the photograph moves to the next or previous one.
+    let startX = 0;
+    stage.addEventListener('pointerdown', (event) => {
+      startX = event.clientX;
+      stage.setPointerCapture(event.pointerId);
+    });
+    stage.addEventListener('pointerup', (event) => {
+      const moved = event.clientX - startX;
+      if (links.length > 1 && Math.abs(moved) > 50) show(index + (moved < 0 ? 1 : -1));
+    });
+
+    // Escape and the close button both end here: free the large image and hand focus back.
+    dialog.addEventListener('close', () => {
+      image.removeAttribute('src');
+      opener?.focus();
+    });
+  });
+</script>
+
+<style>
+  /* The overlay: the whole screen, a photograph above a bar of caption and buttons. */
+  .lightbox {
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: var(--color-navy-950);
+    color: var(--color-text-on-strong);
+  }
+
+  .lightbox[open] {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto;
+  }
+
+  .stage {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
+    padding: var(--space-5) var(--page-gutter) 0;
+    /* A sideways swipe is ours; a vertical one still scrolls nothing, the overlay has no scroll. */
+    touch-action: pan-y;
+    user-select: none;
+  }
+
+  /* Shown whole, as large as the space allows, never cropped or stretched. */
+  .large {
+    max-width: 100%;
+    max-height: 100%;
+    min-height: 0;
+    object-fit: contain;
+  }
+
+  .bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3) var(--space-5);
+    padding: var(--space-4) var(--page-gutter);
+  }
+
+  .caption {
+    flex: 1 1 100%;
+    max-width: var(--width-prose);
+    font-size: var(--text-sm);
+    line-height: var(--leading-snug);
+  }
+
+  .count {
+    flex: 1 1 auto;
+    color: var(--color-ocean-300);
+    font-size: var(--text-sm);
+  }
+
+  .buttons {
+    display: flex;
+    gap: var(--space-2);
+  }
+
+  /* 48px square: comfortable for a thumb. */
+  .control {
+    display: grid;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
+    padding: 0;
+    border: 1px solid var(--color-ocean-300);
+    border-radius: var(--radius-pill);
+    background: transparent;
+    color: var(--color-text-on-strong);
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-out);
+  }
+
+  .control:hover {
+    background: var(--color-navy-700);
+  }
+
+  .control:focus-visible {
+    outline-color: var(--color-white);
+  }
+
+  .control svg {
+    width: 1.5rem;
+    height: 1.5rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* The page behind an open overlay does not scroll. */
+  :global(body:has(dialog.lightbox[open])) {
+    overflow: hidden;
+  }
+</style>
