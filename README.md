@@ -49,6 +49,9 @@ into enquiries through a short intake form that notifies the office straight awa
 - **Plain-language legal pages.** A privacy policy and terms of use, in their own reading layout
   and linked from every footer. The privacy text describes the site as built (no cookies, no
   stored submissions), so it changes whenever that does.
+- **Locked down by default.** A content security policy lets only the site's own code run (Turnstile
+  only on the form pages), and every response carries HSTS, `nosniff`, a strict referrer policy,
+  a permissions policy and frame protection ([details](docs/architecture.md#security-headers)).
 - **Safe to maintain.** Content lives in Markdown with a strict schema, so a mistake fails the
   build instead of breaking the live site.
 
