@@ -1,5 +1,6 @@
 ---
 import LegalLayout from '../layouts/LegalLayout.astro';
+import { beacon } from '../lib/analytics';
 import { formatPhone } from '../lib/seo';
 import { site } from '../lib/site';
 
@@ -20,7 +21,7 @@ const contents = [
   title="Privacy Policy"
   description={`What ${site.name} collects when you visit this website or send us a message, and what we do with it.`}
   intro="We collect very little. This page explains what, why, and who to ask if you have a question."
-  updated="2026-11-22"
+  updated="2026-11-23"
   contents={contents}
 >
   <h2 id="what-we-collect">What we collect</h2>
@@ -50,10 +51,23 @@ const contents = [
     This website sets no cookies. Its fonts are served from the site itself, so your browser does
     not contact font services either.
   </p>
-  <p>
-    If we add visitor statistics later, we will use a cookieless tool that does not follow you from
-    site to site, and we will update this page first.
-  </p>
+  {/* Matches what the site does: the analytics paragraph appears only when the beacon is on. */}
+  {beacon ? (
+    <p>
+      We count visits with Cloudflare Web Analytics, which tells us how many people visit, which
+      pages they read and how quickly the pages load. It sets no cookies, stores nothing in your
+      browser and does not follow you from site to site. For each page view it records the page
+      address (without anything after a question mark), the page you came from, your browser and
+      type of device, your country, and loading times. Cloudflare says it does not use this to
+      identify or fingerprint visitors, and describes its handling in its own privacy policy.
+    </p>
+  ) : (
+    <p>
+      This website does not collect visitor statistics. If we add them later, we will use a
+      cookieless tool that does not follow you from site to site, and we will update this page
+      first.
+    </p>
+  )}
 
   <h2 id="spam-protection">Spam protection</h2>
   <p>
