@@ -73,6 +73,14 @@ export const site: SiteFacts = {
 // import.meta.env does not exist; there the site counts as not launched.
 export const launched: boolean = import.meta.env?.PUBLIC_SITE_LAUNCHED === 'true';
 
+/**
+ * True only in the Lighthouse build in CI (PUBLIC_AUDIT_FIXTURES=true). It
+ * adds one made-up project page, /portfolio/audit-example/, so the project
+ * page template can be audited while every real project is still a draft.
+ * Never set it for a deployment.
+ */
+export const auditFixtures: boolean = import.meta.env.PUBLIC_AUDIT_FIXTURES === 'true';
+
 /** Main navigation, in display order. Paths always end in "/". */
 export const navigation = [
   { label: 'Portfolio', href: '/portfolio/' },

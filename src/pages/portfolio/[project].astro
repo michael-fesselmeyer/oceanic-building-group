@@ -6,17 +6,24 @@ import { getImage } from 'astro:assets';
 import ProjectArticle from '../../components/project/ProjectArticle.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getProjects, renderProjectStory, type Project } from '../../lib/content';
+import { auditProject } from '../../lib/examples';
 import { neighbors } from '../../lib/project-page';
 import { shareImageFor } from '../../lib/share-image';
-import { site } from '../../lib/site';
+import { auditFixtures, site } from '../../lib/site';
 import { projectCrumbs, projectJsonLd } from '../../lib/structured-data';
 
 export async function getStaticPaths() {
   const projects = await getProjects();
-  return projects.map((project) => ({
+  const paths = projects.map((project) => ({
     params: { project: project.id },
-    props: { project, ...neighbors(projects, project.id) },
+    props: { project, ...neighbors(projects, project.id) } as Props,
   }));
+  // The Lighthouse build adds one made-up project, so the template is audited
+  // even while every real project is a draft. See `auditFixtures`.
+  if (auditFixtures) {
+    paths.push({ params: { project: auditProject.id }, props: { project: auditProject } });
+  }
+  return paths;
 }
 
 interface Props {
