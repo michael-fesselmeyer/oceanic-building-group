@@ -22,9 +22,15 @@ describe('isSitemapPage', () => {
     expect(isSitemapPage('https://builders.example.test/style-guide/project/')).toBe(false);
   });
 
+  it('leaves out server routes under /api, such as the intake form endpoint', () => {
+    expect(isSitemapPage('/api/intake/')).toBe(false);
+    expect(isSitemapPage('https://builders.example.test/api/intake/')).toBe(false);
+  });
+
   it('does not mistake a page that merely starts with the same letters', () => {
     expect(isSitemapPage('/style-guidelines/')).toBe(true);
     expect(isSitemapPage('/4040/')).toBe(true);
+    expect(isSitemapPage('/apiary/')).toBe(true);
   });
 });
 
