@@ -283,10 +283,14 @@ export function checkContent(files) {
 
 /** Roles and wording that suggest a real-estate licence. */
 const LICENSEE = /\b(?:real estate|realtor|realty|broker|sales associate)\b/i;
-/** The line a licensee's team file carries, for example "Brokerage: Coastal Realty LLC". */
-const BROKERAGE_LINE = /^Brokerage:[ \t]*\S/m;
 
-/** @param {ContentFile[]} files @returns {GateResult} */
+/**
+ * A licensee's team file is ready when it sets `realEstateLicensee: true` and
+ * names the `brokerage`, the two fields the team schema uses. Wording in the
+ * role or text that suggests a licence also marks a licensee, so a file that
+ * forgot the flag is caught too.
+ * @param {ContentFile[]} files @returns {GateResult}
+ */
 export function checkTeam(files) {
   const name = 'Team brokerage details';
   const team = files.filter((file) => file.collection === 'team' && !isDraft(file));
@@ -295,19 +299,26 @@ export function checkTeam(files) {
       name,
       ok: true,
       detail:
-        'No team members are published yet. When they are, a real-estate licensee needs a "Brokerage:" line.',
+        'No team members are published yet. When they are, a real-estate licensee needs realEstateLicensee: true and a brokerage.',
     };
   }
-  const licensees = team.filter((file) => LICENSEE.test(`${file.fields.role ?? ''}\n${file.body}`));
-  const missing = licensees.filter((file) => !BROKERAGE_LINE.test(file.body));
+  const licensees = team.filter(
+    (file) =>
+      file.fields.realEstateLicensee === 'true' ||
+      LICENSEE.test(`${file.fields.role ?? ''}\n${file.body}`),
+  );
+  const missing = licensees.filter(
+    (file) => file.fields.realEstateLicensee !== 'true' || !file.fields.brokerage?.trim(),
+  );
   if (missing.length > 0) {
     return {
       name,
       ok: false,
       detail: `Real-estate licensees without brokerage details: ${missing.map((file) => file.path).join(', ')}.`,
       next:
-        'Add a line "Brokerage: <the brokerage firm\'s name>" to each file\'s text, as Florida ' +
-        'advertising rules require for a licensee, or check the role if they are not licensed.',
+        "In each file set realEstateLicensee: true and brokerage: <the brokerage firm's licensed " +
+        'name>, as Florida advertising rules require for a licensee, or check the role if they ' +
+        'are not licensed.',
     };
   }
   return {
