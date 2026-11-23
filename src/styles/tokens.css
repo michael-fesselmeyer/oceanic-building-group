@@ -91,6 +91,8 @@
   --width-prose: 42rem;
   /* Line length for section headings, in characters of the heading's own size. */
   --measure-heading: 24ch;
+  /* Widest the Areas map is drawn once it no longer sits beside the town list. */
+  --width-map: 26rem;
   /* Tallest a gallery photograph is shown, so a portrait one fits on screen whole. */
   --photo-max-height: 85svh;
 
