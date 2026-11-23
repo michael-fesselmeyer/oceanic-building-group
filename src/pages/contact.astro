@@ -26,8 +26,8 @@ const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${enco
   `${site.name}, ${oneLineAddress}`,
 )}`;
 
-// A loose email shape for the browser: something@something.something. The
-// schema runs the stricter check on the server.
+// A loose email shape for the browser: text, an at sign, then a domain with a
+// dot in it. The schema runs the stricter check on the server.
 const EMAIL_PATTERN = '[^@\\s]+@[^@\\s]+\\.[^@\\s]+';
 ---
 
