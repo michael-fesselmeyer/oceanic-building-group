@@ -683,6 +683,62 @@ the analytics switch), and Cloudflare Turnstile checks the form. A change that m
 such as storing leads, setting a cookie or adding a third-party script, updates the privacy page
 and its date in the same pull request. The business reviews both texts before launch.
 
+## Security headers
+
+Every response carries the same security headers. They are defined once in
+[`src/lib/security-headers.ts`](../src/lib/security-headers.ts) and reach responses two ways:
+
+- **Static files** (every prerendered page, image, font and script) get them from
+  [`public/_headers`](../public/_headers), Cloudflare's headers file for static assets. A unit test
+  keeps the file identical to the module. The build adds its own `Cache-Control` rule for
+  `/_astro/*` to the same file, so `public/_headers` must never set `Cache-Control`.
+- **Worker responses** (the intake endpoint's redirects, the form it sends back, its plain-text
+  refusals) get them from [`src/middleware.ts`](../src/middleware.ts), because Cloudflare does not
+  apply `_headers` to responses a Worker generates.
+
+| Header                      | Value                                                              | Why                                                                                                                                                         |
+| --------------------------- | ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Content-Security-Policy`   | see below                                                          | Only the site's own code runs, so injected or tampered markup cannot run scripts or load from elsewhere                                                     |
+| `Strict-Transport-Security` | `max-age=31536000; includeSubDomains`                              | Browsers use HTTPS for a year after the first visit, so the form is never sent in the clear. Not `preload`: that is a long commitment the owner should make |
+| `X-Content-Type-Options`    | `nosniff`                                                          | Browsers do not guess a file's type, so an uploaded or mistyped file is never run as a script                                                               |
+| `Referrer-Policy`           | `strict-origin-when-cross-origin`                                  | Other sites see only the domain a visitor came from, never the page. Turnstile still learns the origin it needs                                             |
+| `Permissions-Policy`        | camera, microphone, location, payment, sensors, USB and topics off | The site uses none of them, so no page, script or frame can ask for them                                                                                    |
+| `X-Frame-Options`           | `DENY`                                                             | Older browsers refuse to show the site inside another site's frame (clickjacking); newer ones use `frame-ancestors`                                         |
+
+### Content security policy
+
+The policy comes in two parts that a browser enforces together:
+
+- **In each page.** Astro's `security.csp` (set in `astro.config.mjs` from `cspConfig()`) hashes
+  every script and style it renders and writes the policy into a `<meta>` tag on prerendered
+  pages, and into a header on the form the endpoint sends back. It allows the site itself and
+  nothing else: `default-src`, `img-src`, `font-src`, `connect-src` and `script-src` are `'self'`
+  plus hashes, `object-src` is `'none'`, and `base-uri` and `form-action` are `'self'`.
+  - **No `'unsafe-inline'` for scripts or `<style>` elements.** The contact form's script and the
+    small stylesheets Astro inlines are allowed by their hashes, which change with the code on
+    every build, so nothing needs updating by hand.
+  - **Style attributes are allowed** (`style-src-attr 'unsafe-inline'`). Components set CSS custom
+    properties with them, such as a photograph's aspect ratio. A style attribute cannot run code;
+    hashing each one would tie the policy to every photograph's dimensions. The build warns that
+    `'self'` does not apply to attributes, which is intended.
+  - **Turnstile** (`https://challenges.cloudflare.com` for `script-src`, `frame-src` and
+    `connect-src`) is allowed only on `/contact/` and the form the endpoint sends back, by
+    `allowTurnstile()` in those pages' frontmatter. It must be called there, not in a component:
+    the policy is written into `<head>` before the page body renders.
+  - **Analytics** (`https://static.cloudflareinsights.com` for scripts,
+    `https://cloudflareinsights.com` for its reports) are allowed only when the beacon is on: the
+    site is launched and `PUBLIC_CF_ANALYTICS_TOKEN` is set, the same rule the beacon uses.
+    `astro.config.mjs` reads both from the build environment.
+  - **Markdown syntax highlighting is off**, because Shiki writes inline styles. The content has
+    no code blocks.
+- **In the headers.** `frame-ancestors 'none'` cannot be set in a `<meta>` tag, so the headers
+  carry a second policy with it, plus `object-src`, `base-uri` and `form-action` again.
+
+Astro does not apply the policy on the development server, so check a change with a build:
+`tests/e2e/security.spec.ts` loads every built page and fails on any policy violation, and checks
+that a script the site did not ship is refused. `tests/e2e/intake.spec.ts` checks the headers on
+a static page and on each kind of endpoint response from the built Worker.
+
 ## Quality gates
 
 | Gate                         | Tool                    | Where        |
