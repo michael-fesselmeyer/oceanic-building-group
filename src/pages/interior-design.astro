@@ -1,0 +1,51 @@
+---
+// The interior design partner page. The partner's name and website come
+// from `site.designPartner`, the introduction and biography from the one
+// file in src/content/design-partner/, the credited projects from projects
+// marked `interiorDesignPartner: true` and the quotes from testimonials
+// marked `aboutDesignPartner: true`. The layout is in
+// src/components/design-partner/DesignPartnerArticle.astro.
+import DesignPartnerArticle, {
+  type PartnerQuote,
+} from '../components/design-partner/DesignPartnerArticle.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import {
+  getDesignPartnerProfile,
+  getDesignPartnerProjects,
+  getDesignPartnerTestimonials,
+  getProjects,
+  renderDesignPartnerBio,
+  testimonialQuote,
+} from '../lib/content';
+import { DESIGN_PARTNER_TITLE, designPartnerDescription } from '../lib/design-partner';
+import { site } from '../lib/site';
+
+const partner = site.designPartner;
+const profile = await getDesignPartnerProfile();
+const intro = profile?.data ?? null;
+const Bio = profile ? await renderDesignPartnerBio(profile) : null;
+const projects = await getDesignPartnerProjects();
+
+// A quote names its project only when that project is published.
+const projectTitles = new Map((await getProjects()).map((p) => [p.id, p.data.title]));
+const testimonials: PartnerQuote[] = (await getDesignPartnerTestimonials()).map((item) => ({
+  quote: testimonialQuote(item),
+  attribution: item.data.attribution,
+  source: item.data.project ? projectTitles.get(item.data.project.id) : undefined,
+}));
+---
+
+<BaseLayout
+  title={DESIGN_PARTNER_TITLE}
+  description={designPartnerDescription(partner, intro)}
+  noindex={partner === null}
+>
+  <DesignPartnerArticle
+    partner={partner}
+    intro={intro}
+    projects={projects}
+    testimonials={testimonials}
+  >
+    {Bio && <Bio />}
+  </DesignPartnerArticle>
+</BaseLayout>
