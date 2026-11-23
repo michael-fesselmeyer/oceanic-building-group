@@ -89,7 +89,7 @@ const updatedLabel = new Intl.DateTimeFormat('en-US', {
 
   .body {
     display: grid;
-    grid-template-columns: 14rem minmax(0, var(--width-prose));
+    grid-template-columns: var(--width-sidebar) minmax(0, var(--width-prose));
     gap: var(--space-9);
     padding-top: var(--space-7);
   }
@@ -157,7 +157,7 @@ const updatedLabel = new Intl.DateTimeFormat('en-US', {
 
   @media (max-width: 1100px) {
     .body {
-      grid-template-columns: 11rem minmax(0, var(--width-prose));
+      grid-template-columns: var(--width-sidebar-narrow) minmax(0, var(--width-prose));
       gap: var(--space-7);
     }
   }

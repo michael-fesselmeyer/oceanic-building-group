@@ -557,7 +557,7 @@ const summaryTitle =
 
   .lede {
     margin-top: var(--space-5);
-    max-width: 30rem;
+    max-width: var(--width-lede);
     font-size: var(--text-lg);
     line-height: var(--leading-snug);
     color: var(--color-text-muted);
@@ -625,13 +625,13 @@ const summaryTitle =
     margin-top: var(--space-5);
     padding: var(--space-5);
     background: var(--color-white);
-    border-left: 3px solid var(--color-error);
+    border-left: var(--border-accent) solid var(--color-error);
   }
 
   .summary-heading {
     font-family: var(--font-body);
     font-size: var(--text-base);
-    font-weight: 600;
+    font-weight: var(--weight-strong);
     line-height: var(--leading-snug);
     letter-spacing: normal;
     color: var(--color-text);
@@ -654,7 +654,7 @@ const summaryTitle =
     margin-bottom: var(--space-5);
     padding: var(--space-4) var(--space-5);
     background: var(--color-white);
-    border-left: 3px solid var(--color-error);
+    border-left: var(--border-accent) solid var(--color-error);
     color: var(--color-text);
   }
 
@@ -684,12 +684,12 @@ const summaryTitle =
   legend {
     color: var(--color-heading);
     font-size: var(--text-sm);
-    font-weight: 600;
+    font-weight: var(--weight-strong);
   }
 
   .optional {
     color: var(--color-text-muted);
-    font-weight: 400;
+    font-weight: var(--weight-regular);
   }
 
   .hint {
@@ -730,7 +730,7 @@ const summaryTitle =
   .error {
     color: var(--color-error);
     font-size: var(--text-sm);
-    font-weight: 600;
+    font-weight: var(--weight-strong);
   }
 
   .error[hidden] {
@@ -771,7 +771,7 @@ const summaryTitle =
     background: var(--color-white);
     color: var(--color-text);
     font-size: var(--text-base);
-    font-weight: 400;
+    font-weight: var(--weight-regular);
     cursor: pointer;
     transition: border-color var(--duration-fast) var(--ease-out);
   }
@@ -807,7 +807,7 @@ const summaryTitle =
   }
 
   .privacy {
-    flex: 1 1 16rem;
+    flex: 1 1 var(--width-note);
     color: var(--color-text-muted);
     font-size: var(--text-sm);
   }

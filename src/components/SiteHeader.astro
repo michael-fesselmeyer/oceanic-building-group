@@ -92,7 +92,7 @@ const path = Astro.url.pathname;
     top: 0;
     z-index: 10;
     background: color-mix(in srgb, var(--color-page) calc(var(--header-solid) * 92%), transparent);
-    backdrop-filter: blur(calc(var(--header-solid) * 10px));
+    backdrop-filter: blur(calc(var(--header-solid) * var(--header-blur)));
     border-bottom: 1px solid
       color-mix(in srgb, var(--color-border) calc(var(--header-solid) * 100%), transparent);
   }
@@ -195,11 +195,11 @@ const path = Astro.url.pathname;
   .site-nav li a {
     color: var(--header-link);
     font-size: var(--text-sm);
-    font-weight: 500;
+    font-weight: var(--weight-medium);
     text-decoration: underline;
     text-decoration-color: transparent;
     text-decoration-thickness: 1px;
-    text-underline-offset: 0.5em;
+    text-underline-offset: var(--underline-offset-tab);
     transition: text-decoration-color var(--duration-fast) var(--ease-out);
   }
 
@@ -317,7 +317,7 @@ const path = Astro.url.pathname;
         font-family: var(--font-display);
         font-size: var(--text-xl);
         border-bottom: 1px solid var(--color-border);
-        text-underline-offset: 0.3em;
+        text-underline-offset: var(--underline-offset-menu);
       }
 
       .contact-button {

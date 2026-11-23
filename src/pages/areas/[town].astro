@@ -141,7 +141,7 @@ const projects = projectsInTown(town.id, await getProjects());
     color: var(--color-ocean-300);
     text-decoration-line: underline;
     text-decoration-color: transparent;
-    text-underline-offset: 0.25em;
+    text-underline-offset: var(--underline-offset-loose);
     transition: text-decoration-color var(--duration-fast) var(--ease-out);
   }
 
@@ -207,7 +207,7 @@ const projects = projectsInTown(town.id, await getProjects());
 
   .siblings a[aria-current='page'] {
     color: var(--color-heading);
-    font-weight: 600;
+    font-weight: var(--weight-strong);
     box-shadow: inset 2px 0 0 var(--color-link);
     padding-left: var(--space-3);
   }
@@ -267,7 +267,7 @@ const projects = projectsInTown(town.id, await getProjects());
   .service-list a {
     color: var(--color-heading);
     font-size: var(--text-lg);
-    text-underline-offset: 0.25em;
+    text-underline-offset: var(--underline-offset-loose);
   }
 
   .all {

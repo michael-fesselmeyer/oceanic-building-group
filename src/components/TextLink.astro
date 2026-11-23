@@ -26,7 +26,7 @@ const text = (await Astro.slots.render('default')).trim();
     text-decoration-line: underline;
     text-decoration-color: var(--color-link);
     text-decoration-thickness: 1px;
-    text-underline-offset: 0.25em;
+    text-underline-offset: var(--underline-offset-loose);
     transition:
       color var(--duration-fast) var(--ease-out),
       text-decoration-color var(--duration-fast) var(--ease-out);
