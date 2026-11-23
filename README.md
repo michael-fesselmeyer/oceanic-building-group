@@ -108,19 +108,39 @@ featured project, and nothing to show at `/style-guide/home/`, `/style-guide/hom
 `/style-guide/home/none/`. None of
 these pages is built for the launched site.
 
-| Command                | What it does                                                   |
-| ---------------------- | -------------------------------------------------------------- |
-| `npm run dev`          | Development server with live reload                            |
-| `npm run build`        | Production build into `dist/`                                  |
-| `npm run check`        | Type-checks code and validates every content file              |
-| `npm run lint`         | ESLint                                                         |
-| `npm run format`       | Formats every file with Prettier                               |
-| `npm test`             | Unit tests                                                     |
-| `npm run test:e2e`     | Browser and accessibility tests against the production build   |
-| `npm run hygiene`      | Checks that nothing private or off-policy is in the repository |
-| `npm run brand`        | Regenerates the wordmark, favicons, manifest and share image   |
-| `npm run launch-check` | Says whether the site is ready to go live (see below)          |
-| `npm run verify`       | Everything CI runs except the browser tests and Lighthouse     |
+| Command                 | What it does                                                   |
+| ----------------------- | -------------------------------------------------------------- |
+| `npm run dev`           | Development server with live reload                            |
+| `npm run build`         | Production build into `dist/`                                  |
+| `npm run check`         | Type-checks code and validates every content file              |
+| `npm run lint`          | ESLint                                                         |
+| `npm run format`        | Formats every file with Prettier                               |
+| `npm test`              | Unit tests                                                     |
+| `npm run test:e2e`      | Browser and accessibility tests against the production build   |
+| `npm run hygiene`       | Checks that nothing private or off-policy is in the repository |
+| `npm run brand`         | Regenerates the wordmark, favicons, manifest and share image   |
+| `npm run launch-check`  | Says whether the site is ready to go live (see below)          |
+| `npm run photos:import` | Turns camera files into project photographs (see below)        |
+| `npm run verify`        | Everything CI runs except the browser tests and Lighthouse     |
+
+## Adding project photographs
+
+```bash
+npm run photos:import -- ~/Pictures/river-house masterpiece-on-the-river
+```
+
+Every JPEG, PNG and WebP in the folder is turned upright, scaled to at most 2400px on its long
+edge, saved as a JPEG with its GPS position and camera details removed, and written to
+`src/assets/projects/<project-id>/` under a clean name (`DJI_0042.JPG` becomes `dji-0042.jpg`).
+It then prints a `cover` and `gallery` block to paste into the project's file. Every alt text in
+that block is empty, so the build stops until each photograph is described.
+
+- Existing photographs are never replaced unless you add `--force`; without it nothing is
+  written.
+- HEIC photographs from an iPhone are skipped with a message: the free image library bundled with
+  the site cannot decode them. Export them as JPEG first (Photos: File > Export, or
+  `sips -s format jpeg photo.heic --out photo.jpg` on a Mac).
+- The first photograph becomes the cover; reorder the pasted lines as you like.
 
 ## Launch check
 

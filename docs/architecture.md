@@ -378,6 +378,28 @@ content files by relative path. Astro generates responsive sizes in modern forma
 and writes width and height attributes, which prevents layout shift. Components must pass
 `widths` and `sizes` so phones download a small file.
 
+Project photographs come in through `npm run photos:import -- <folder> <project-id>`
+([`scripts/import-photos.mjs`](../scripts/import-photos.mjs), with the work in
+[`scripts/photo-import.mjs`](../scripts/photo-import.mjs)), using sharp, which Astro already
+needs:
+
+- **Masters.** Each file is rotated upright from its EXIF orientation, fitted inside 2400 x 2400
+  without enlarging, flattened onto white, converted to sRGB and saved as a JPEG at quality 90
+  (Astro re-encodes it for the page). Output goes to `src/assets/projects/<project-id>/`.
+- **No metadata.** sharp writes no EXIF, XMP, IPTC or ICC data unless asked, and the pipeline
+  never asks, so GPS positions, camera and lens details, dates and owner names are gone. A unit
+  test writes a photograph with a made-up GPS position and camera and checks the master has none.
+- **Alt text cannot be skipped.** The printed `cover` and `gallery` block has `''` for every alt
+  text. The schema requires at least 10 characters, so `astro check` and the build fail, naming
+  each field, until a person writes them.
+- **Safe to rerun.** Clean names are lowercase words joined by hyphens; names that clean to the
+  same thing get `-2`, `-3`. If any target file exists, nothing is written unless `--force` is
+  given. The project id must be a content file name, so it cannot point outside the folder.
+- **HEIC** is tried and, when the bundled libvips cannot decode it (it reads HEIF only as AVIF,
+  not the HEVC an iPhone writes), skipped with instructions to export JPEG. Decoding HEVC would
+  need licensed codecs, so the site does not add them.
+- The unit tests generate their photographs with sharp at run time; no test images are committed.
+
 ## Portfolio pages
 
 `/portfolio/` and one page per filter (`/portfolio/custom-homes/`, `/renovations/`, `/commercial/`
