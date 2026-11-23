@@ -82,7 +82,8 @@ Project setup, design tokens, page shell, content schemas, tests, CI and reposit
 
 ## Launch gates
 
-The site must not go live until each of these is true:
+The site must not go live until each of these is true. `npm run launch-check` checks them all
+(see the README):
 
 - The contractor license number is issued and shown in the footer and on the contact page.
 - The public office phone number is set.
