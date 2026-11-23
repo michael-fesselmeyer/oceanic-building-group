@@ -1,0 +1,265 @@
+---
+// Our Process: the stages of a build in order, one per Markdown file in
+// src/content/process/. A stage's duration is shown only when its file has
+// one; with no stages the page says so and still ends with the contact link.
+import Button from '../components/Button.astro';
+import SectionHeading from '../components/SectionHeading.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getProcessSteps, renderProcessStep } from '../lib/content';
+import { contactLink } from '../lib/site';
+
+const steps = await Promise.all(
+  (await getProcessSteps()).map(async (step, index) => ({
+    id: step.id,
+    title: step.data.title,
+    duration: step.data.duration,
+    number: String(index + 1).padStart(2, '0'),
+    Content: await renderProcessStep(step),
+  })),
+);
+---
+
+<BaseLayout
+  title="Our Process"
+  description="How a build with Oceanic Building Group unfolds, from the first meeting and design through permits and construction to the final walkthrough."
+>
+  <div class="container process">
+    <header class="head">
+      <p class="label kicker">How we build</p>
+      <h1>Our Process</h1>
+      <p class="intro">
+        Every project moves through the same stages, in the same order, so you always know where you
+        are and what comes next.
+      </p>
+    </header>
+
+    {steps.length > 0 ? (
+      <ol role="list" class="steps">
+        {steps.map(({ id, title, duration, number, Content }) => (
+          <li class="step" id={id}>
+            <span class="numeral" aria-hidden="true">
+              {number}
+            </span>
+            <div class="body">
+              <h2>{title}</h2>
+              <div class="text">
+                <Content />
+              </div>
+              {duration && (
+                <p class="duration">
+                  <span class="label">Typical length</span>
+                  <span class="time">{duration}</span>
+                </p>
+              )}
+            </div>
+          </li>
+        ))}
+      </ol>
+    ) : (
+      <p class="empty">The stages of a build will be published here soon.</p>
+    )}
+
+    <section class="closing" aria-labelledby="closing-heading">
+      <SectionHeading id="closing-heading" label="Next step">
+        Start with a conversation
+      </SectionHeading>
+      <p>Tell us about the project you have in mind.</p>
+      <p class="action">
+        <Button href={contactLink.href}>{contactLink.label}</Button>
+      </p>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .process {
+    padding-block: var(--space-8) var(--section-gap);
+  }
+
+  .head {
+    max-width: var(--width-prose);
+  }
+
+  .kicker {
+    color: var(--color-link);
+  }
+
+  h1 {
+    margin-top: var(--space-4);
+    font-size: var(--text-3xl);
+  }
+
+  .intro {
+    margin-top: var(--space-5);
+    font-size: var(--text-lg);
+    line-height: var(--leading-snug);
+    color: var(--color-text-muted);
+  }
+
+  .steps {
+    margin-top: var(--space-8);
+    border-top: 1px solid var(--color-border);
+  }
+
+  /* A large numeral on the left, then a vertical rule that runs through every
+     stage and ties them into one sequence, then the stage itself. */
+  .step {
+    display: grid;
+    grid-template-columns: minmax(var(--space-9), 1fr) minmax(0, 3fr);
+    column-gap: var(--space-7);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .numeral {
+    font-family: var(--font-display);
+    font-size: var(--text-4xl);
+    line-height: var(--leading-tight);
+    color: var(--color-link);
+    font-variant-numeric: lining-nums tabular-nums;
+    padding-block: var(--space-7);
+  }
+
+  .body {
+    position: relative;
+    max-width: var(--width-prose);
+    padding-block: var(--space-7);
+    padding-left: var(--space-7);
+    border-left: 1px solid var(--color-border);
+  }
+
+  /* A small marker on the rule where each stage begins. */
+  .body::before {
+    content: '';
+    position: absolute;
+    top: calc(var(--space-7) + var(--space-3));
+    left: calc(var(--space-2) / -2 - 0.5px);
+    width: var(--space-2);
+    height: var(--space-2);
+    border-radius: var(--radius-pill);
+    background: var(--color-link);
+  }
+
+  h2 {
+    font-size: var(--text-2xl);
+    overflow-wrap: anywhere;
+  }
+
+  .text {
+    margin-top: var(--space-4);
+    color: var(--color-text-muted);
+  }
+
+  .text :global(p + p) {
+    margin-top: var(--space-4);
+  }
+
+  .duration {
+    display: grid;
+    gap: var(--space-1);
+    margin-top: var(--space-5);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .duration .label {
+    color: var(--color-link);
+  }
+
+  .time {
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    line-height: var(--leading-snug);
+    color: var(--color-heading);
+  }
+
+  .empty {
+    max-width: var(--width-prose);
+    margin-top: var(--space-8);
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    line-height: var(--leading-snug);
+    color: var(--color-heading);
+  }
+
+  .closing {
+    display: grid;
+    gap: var(--space-5);
+    justify-items: start;
+    max-width: var(--width-prose);
+    margin-top: var(--section-gap);
+  }
+
+  .closing p {
+    font-size: var(--text-lg);
+    color: var(--color-text-muted);
+  }
+
+  .action {
+    margin-top: var(--space-2);
+  }
+
+  @media (max-width: 1100px) {
+    .step {
+      grid-template-columns: var(--space-9) minmax(0, 1fr);
+      column-gap: var(--space-6);
+    }
+
+    .numeral {
+      font-size: var(--text-3xl);
+    }
+
+    .body {
+      padding-left: var(--space-6);
+    }
+  }
+
+  @media (max-width: 800px) {
+    .step {
+      grid-template-columns: var(--space-8) minmax(0, 1fr);
+      column-gap: var(--space-5);
+    }
+
+    .numeral {
+      font-size: var(--text-2xl);
+      padding-block: var(--space-6);
+    }
+
+    .body {
+      padding-block: var(--space-6);
+      padding-left: var(--space-5);
+    }
+
+    .body::before {
+      top: calc(var(--space-6) + var(--space-2));
+    }
+  }
+
+  /* Phone: a plain ordered list. The numeral sits above each title and the
+     rule and marker give way to a divider between stages. */
+  @media (max-width: 520px) {
+    .steps {
+      margin-top: var(--space-7);
+    }
+
+    .step {
+      grid-template-columns: minmax(0, 1fr);
+      row-gap: var(--space-3);
+      padding-block: var(--space-6);
+    }
+
+    .numeral {
+      font-size: var(--text-xl);
+      padding-block: 0;
+    }
+
+    .body {
+      padding-block: 0;
+      padding-left: 0;
+      border-left: 0;
+    }
+
+    .body::before {
+      content: none;
+    }
+  }
+</style>
