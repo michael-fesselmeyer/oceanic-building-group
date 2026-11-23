@@ -1,0 +1,331 @@
+---
+// One page per town at /areas/<file name>/: a navy opening band, the town's
+// Markdown description beside a list of all the towns, the portfolio projects
+// that name the town, and links to the services and to contact. A town with
+// no projects says so plainly and points to the portfolio instead of showing
+// an empty section.
+import Button from '../../components/Button.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import SectionHeading from '../../components/SectionHeading.astro';
+import TextLink from '../../components/TextLink.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getProjects, getServices, getTowns, renderTownBody, type Town } from '../../lib/content';
+import { portfolioPath } from '../../lib/portfolio';
+import { servicePath, SERVICES_PATH } from '../../lib/services';
+import { contactLink } from '../../lib/site';
+import { townCrumbs } from '../../lib/structured-data';
+import { AREAS_PATH, projectsInTown, townHeading, townPath } from '../../lib/towns';
+
+export async function getStaticPaths() {
+  const towns = await getTowns();
+  return towns.map((town) => ({ params: { town: town.id }, props: { town } }));
+}
+
+interface Props {
+  town: Town;
+}
+
+const { town } = Astro.props;
+const { name, county, summary, seoDescription } = town.data;
+const heading = townHeading(name);
+
+const Body = await renderTownBody(town);
+const towns = await getTowns();
+const services = await getServices();
+const projects = projectsInTown(town.id, await getProjects());
+---
+
+<BaseLayout
+  title={heading}
+  description={seoDescription}
+  breadcrumbs={townCrumbs(name, townPath(town.id))}
+>
+  <article>
+    <header class="opening">
+      <div class="container opening-grid">
+        <p class="label kicker">
+          <a href={AREAS_PATH}>Areas We Serve</a>
+          {county && <span class="county">{county}</span>}
+        </p>
+        <h1>{heading}</h1>
+        <p class="lede">{summary}</p>
+      </div>
+    </header>
+
+    <div class="container body">
+      <nav class="siblings" aria-label="All areas">
+        <p class="label">Areas we serve</p>
+        <ul role="list">
+          {towns.map((item) => (
+            <li>
+              <a href={townPath(item.id)} aria-current={item.id === town.id ? 'page' : undefined}>
+                {item.data.name}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      <div class="prose">
+        <Body />
+      </div>
+    </div>
+
+    <section class="container projects" aria-labelledby="projects-heading">
+      <SectionHeading id="projects-heading" label="From the portfolio">
+        Projects in {name}
+      </SectionHeading>
+      {projects.length > 0 ? (
+        <ul role="list" class="project-list">
+          {projects.map((project) => (
+            <li>
+              <ProjectCard project={project} />
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p class="none">
+          The portfolio does not yet include a finished project in {name}.{' '}
+          <TextLink href={portfolioPath()}>Browse the full portfolio</TextLink> to see our work
+          elsewhere in the area, or{' '}
+          <TextLink href={contactLink.href}>tell us about your site</TextLink>.
+        </p>
+      )}
+    </section>
+
+    <section class="container services" aria-labelledby="services-heading">
+      <SectionHeading id="services-heading" label="What we build">
+        Our services
+      </SectionHeading>
+      <ul role="list" class="service-list">
+        {services.map((service) => (
+          <li>
+            <a href={servicePath(service.id)}>{service.data.title}</a>
+          </li>
+        ))}
+      </ul>
+      <p class="all">
+        <TextLink href={SERVICES_PATH}>All services</TextLink>
+      </p>
+    </section>
+
+    <aside class="closing" aria-labelledby="closing-heading">
+      <div class="container closing-grid">
+        <h2 id="closing-heading">Planning a project in {name}?</h2>
+        <p class="closing-action">
+          <Button href={contactLink.href}>{contactLink.label}</Button>
+        </p>
+      </div>
+    </aside>
+  </article>
+</BaseLayout>
+
+<style>
+  .opening {
+    padding-block: var(--space-8);
+    background: var(--color-surface-strong);
+    color: var(--color-text-on-strong);
+  }
+
+  .opening-grid {
+    max-width: var(--width-content);
+  }
+
+  .kicker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-5);
+  }
+
+  .kicker a {
+    color: var(--color-ocean-300);
+    text-decoration-line: underline;
+    text-decoration-color: transparent;
+    text-underline-offset: 0.25em;
+    transition: text-decoration-color var(--duration-fast) var(--ease-out);
+  }
+
+  .kicker a:hover {
+    text-decoration-color: currentColor;
+  }
+
+  .county {
+    color: var(--color-ocean-300);
+  }
+
+  h1 {
+    margin-top: var(--space-4);
+    color: var(--color-text-on-strong);
+    font-size: var(--text-3xl);
+  }
+
+  .lede {
+    max-width: var(--width-prose);
+    margin-top: var(--space-5);
+    font-size: var(--text-lg);
+    line-height: var(--leading-snug);
+  }
+
+  .body {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: var(--space-6);
+    padding-block: var(--space-8);
+  }
+
+  .siblings {
+    grid-column: 1 / span 3;
+    align-self: start;
+    position: sticky;
+    top: calc(var(--header-height) + var(--space-6));
+  }
+
+  .siblings .label {
+    color: var(--color-text-muted);
+  }
+
+  .siblings ul {
+    margin-top: var(--space-4);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .siblings li {
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .siblings a {
+    display: block;
+    padding-block: var(--space-3);
+    color: var(--color-text-muted);
+    text-decoration: none;
+    transition: color var(--duration-fast) var(--ease-out);
+  }
+
+  .siblings a:hover {
+    color: var(--color-heading);
+  }
+
+  .siblings a[aria-current='page'] {
+    color: var(--color-heading);
+    font-weight: 600;
+    box-shadow: inset 2px 0 0 var(--color-link);
+    padding-left: var(--space-3);
+  }
+
+  .prose {
+    grid-column: 5 / span 7;
+    max-width: var(--width-prose);
+  }
+
+  .prose > :global(p:first-child) {
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    line-height: var(--leading-snug);
+    color: var(--color-heading);
+  }
+
+  .prose :global(h2) {
+    margin-top: var(--space-7);
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--color-border);
+    font-size: var(--text-2xl);
+  }
+
+  .prose :global(p) {
+    margin-top: var(--space-4);
+  }
+
+  .prose > :global(p:first-child) {
+    margin-top: 0;
+  }
+
+  .projects,
+  .services {
+    padding-bottom: var(--section-gap);
+  }
+
+  .project-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-7) var(--space-6);
+    margin-top: var(--space-6);
+  }
+
+  .none {
+    max-width: var(--width-prose);
+    margin-top: var(--space-5);
+    color: var(--color-text-muted);
+  }
+
+  .service-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3) var(--space-6);
+    margin-top: var(--space-5);
+  }
+
+  .service-list a {
+    color: var(--color-heading);
+    font-size: var(--text-lg);
+    text-underline-offset: 0.25em;
+  }
+
+  .all {
+    margin-top: var(--space-5);
+  }
+
+  /* No fill: the footer keeps its own space above it. */
+  .closing {
+    padding-block: var(--space-7) 0;
+  }
+
+  .closing-grid {
+    display: flex;
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--color-heading);
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-5) var(--space-6);
+  }
+
+  .closing h2 {
+    font-size: var(--text-2xl);
+  }
+
+  @media (max-width: 1100px) {
+    .siblings {
+      grid-column: 1 / span 4;
+    }
+
+    .prose {
+      grid-column: 5 / span 8;
+    }
+  }
+
+  @media (max-width: 800px) {
+    .opening {
+      padding-block: var(--space-7);
+    }
+
+    .siblings,
+    .prose {
+      grid-column: 1 / -1;
+    }
+
+    .body {
+      padding-block: var(--space-7);
+    }
+
+    /* The list of areas moves below the text, as a short footer to it. */
+    .siblings {
+      position: static;
+      order: 2;
+    }
+
+    .project-list {
+      grid-template-columns: 1fr;
+      gap: var(--space-6);
+    }
+  }
+</style>

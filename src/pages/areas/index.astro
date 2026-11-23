@@ -1,0 +1,190 @@
+---
+// /areas/: the towns the business serves, as ruled rows. Each row names the
+// town, its county and a sentence about building there, and shows how many
+// portfolio projects are in it only when there are some.
+import Button from '../../components/Button.astro';
+import TextLink from '../../components/TextLink.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getProjects, getTowns } from '../../lib/content';
+import { portfolioPath } from '../../lib/portfolio';
+import { contactLink, site } from '../../lib/site';
+import { projectCountLabel, projectsInTown, townPath } from '../../lib/towns';
+
+const towns = await getTowns();
+const projects = await getProjects();
+
+const rows = towns.map((town) => ({
+  town,
+  href: townPath(town.id),
+  count: projectsInTown(town.id, projects).length,
+}));
+
+const description = `The towns we build in across ${site.serviceArea}, with notes on coastal construction, flood rules and permits for each.`;
+---
+
+<BaseLayout title="Areas We Serve" description={description}>
+  <div class="container areas">
+    <header class="head">
+      <p class="label kicker">Where we build</p>
+      <h1>Areas We Serve</h1>
+      <p class="intro">
+        {site.name} builds custom homes, renovations and commercial projects in {site.serviceArea}.
+        Each town has its own permits, flood rules and building considerations; these pages set them
+        out.
+      </p>
+    </header>
+
+    {rows.length > 0 ? (
+      <ul role="list" class="index">
+        {rows.map(({ town, href, count }) => (
+          <li class="row">
+            <div class="text">
+              <h2>
+                <a href={href}>{town.data.name}</a>
+              </h2>
+              <p class="summary">{town.data.summary}</p>
+            </div>
+            <p class="aside">
+              {town.data.county && <span class="label county">{town.data.county}</span>}
+              {count > 0 && <span class="count">{projectCountLabel(count)} in the portfolio</span>}
+            </p>
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p class="empty">The towns we serve will be listed here soon.</p>
+    )}
+
+    <aside class="closing" aria-label="Next steps">
+      <p class="closing-text">
+        Not sure whether your site is in our area?{' '}
+        <TextLink href={contactLink.href}>Ask us</TextLink>, or{' '}
+        <TextLink href={portfolioPath()}>browse the portfolio</TextLink>.
+      </p>
+      <Button href={contactLink.href}>{contactLink.label}</Button>
+    </aside>
+  </div>
+</BaseLayout>
+
+<style>
+  .areas {
+    padding-block: var(--space-8) var(--section-gap);
+  }
+
+  .head {
+    max-width: var(--width-prose);
+  }
+
+  .kicker {
+    color: var(--color-text-muted);
+  }
+
+  h1 {
+    margin-top: var(--space-4);
+    font-size: var(--text-3xl);
+  }
+
+  .intro {
+    margin-top: var(--space-5);
+    font-size: var(--text-lg);
+    line-height: var(--leading-snug);
+  }
+
+  .index {
+    margin-top: var(--space-8);
+    border-top: 1px solid var(--color-heading);
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: var(--space-5) var(--space-6);
+    align-items: baseline;
+    padding-block: var(--space-6);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .text {
+    grid-column: 1 / span 8;
+  }
+
+  h2 {
+    font-size: var(--text-2xl);
+  }
+
+  h2 a {
+    color: var(--color-heading);
+    text-decoration: none;
+  }
+
+  h2 a:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  /* The whole row is the link's target, so the click area is large. */
+  h2 a::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+
+  .row {
+    position: relative;
+  }
+
+  .summary {
+    max-width: var(--width-prose);
+    margin-top: var(--space-3);
+    color: var(--color-text-muted);
+  }
+
+  .aside {
+    grid-column: 9 / span 4;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    justify-self: end;
+    text-align: right;
+  }
+
+  .county {
+    color: var(--color-text-muted);
+  }
+
+  .count {
+    font-size: var(--text-sm);
+  }
+
+  .empty {
+    margin-top: var(--space-7);
+    color: var(--color-text-muted);
+  }
+
+  .closing {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-5) var(--space-6);
+    margin-top: var(--space-8);
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--color-heading);
+  }
+
+  @media (max-width: 800px) {
+    .areas {
+      padding-block: var(--space-7);
+    }
+
+    .text,
+    .aside {
+      grid-column: 1 / -1;
+    }
+
+    .aside {
+      justify-self: start;
+      text-align: left;
+    }
+  }
+</style>

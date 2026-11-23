@@ -3,7 +3,7 @@
 // yet (phone, license number) are `null` in src/lib/site.ts and are left
 // out here, never shown as a placeholder.
 import { formatPhone } from '../lib/seo';
-import { contactLink, navigation, site } from '../lib/site';
+import { areasLink, contactLink, navigation, site } from '../lib/site';
 
 const year = new Date().getFullYear();
 const { address } = site;
@@ -33,7 +33,7 @@ const { address } = site;
     <nav aria-label="Footer">
       <p class="label heading">Explore</p>
       <ul role="list">
-        {[...navigation, contactLink].map((item) => (
+        {[...navigation, areasLink, contactLink].map((item) => (
           <li>
             <a href={item.href}>{item.label}</a>
           </li>

@@ -22,10 +22,11 @@ import StatList from '../StatList.astro';
 import TextLink from '../TextLink.astro';
 import ProjectGallery from './ProjectGallery.astro';
 import ProjectPager from './ProjectPager.astro';
-import { PROJECT_CATEGORY_LABELS, type Project } from '../../lib/content';
+import { getTowns, PROJECT_CATEGORY_LABELS, type Project } from '../../lib/content';
 import { projectFacts } from '../../lib/project-page';
 import { site, type DesignPartner } from '../../lib/site';
 import { projectStats, visibleStats } from '../../lib/stats';
+import { townPath } from '../../lib/towns';
 
 interface Props {
   project: Project;
@@ -49,6 +50,9 @@ const {
 } = project.data;
 
 const facts = projectFacts(project.data);
+// The location links to the town's page when the project names a town that has one.
+const townId = project.data.town?.id;
+const town = townId ? (await getTowns()).find((item) => item.id === townId) : undefined;
 const statRows = projectStats(stats);
 const hasStats = visibleStats(statRows).length > 0;
 const featureList = features.map((feature) => feature.trim()).filter(Boolean);
@@ -74,7 +78,13 @@ const LONG_TITLE = 48;
           {facts.map((fact) => (
             <div>
               <dt class="label">{fact.label}</dt>
-              <dd>{fact.value}</dd>
+              <dd>
+                {town && fact.label === 'Location' ? (
+                  <a href={townPath(town.id)}>{fact.value}</a>
+                ) : (
+                  fact.value
+                )}
+              </dd>
             </div>
           ))}
         </dl>
@@ -214,6 +224,11 @@ const LONG_TITLE = 48;
   .facts dd {
     margin: 0;
     color: var(--color-heading);
+  }
+
+  .facts dd a {
+    color: inherit;
+    text-underline-offset: 0.25em;
   }
 
   /* Full bleed, cropped to a wide band so the title and photograph share the first screen. */

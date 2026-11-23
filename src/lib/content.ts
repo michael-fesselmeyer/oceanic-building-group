@@ -44,8 +44,15 @@ export async function renderServiceBody(service: Service) {
   return (await render(service)).Content;
 }
 
-export async function getTowns() {
+export type Town = CollectionEntry<'towns'>;
+
+export async function getTowns(): Promise<Town[]> {
   return (await getCollection('towns', isVisible)).sort(byOrder);
+}
+
+/** A town's Markdown description, as a component to place on the page. */
+export async function renderTownBody(town: Town) {
+  return (await render(town)).Content;
 }
 
 export async function getTeam() {
