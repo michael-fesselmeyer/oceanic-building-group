@@ -4,6 +4,7 @@ import {
   SITEVERIFY_URL,
   TEST_KEYS,
   isServiceFailure,
+  turnstileSiteKey,
   verifyTurnstile,
 } from '../../src/lib/turnstile';
 
@@ -78,5 +79,20 @@ describe('verifyTurnstile', () => {
     expect(isServiceFailure(['timeout-or-duplicate'])).toBe(false);
     expect(isServiceFailure(['invalid-input-secret'])).toBe(true);
     expect(isServiceFailure(['internal-error'])).toBe(true);
+  });
+});
+
+describe('turnstileSiteKey', () => {
+  it('uses the configured key', () => {
+    expect(turnstileSiteKey(' 0x4AAAAexample ', true)).toBe('0x4AAAAexample');
+  });
+
+  it('falls back to the always-pass test key before launch', () => {
+    expect(turnstileSiteKey(undefined, false)).toBe(TEST_KEYS.siteAlwaysPasses);
+    expect(turnstileSiteKey('', false)).toBe(TEST_KEYS.siteAlwaysPasses);
+  });
+
+  it('leaves the widget out of a launched build with no key', () => {
+    expect(turnstileSiteKey(undefined, true)).toBeNull();
   });
 });

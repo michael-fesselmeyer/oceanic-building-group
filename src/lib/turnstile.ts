@@ -90,3 +90,15 @@ export function isServiceFailure(errorCodes: string[]): boolean {
   ]);
   return errorCodes.some((code) => ours.has(code));
 }
+
+/**
+ * The widget's site key. Development and preview builds fall back to the
+ * always-pass test key so the form works with no setup. A launched build
+ * never does: a test site key with a real secret would fail every visitor, so
+ * without a configured key the widget is left out instead.
+ */
+export function turnstileSiteKey(configured: string | undefined, launched: boolean): string | null {
+  const key = configured?.trim();
+  if (key) return key;
+  return launched ? null : TEST_KEYS.siteAlwaysPasses;
+}
