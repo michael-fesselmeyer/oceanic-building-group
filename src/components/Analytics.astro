@@ -1,0 +1,11 @@
+---
+// Cloudflare Web Analytics beacon, added by BaseLayout at the end of <body>.
+// Renders nothing unless the site is launched and the token is set; see
+// src/lib/analytics.ts. A module script is deferred, so it never delays the
+// page.
+import { beacon } from '../lib/analytics';
+---
+
+{beacon && (
+  <script is:inline type="module" src={beacon.src} data-cf-beacon={beacon.config}></script>
+)}
