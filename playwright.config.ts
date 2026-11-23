@@ -18,8 +18,13 @@ const workerEnv = {
   TURNSTILE_SECRET_KEY: '1x0000000000000000000000000000000AA',
 };
 
+// Every page is checked in Chromium and in WebKit (Safari's engine), each on a 1440 x 900
+// desktop and on a phone. Tests that differ by screen size read the `isMobile` fixture, never the
+// project name.
 const desktop = { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } };
 const phone = devices['Pixel 7'];
+const desktopSafari = { ...devices['Desktop Safari'], viewport: { width: 1440, height: 900 } };
+const phoneSafari = devices['iPhone 15'];
 const intakeSpec = /intake\.spec\.ts/;
 
 export default defineConfig({
@@ -35,6 +40,9 @@ export default defineConfig({
   projects: [
     { name: 'desktop', use: desktop, testIgnore: intakeSpec },
     { name: 'phone', use: phone, testIgnore: intakeSpec },
+    { name: 'desktop-safari', use: desktopSafari, testIgnore: intakeSpec },
+    { name: 'phone-safari', use: phoneSafari, testIgnore: intakeSpec },
+    // The intake endpoint is server code: one browser is enough to post to it.
     {
       name: 'worker',
       use: { ...desktop, baseURL: `http://localhost:${workerPort}` },
