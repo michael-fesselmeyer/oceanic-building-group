@@ -20,7 +20,8 @@ into enquiries through a short intake form that notifies the office straight awa
   links, so filtering works without JavaScript. Each project has its own page at
   `/portfolio/<project>/`: a full-bleed cover, the facts, the story and features, a stacked
   gallery that opens in a lightbox (plain links to large photographs without JavaScript), and
-  links to the previous and next project.
+  links to the previous and next project. Projects still being built show dated progress updates,
+  newest first, and their cards say when they were last updated.
 - **Four service pages.** An overview and one page each for custom homes, renovations, commercial
   construction and investor partnerships, written in Markdown. Each shows related projects from
   the portfolio by category and leaves that section out when there are none.

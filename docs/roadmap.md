@@ -42,7 +42,8 @@ Project setup, design tokens, page shell, content schemas, tests, CI and reposit
 1. Portfolio index with category and status filters that work without JavaScript.
 2. Project page template: hero, gallery with a lightbox, stats, story, credits, next and previous.
 3. Project content: every completed project, with its photographs sized and described.
-4. Under-construction projects with progress photographs.
+4. Under-construction projects with progress photographs (template and display done; waiting for
+   real projects and photographs).
 
 ### 3. Company pages
 

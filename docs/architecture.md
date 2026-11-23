@@ -25,7 +25,7 @@ field fails the build.
 
 | Collection      | Holds                                                          | Used by                               |
 | --------------- | -------------------------------------------------------------- | ------------------------------------- |
-| `projects`      | Photographs, stats, story, category, town                      | Portfolio, project pages, home, towns |
+| `projects`      | Photographs, stats, story, category, town, progress updates    | Portfolio, project pages, home, towns |
 | `services`      | One page per service line                                      | Services pages, home                  |
 | `towns`         | One page per service-area town                                 | Town pages, project filters           |
 | `team`          | Name, role, optional portrait and biography; licensee details  | About                                 |
@@ -221,8 +221,9 @@ in CSS:
 `/style-guide/` shows every component and variant, including the edge cases (no caption, partial
 and empty stats, long titles, a project with no location). Check it after changing a component.
 `/style-guide/project/` shows the project page with every part filled in (gallery, design partner
-credit, both neighbors) and `/style-guide/project/sparse/` shows one with only the required
-fields. `/style-guide/interior-design/` shows the interior design page with a made-up partner,
+credit, both neighbors), `/style-guide/project/sparse/` shows one with only the required fields,
+and `/style-guide/project/progress/` shows an under-construction project with four progress
+updates written out of order, one of them without a photograph. `/style-guide/interior-design/` shows the interior design page with a made-up partner,
 credited projects, testimonials and a long biography, and `/style-guide/interior-design/no-partner/`
 shows it with no partner set. `/style-guide/home/` shows every home page section filled with
 made-up content (four featured projects, one with a long title and one with no location, and three
@@ -297,11 +298,29 @@ the content entry is the address.
   wrap: the first project has no previous link and the last has no next, so a short portfolio
   never links a project to itself. `neighbors()` in
   [`src/lib/project-page.ts`](../src/lib/project-page.ts) does this.
-- **Empty parts.** Stats, features, the gallery, the facts under the title (location, style, year),
-  the design partner credit and the neighbor links each disappear entirely when the project has
-  nothing for them.
+- **Empty parts.** Stats, features, construction progress, the gallery, the facts under the title
+  (location, style, year), the design partner credit and the neighbor links each disappear
+  entirely when the project has nothing for them.
 - **Status.** An `under-construction` project carries an "Under construction" label next to its
-  category.
+  category, on its page and on its card.
+- **Construction progress.** A project's `progress` list holds dated updates: a `date`
+  (year-month-day), a short `caption` and, usually, a `photo` with its `alt` text (the schema
+  refuses a photo without alt, or alt without a photo). While the project is `under-construction`
+  and has at least one update, its page shows a "Construction progress" section after the story,
+  with the date of the latest update beside the heading.
+  [`ProjectProgress`](../src/components/project/ProjectProgress.astro) lists the updates newest
+  first (`progressNewestFirst()` in [`src/lib/project-page.ts`](../src/lib/project-page.ts); on the
+  same day the one written later in the file comes first), each with its date in a `<time>`
+  element. Photographs are cropped to 3:2 beside their date and caption and open in the lightbox
+  with the date and caption under them; an update without a photograph is text only. Dates are
+  formatted in UTC ("March 4, 2026") so they never shift a day with the build machine's time zone.
+  Once the project is `completed`, the section is no longer shown and the updates stay in the file;
+  the gallery takes over. Project cards in the portfolio (including the "Under construction"
+  filter) and on the home page add "Updated" and that date. How to add an update, in plain words,
+  is in `src/content/projects/_template.md`.
+- **Lightbox, shared.** The dialog and its script live in
+  [`Lightbox.astro`](../src/components/project/Lightbox.astro), placed right after any list
+  that carries `data-gallery`; the gallery and the progress list both use it.
 - **Design partner.** The credit appears only when the project sets `interiorDesignPartner: true`
   and `site.designPartner` in [`src/lib/site.ts`](../src/lib/site.ts) is not `null`. It links to
   `/interior-design/`.
@@ -309,13 +328,13 @@ the content entry is the address.
   one is centered and kept within the `--photo-max-height` token. The list carries `data-gallery`
   and each item `data-gallery-item`, `data-gallery-index` and an id (`photo-1`...).
 - **Lightbox.** Each photograph links to a large version (WebP, at most 2400px wide), so with no
-  JavaScript it opens as a plain image. A short script (about sixty lines, no library) in `ProjectGallery.astro`
-  upgrades the links: a click opens the large image in a `<dialog>` (`showModal`, so focus stays
+  JavaScript it opens as a plain image. A short script (about sixty lines, no library) in
+  `Lightbox.astro` upgrades the links: a click opens the large image in a `<dialog>` (`showModal`, so focus stays
   inside and Escape closes it) with previous, next and close buttons at 48px, the arrow keys and a
   horizontal swipe, and focus returns to the photograph that opened it. The large image gets its
   address only on open and loses it on close, so nothing large loads until asked. Alt text comes
-  from the thumbnail and a caption from the item's `<figcaption>` when it has one; the gallery
-  schema has no caption field yet, so none appears today. Modified clicks (new tab) are left alone.
+  from the thumbnail and a caption from the item's `<figcaption>` when it has one; gallery
+  photographs have no caption field yet, while progress photographs show their date and caption. Modified clicks (new tab) are left alone.
   `tests/e2e/lightbox.spec.ts` covers the no-script links, open, arrow keys, buttons, Escape and
   focus, swipe, captions and axe, against the style guide's project example.
 - **Sharing.** The cover, cropped to 1200 x 630, is the page's share image. The description is
