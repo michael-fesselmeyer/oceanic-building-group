@@ -1,0 +1,166 @@
+---
+// The short version of Our Process on the home page: every stage's title in
+// order along a ruled timeline, on a sand band, linking to /process/ for the
+// details. A stage shows its typical length only when its file has one.
+//
+//   steps  The stages in order. With none, nothing is rendered.
+//
+// The timeline is one row on wide screens, four and then two columns on
+// narrower ones, and a plain list on phones.
+import SectionHeading from '../SectionHeading.astro';
+import TextLink from '../TextLink.astro';
+import { listNumber, type HomeStep } from '../../lib/home';
+
+interface Props {
+  steps: HomeStep[];
+}
+
+const { steps } = Astro.props;
+---
+
+{steps.length > 0 && (
+  <section class="home-process" aria-labelledby="process-heading">
+    <div class="container">
+      <div class="head">
+        <SectionHeading id="process-heading" label="Our process">
+          How a build unfolds
+        </SectionHeading>
+        <p class="head-text">Every project moves through the same stages, in the same order.</p>
+      </div>
+      <ol role="list" class="timeline">
+        {steps.map((step, index) => (
+          <li class="stage">
+            <span class="number label" aria-hidden="true">
+              {listNumber(index)}
+            </span>
+            <p class="title">{step.title}</p>
+            {step.duration?.trim() && (
+              <p class="duration">
+                <span class="visually-hidden">Typical length: </span>
+                {step.duration.trim()}
+              </p>
+            )}
+          </li>
+        ))}
+      </ol>
+      <p class="more">
+        <TextLink href="/process/">See each stage in detail</TextLink>
+      </p>
+    </div>
+  </section>
+)}
+
+<style>
+  .home-process {
+    margin-top: var(--section-gap);
+    padding-block: var(--section-gap);
+    background: var(--color-surface);
+  }
+
+  .head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    justify-content: space-between;
+    gap: var(--space-5) var(--space-7);
+  }
+
+  .head-text {
+    max-width: 30ch;
+    color: var(--color-text-muted);
+  }
+
+  .timeline {
+    display: grid;
+    grid-auto-columns: minmax(0, 1fr);
+    grid-auto-flow: column;
+    margin-top: var(--space-8);
+  }
+
+  /* Each stage owns a stretch of the rule, with a marker where it starts. */
+  .stage {
+    position: relative;
+    display: grid;
+    align-content: start;
+    gap: var(--space-2);
+    padding: var(--space-5) var(--space-5) 0 0;
+    border-top: 1px solid var(--color-heading);
+  }
+
+  .stage::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: var(--space-3);
+    height: var(--space-3);
+    border-radius: var(--radius-pill);
+    background: var(--color-link);
+    transform: translateY(-50%);
+  }
+
+  .number {
+    color: var(--color-link);
+  }
+
+  /* Plain text, not headings: seven tiny headings would only crowd a screen reader's outline. */
+  .title {
+    color: var(--color-heading);
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+    line-height: var(--leading-snug);
+  }
+
+  .duration {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
+
+  .more {
+    margin-top: var(--space-7);
+  }
+
+  @media (max-width: 1100px) {
+    .timeline {
+      grid-auto-flow: row;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      row-gap: var(--space-7);
+    }
+  }
+
+  @media (max-width: 800px) {
+    .timeline {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: var(--space-5);
+      margin-top: var(--space-7);
+    }
+  }
+
+  /* Phones: a plain list, the number beside the title. */
+  @media (max-width: 520px) {
+    .timeline {
+      grid-template-columns: minmax(0, 1fr);
+      row-gap: 0;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .stage {
+      grid-template-columns: var(--space-7) minmax(0, 1fr);
+      column-gap: var(--space-3);
+      padding: var(--space-4) 0;
+      border-top-color: var(--color-border);
+    }
+
+    .stage::before {
+      content: none;
+    }
+
+    .number {
+      padding-top: var(--space-1);
+    }
+
+    .duration {
+      grid-column: 2;
+    }
+  }
+</style>
