@@ -1,0 +1,78 @@
+---
+// The heading that opens a page section: an optional small label above a
+// serif heading ("Selected work" under "PORTFOLIO").
+//
+//   level  Heading level, 2 by default. Pick the level that keeps the page's
+//          headings in order; the size follows the level.
+//   label  Small capitals line above the heading. Left out when empty.
+//   id     Put on the heading, so the section can use aria-labelledby.
+//   align  "start" (default) or "center".
+//
+// The heading text goes in the default slot.
+interface Props {
+  level?: 2 | 3 | 4;
+  label?: string | null;
+  id?: string;
+  align?: 'start' | 'center';
+}
+
+const { level = 2, label, id, align = 'start' } = Astro.props;
+const Heading = `h${level}` as const;
+const hasLabel = Boolean(label?.trim());
+---
+
+{hasLabel ? (
+  <hgroup class:list={['section-heading', align]}>
+    <p class="label">{label}</p>
+    <Heading id={id}>
+      <slot />
+    </Heading>
+  </hgroup>
+) : (
+  <Heading class:list={['section-heading', align]} id={id}>
+    <slot />
+  </Heading>
+)}
+
+<style>
+  hgroup {
+    display: grid;
+    gap: var(--space-4);
+    margin: 0;
+  }
+
+  .label {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    color: var(--color-link);
+  }
+
+  /* A short rule leads into the label, like a caption mark in print. */
+  .label::before {
+    content: '';
+    width: var(--space-6);
+    border-top: 1px solid currentColor;
+  }
+
+  .section-heading :is(h2, h3, h4),
+  :is(h2, h3, h4).section-heading {
+    max-width: var(--measure-heading);
+  }
+
+  .center {
+    justify-items: center;
+    text-align: center;
+  }
+
+  .center :is(h2, h3, h4),
+  :is(h2, h3, h4).center {
+    margin-inline: auto;
+  }
+
+  @media (max-width: 520px) {
+    hgroup {
+      gap: var(--space-3);
+    }
+  }
+</style>

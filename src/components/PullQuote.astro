@@ -1,0 +1,94 @@
+---
+// A quote set large: a client testimonial, or a line lifted from a project
+// story. One per section at most, so it keeps its weight.
+//
+//   attribution  Who said it, as the client agreed to be named
+//                ("Homeowner, Juno Beach"). Left out when empty.
+//   source       Optional context after the attribution, for example the
+//                project name.
+//
+// The quote goes in the default slot, without quotation marks; the
+// component adds them.
+interface Props {
+  attribution?: string | null;
+  source?: string | null;
+}
+
+const { attribution, source } = Astro.props;
+// Trimmed so the quotation marks sit tight against the words.
+const quote = (await Astro.slots.render('default')).trim();
+const who = attribution?.trim();
+const where = source?.trim();
+---
+
+<figure class="pull-quote">
+  <blockquote>
+    <p set:html={quote} />
+  </blockquote>
+  {who && (
+    <figcaption class="label">
+      {who}
+      {where && <span class="source">{where}</span>}
+    </figcaption>
+  )}
+</figure>
+
+<style>
+  .pull-quote {
+    display: grid;
+    gap: var(--space-5);
+    max-width: var(--width-prose);
+    margin: 0;
+    padding-left: var(--space-6);
+    border-left: 1px solid var(--color-link);
+  }
+
+  blockquote {
+    margin: 0;
+  }
+
+  blockquote p {
+    color: var(--color-heading);
+    font-family: var(--font-display);
+    font-size: var(--text-2xl);
+    font-style: italic;
+    line-height: var(--leading-snug);
+    text-wrap: pretty;
+  }
+
+  /* Hanging punctuation keeps the opening mark outside the text edge. */
+  blockquote p::before {
+    content: '\201C';
+    margin-left: calc(-1 * var(--hang-quote));
+  }
+
+  blockquote p::after {
+    content: '\201D';
+  }
+
+  figcaption {
+    color: var(--color-text-muted);
+  }
+
+  .source {
+    font-weight: 400;
+    letter-spacing: normal;
+    text-transform: none;
+  }
+
+  .source::before {
+    content: ', ';
+  }
+
+  @media (max-width: 800px) {
+    .pull-quote {
+      padding-left: var(--space-5);
+    }
+  }
+
+  @media (max-width: 520px) {
+    blockquote p {
+      font-size: var(--text-xl);
+    }
+  }
+</style>

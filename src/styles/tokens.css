@@ -61,6 +61,9 @@
   /* Small capitals labels ("RESIDENTIAL", "VIEW PROJECT"). */
   --tracking-label: 0.16em;
 
+  /* How far an opening quotation mark hangs into the margin. */
+  --hang-quote: 0.45em;
+
   /* Spacing scale. */
   --space-1: 0.25rem;
   --space-2: 0.5rem;
@@ -80,6 +83,8 @@
   --page-gutter: clamp(1rem, 4vw, 4rem);
   --width-content: 76rem;
   --width-prose: 42rem;
+  /* Line length for section headings, in characters of the heading's own size. */
+  --measure-heading: 24ch;
 
   --radius-sm: 2px;
   --radius-pill: 999px;
