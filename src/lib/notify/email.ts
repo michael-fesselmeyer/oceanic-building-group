@@ -32,20 +32,41 @@ function followUpLines(answers: readonly FollowUpAnswer[]): string[] {
     'About the project:',
     ...answers.map(({ field, answer }) => {
       const label = followUps.find((question) => question.field === field)?.summary ?? field;
-      return `${label}: ${answer}`;
+      return `${label}: ${oneLine(answer)}`;
     }),
   ];
 }
 
-/** Line breaks would let a visitor's text break out of a header line. */
+/**
+ * Unicode direction controls. In a visitor's text they would reverse how the
+ * rest of a line is displayed, so a name could disguise the subject.
+ */
+const DIRECTION_CONTROLS = /[\u061C\u200E\u200F\u202A-\u202E\u2066-\u2069]/gu;
+
+/** Removes direction controls and every control character except white space (tab, line break). */
+function withoutControls(text: string): string {
+  return text.replace(DIRECTION_CONTROLS, '').replace(/[^\P{Cc}\s]/gu, '');
+}
+
+/**
+ * A visitor's text for one line (the subject, a "Name:" line): line breaks
+ * would let it break out of a header line, and other control characters have
+ * no place in an email.
+ */
 function oneLine(text: string): string {
-  return text.replace(/\s+/g, ' ').trim();
+  return withoutControls(text).replace(/\s+/g, ' ').trim();
+}
+
+/** A visitor's message: line breaks kept, other control characters removed. */
+function plainText(text: string): string {
+  return withoutControls(text.replace(/\r\n?/g, '\n')).trim();
 }
 
 /**
  * The subject and plain-text body. The body depends only on the submission,
  * never on the time it was sent, so a resent form produces the same request
- * and the provider's idempotency check can recognise it.
+ * and the provider's idempotency check can recognise it. The spam-check line
+ * comes before anything the visitor wrote, so their text cannot imitate it.
  */
 export function formatLeadEmail(lead: Lead): { subject: string; text: string } {
   const { intake, spamCheck } = lead;
@@ -57,21 +78,21 @@ export function formatLeadEmail(lead: Lead): { subject: string; text: string } {
 
   const text = [
     'A new enquiry came in through the website contact form.',
-    '',
-    `Name: ${name}`,
-    `Email: ${intake.email}`,
-    `Phone: ${intake.phone ?? 'not given'}`,
-    `Project: ${project}`,
-    '',
-    'Message:',
-    intake.message,
-    ...followUpLines(intake.followUps),
-    '',
-    '--',
     spamCheck === 'passed'
       ? 'Spam check: passed.'
       : 'Spam check: not run, because the visitor’s browser had JavaScript turned off. ' +
         'Treat with care if it looks automated.',
+    '',
+    `Name: ${name}`,
+    `Email: ${oneLine(intake.email)}`,
+    `Phone: ${intake.phone ? oneLine(intake.phone) : 'not given'}`,
+    `Project: ${project}`,
+    '',
+    'Message:',
+    plainText(intake.message),
+    ...followUpLines(intake.followUps),
+    '',
+    '--',
     `Reply to this email to answer ${name} directly.`,
   ].join('\n');
 
