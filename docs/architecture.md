@@ -820,7 +820,11 @@ A text message to the office phone when an enquiry arrives, through Twilio
 [`.env.example`](../.env.example): from `.dev.vars` locally and the Worker's encrypted settings in
 production, through `getSecret()` from `astro:env/server`. A built site gets no defaults, so a
 missing secret logs `[intake] not configured:` with the variable names (never values) and the
-visitor gets the form back instead of a silent loss.
+visitor gets the form back instead of a silent loss. A launched build (`PUBLIC_SITE_LAUNCHED=true`)
+also refuses the two settings meant only for development and tests, the same way: a Cloudflare
+Turnstile test secret (the spam check would answer it without asking Cloudflare) and
+`EMAIL_TRANSPORT=log` (every enquiry would go to the log). Preview builds and the browser tests are
+not launched, so they keep using both.
 
 Every log line starts with `[intake]` and holds no personal data: names shortened to an initial,
 email addresses to `d***@***.test`, phone numbers to their last two digits, messages to their
