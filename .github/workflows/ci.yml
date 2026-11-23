@@ -77,6 +77,11 @@ jobs:
       - run: npm run build
         env:
           PUBLIC_SITE_LAUNCHED: 'true'
+      # The sitemap exists only on the launched build; check its contents here.
+      - name: Sitemap and robots.txt
+        run: npx playwright test tests/e2e/sitemap.spec.ts --project=desktop
+        env:
+          PUBLIC_SITE_LAUNCHED: 'true'
       - run: npx --yes @lhci/cli@0.16.1 autorun
       - name: Save reports
         if: always()
