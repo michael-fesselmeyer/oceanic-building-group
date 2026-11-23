@@ -14,6 +14,9 @@ into enquiries through a short intake form that notifies the office straight awa
   data, and a performance budget enforced in CI.
 - **Desktop and phone as equals.** The wide layout is designed for large screens; media queries
   simplify it for tablets and phones.
+- **Plain-language legal pages.** A privacy policy and terms of use, in their own reading layout
+  and linked from every footer. The privacy text describes the site as built (no cookies, no
+  stored submissions), so it changes whenever that does.
 - **Safe to maintain.** Content lives in Markdown with a strict schema, so a mistake fails the
   build instead of breaking the live site.
 
@@ -68,7 +71,7 @@ src/
   assets/        Photographs and brand files (optimized at build time)
   components/    Reusable pieces of a page
   content/       One folder per content type, one Markdown file per item
-  layouts/       The page shell
+  layouts/       The page shell and the legal reading layout
   lib/           Business facts, content access and pure helpers
   pages/         One file per address
   styles/        Design tokens and element defaults

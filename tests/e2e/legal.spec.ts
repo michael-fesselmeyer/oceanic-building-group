@@ -59,8 +59,8 @@ for (const { path, heading, footerLink } of pages) {
   });
 }
 
-test('the privacy page leaves out a phone number that is not published', async ({ page }) => {
+test('unknown business facts never show as placeholders', async ({ page }) => {
   await page.goto('/privacy/');
-  await expect(page.locator('address')).not.toContainText(/\(\d{3}\) \d{3}-\d{4}/);
-  await expect(page.locator('address')).not.toContainText('null');
+  const text = await page.locator('address').innerText();
+  expect(text).not.toMatch(/null|undefined/);
 });

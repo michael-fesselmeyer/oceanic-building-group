@@ -84,6 +84,19 @@ Planned design (see the roadmap for status):
 
 Recipients and keys are secrets, listed by name in [`.env.example`](../.env.example).
 
+## Legal pages
+
+`/privacy/` and `/terms/` are ordinary pages that share the reading layout in
+[`src/layouts/LegalLayout.astro`](../src/layouts/LegalLayout.astro). Each page passes its own
+"last updated" date and list of sections. The business name and address come from
+[`src/lib/site.ts`](../src/lib/site.ts); a phone number that is `null` is left out.
+
+The privacy text states facts about how the site behaves: the intake form is the only personal
+data collected, it is emailed and not stored, no cookies are set, analytics (if added) are
+cookieless, and Cloudflare Turnstile checks the form. A change that makes any of these untrue,
+such as storing leads, setting a cookie or adding a third-party script, updates the privacy page
+and its date in the same pull request. The business reviews both texts before launch.
+
 ## Quality gates
 
 | Gate                         | Tool                    | Where        |
