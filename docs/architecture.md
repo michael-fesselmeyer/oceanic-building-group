@@ -1042,9 +1042,11 @@ practices and SEO. A page that misses the budget is fixed, never excused.
   while the repository was private and minutes were limited, but a single sample on a shared
   runner is noisy: pages that score 97 to 100 missed the budget several times on runs where the
   runner itself was slow (its benchmark index halved, or a second of browser-internal work with
-  the site's scripts unchanged). Each page now runs three times and the assertions use the median
-  run (`aggregationMethod: "median-run"`). The budget is unchanged and every assertion is still an
-  error. The job takes about eleven minutes; its time limit is 25. A page that misses on the
+  the site's scripts unchanged). Each page now runs three times and each asserted score is the
+  median of its three values (`aggregationMethod: "median"`). Not `"median-run"`: that picks one
+  representative run by its load timings, and when the three runs load alike it can pick the
+  slowest (0.93 asserted from runs of 0.93, 0.99 and 0.99). The budget is unchanged and every
+  assertion is still an error. The job takes about eleven minutes; its time limit is 25. A page that misses on the
   median of three is a real regression.
 - **Warm runner.** The first audit in a job ran on a cold runner and measured 7 to 15 times the
   style and layout work of the same page audited right after it (issue #72), so whichever page
