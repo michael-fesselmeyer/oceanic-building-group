@@ -73,6 +73,10 @@ const path = Astro.url.pathname;
   }
 
   .site-header {
+    /* Also declared here for browsers without @property, where the registered initial value
+       above does not exist and every color below would be invalid. A running animation still
+       overrides it. */
+    --header-solid: 1;
     --header-strong: color-mix(
       in srgb,
       var(--color-heading) calc(var(--header-solid) * 100%),
@@ -244,44 +248,87 @@ const path = Astro.url.pathname;
 
   /* Tablet and phone: the navigation becomes a full-width sheet. */
   @media (max-width: 800px) {
-    .menu-button {
-      display: block;
+    /* Without popover support (Safari before 17 and other older browsers) the Menu button could
+       not open anything: it stays hidden, the links wrap under the wordmark instead, and the
+       taller header scrolls away rather than staying stuck to the top. The block below
+       replaces this with the menu wherever popover works. */
+    .site-header {
+      position: relative;
     }
 
-    .site-nav:not(:popover-open) {
+    .menu-button {
       display: none;
     }
 
-    .site-nav:popover-open {
-      position: fixed;
-      inset: var(--header-height) 0 auto 0;
+    .site-nav {
+      flex-wrap: wrap;
       width: 100%;
-      max-width: none;
-      flex-direction: column;
-      align-items: stretch;
-      gap: var(--space-5);
-      padding: var(--space-6) var(--page-gutter) var(--space-7);
-      background: var(--color-page);
-      border-bottom: 1px solid var(--color-border);
+      gap: var(--space-3) var(--space-5);
+    }
+
+    .bar {
+      flex-wrap: wrap;
+      height: auto;
+      min-height: var(--header-height);
+      padding-block: var(--space-3);
+      row-gap: var(--space-2);
     }
 
     .site-nav ul {
-      flex-direction: column;
-      gap: 0;
+      flex-wrap: wrap;
+      gap: var(--space-2) var(--space-5);
     }
 
-    .site-nav li a {
-      display: block;
-      padding-block: var(--space-4);
-      font-family: var(--font-display);
-      font-size: var(--text-xl);
-      border-bottom: 1px solid var(--color-border);
-      text-underline-offset: 0.3em;
-    }
+    @supports selector(:popover-open) {
+      .site-header {
+        position: sticky;
+      }
 
-    .contact-button {
-      text-align: center;
-      padding-block: var(--space-4);
+      .bar {
+        flex-wrap: nowrap;
+        height: var(--header-height);
+        padding-block: 0;
+      }
+
+      .menu-button {
+        display: block;
+      }
+
+      .site-nav:not(:popover-open) {
+        display: none;
+      }
+
+      .site-nav:popover-open {
+        position: fixed;
+        inset: var(--header-height) 0 auto 0;
+        width: 100%;
+        max-width: none;
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--space-5);
+        padding: var(--space-6) var(--page-gutter) var(--space-7);
+        background: var(--color-page);
+        border-bottom: 1px solid var(--color-border);
+      }
+
+      .site-nav ul {
+        flex-direction: column;
+        gap: 0;
+      }
+
+      .site-nav li a {
+        display: block;
+        padding-block: var(--space-4);
+        font-family: var(--font-display);
+        font-size: var(--text-xl);
+        border-bottom: 1px solid var(--color-border);
+        text-underline-offset: 0.3em;
+      }
+
+      .contact-button {
+        text-align: center;
+        padding-block: var(--space-4);
+      }
     }
   }
 </style>
