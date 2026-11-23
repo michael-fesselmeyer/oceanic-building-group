@@ -61,6 +61,21 @@ export const messages = {
   messageTooLong: `Please keep your message under ${limits.message.max.toLocaleString('en-US')} characters.`,
 } as const;
 
+/**
+ * What a visitor is told when the form comes back after sending, above the
+ * form, which keeps everything they typed.
+ */
+export const notices = {
+  spamCheckFailed:
+    'We could not confirm that this form was sent by a person. Please check the box below if one appears, then send it again.',
+  spamCheckNeedsScript:
+    'Our spam check needs JavaScript, which seems to be turned off in your browser. Please turn it on and send again, or get in touch using the office details on this page.',
+  unavailable:
+    'Sorry, we could not send your enquiry just now. Nothing you typed has been lost. Please try again in a few minutes, or get in touch using the office details on this page.',
+} as const;
+
+export type Notice = keyof typeof notices;
+
 export const intakeSchema = z.object({
   name: z
     .string({ error: messages.nameRequired })
