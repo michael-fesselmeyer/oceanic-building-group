@@ -1,6 +1,7 @@
 ---
 // Everything on a project page below the site header: title and facts, the
-// full-bleed cover photograph, stats, story and features, the gallery, the
+// full-bleed cover photograph, stats, story and features, construction
+// progress (under-construction projects only), the gallery, the
 // interior design credit and the links to the neighboring projects. Used by
 // src/pages/portfolio/[project].astro, and by the style guide with made-up
 // projects to show the edge cases.
@@ -15,16 +16,22 @@
 // The project's story (its Markdown body) goes in the default slot. An
 // empty story is left out.
 //
-// Every optional part (stats, features, gallery, credit, neighbors) is left
-// out entirely when the project has nothing for it.
+// Every optional part (stats, features, progress, gallery, credit, neighbors)
+// is left out entirely when the project has nothing for it.
 import Photo from '../Photo.astro';
 import StatList from '../StatList.astro';
 import TextLink from '../TextLink.astro';
 import ProjectGallery from './ProjectGallery.astro';
 import ProjectPager from './ProjectPager.astro';
+import ProjectProgress from './ProjectProgress.astro';
 import { getTowns, PROJECT_CATEGORY_LABELS, type Project } from '../../lib/content';
 import { PROJECT_TRANSITION_CLASS, projectTransitionName } from '../../lib/motion';
-import { projectFacts } from '../../lib/project-page';
+import {
+  formatProgressDate,
+  isoDay,
+  latestProgressDate,
+  projectFacts,
+} from '../../lib/project-page';
 import { site, type DesignPartner } from '../../lib/site';
 import { projectStats, visibleStats } from '../../lib/stats';
 import { townPath } from '../../lib/towns';
@@ -48,6 +55,7 @@ const {
   stats,
   features,
   interiorDesignPartner,
+  progress,
 } = project.data;
 
 const facts = projectFacts(project.data);
@@ -60,6 +68,8 @@ const featureList = features.map((feature) => feature.trim()).filter(Boolean);
 const partner = interiorDesignPartner ? designPartner : null;
 const hasAside = featureList.length > 0 || partner !== null;
 const underConstruction = status === 'under-construction';
+// Progress is shown only while the project is being built.
+const lastUpdate = latestProgressDate(project.data);
 // Rendered here so a project with an empty body leaves no empty wrapper.
 const story = (await Astro.slots.render('default')).trim();
 /** Titles past this length drop a size, so the headline stays within about three lines. */
@@ -147,6 +157,20 @@ const LONG_TITLE = 48;
       </aside>
     )}
   </div>
+
+  {lastUpdate && (
+    <section class="container progress-band" aria-labelledby="progress-heading">
+      <div class="progress-head">
+        <h2 class="label section-label" id="progress-heading">
+          Construction progress
+        </h2>
+        <p class="updated">
+          Last updated <time datetime={isoDay(lastUpdate)}>{formatProgressDate(lastUpdate)}</time>
+        </p>
+      </div>
+      <ProjectProgress updates={progress} label={`Progress at ${title}`} />
+    </section>
+  )}
 
   {gallery.length > 0 && (
     <section class="gallery-band" aria-labelledby="gallery-heading">
@@ -313,6 +337,24 @@ const LONG_TITLE = 48;
 
   .credit p {
     margin-top: var(--space-4);
+  }
+
+  .progress-band {
+    margin-top: var(--section-gap);
+  }
+
+  .progress-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-2) var(--space-5);
+    margin-bottom: var(--space-5);
+  }
+
+  .updated {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
   }
 
   .gallery-band {
