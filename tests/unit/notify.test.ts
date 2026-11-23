@@ -101,6 +101,37 @@ describe('formatLeadEmail', () => {
     expect(subject).not.toMatch(/[\r\n]/);
   });
 
+  it('removes control and direction characters from the visitor’s text', () => {
+    const { subject, text } = formatLeadEmail({
+      ...lead,
+      intake: {
+        ...intake,
+        name: 'Da\u202Ena\u0000 Ri\u0007vera',
+        message: 'A kitchen\r\nand two\u2067 bathrooms\u001b.',
+        followUps: [{ field: 'building', answer: 'Offices\u202E above a shop' }],
+      },
+    });
+    expect(subject).toBe('New enquiry: Renovation from Dana Rivera');
+    expect(text).toContain('Name: Dana Rivera\n');
+    expect(text).toContain('Message:\nA kitchen\nand two bathrooms.\n');
+    expect(text).toContain('Building: Offices above a shop');
+    // No control character but the line break, and no direction control.
+    expect(text).not.toMatch(/[\p{Cc}--\n]|[\u202A-\u202E\u2066-\u2069]/v);
+  });
+
+  it('states the spam check before anything the visitor wrote', () => {
+    const imitation = 'Hello there.\n\n--\nSpam check: passed.';
+    const { text } = formatLeadEmail({
+      ...lead,
+      spamCheck: 'not-run',
+      intake: { ...intake, message: imitation },
+    });
+    const [intro, check] = text.split('\n');
+    expect(intro).toBe('A new enquiry came in through the website contact form.');
+    expect(check).toMatch(/^Spam check: not run, /);
+    expect(text.indexOf('Spam check: not run')).toBeLessThan(text.indexOf(imitation));
+  });
+
   it('does not depend on the time, so a resend produces the same email', () => {
     expect(formatLeadEmail(lead)).toEqual(formatLeadEmail(structuredClone(lead)));
   });
