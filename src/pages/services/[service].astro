@@ -20,6 +20,7 @@ import {
   servicePath,
 } from '../../lib/services';
 import { contactLink } from '../../lib/site';
+import { serviceCrumbs } from '../../lib/structured-data';
 
 export async function getStaticPaths() {
   const services = await getServices();
@@ -51,7 +52,11 @@ const slotSizes = [
 ];
 ---
 
-<BaseLayout title={title} description={seoDescription}>
+<BaseLayout
+  title={title}
+  description={seoDescription}
+  breadcrumbs={serviceCrumbs(title, servicePath(service.id))}
+>
   <article>
     <header class="opening">
       <div class="container opening-grid">

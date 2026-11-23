@@ -2,6 +2,7 @@
 // Everything search engines and link previews read from <head>.
 import { canonicalUrl, DEFAULT_SHARE_IMAGE, pageTitle, shareImageUrl } from '../lib/seo';
 import { launched, site } from '../lib/site';
+import { pageGraph, serializeJsonLd, type Crumb, type JsonLd } from '../lib/structured-data';
 
 interface Props {
   /** Page name. Leave out on the home page. */
@@ -11,9 +12,13 @@ interface Props {
   image?: string;
   /** Keeps this page out of search engines even after launch. */
   noindex?: boolean;
+  /** Trail from the home page down to this page, for nested pages. */
+  breadcrumbs?: Crumb[];
+  /** Extra JSON-LD nodes for this page, such as a project description. */
+  structuredData?: JsonLd[];
 }
 
-const { title, description, image, noindex = false } = Astro.props;
+const { title, description, image, noindex = false, breadcrumbs, structuredData } = Astro.props;
 const fullTitle = pageTitle(site.name, title, site.tagline);
 const canonical = canonicalUrl(Astro.url.pathname, Astro.site ?? Astro.url.origin);
 const shareImage = shareImageUrl(image, Astro.site ?? Astro.url.origin);
@@ -21,6 +26,13 @@ const shareImage = shareImageUrl(image, Astro.site ?? Astro.url.origin);
 const isDefaultImage = !image?.trim();
 const defaultImageAlt = `${site.name} wordmark in white on navy, with the line “${site.tagline}”`;
 const hidden = noindex || !launched;
+const graph = pageGraph({
+  facts: site,
+  siteUrl: Astro.site ?? Astro.url.origin,
+  pathname: Astro.url.pathname,
+  breadcrumbs,
+  nodes: structuredData,
+});
 ---
 
 <title>{fullTitle}</title>
@@ -42,3 +54,5 @@ const hidden = noindex || !launched;
   </>
 )}
 <meta name="twitter:card" content="summary_large_image" />
+
+<script type="application/ld+json" set:html={serializeJsonLd(graph)} />

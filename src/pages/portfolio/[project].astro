@@ -7,6 +7,8 @@ import ProjectArticle from '../../components/project/ProjectArticle.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getProjects, renderProjectStory, type Project } from '../../lib/content';
 import { neighbors } from '../../lib/project-page';
+import { site } from '../../lib/site';
+import { projectCrumbs, projectJsonLd } from '../../lib/structured-data';
 
 export async function getStaticPaths() {
   const projects = await getProjects();
@@ -23,7 +25,7 @@ interface Props {
 }
 
 const { project, previous, next } = Astro.props;
-const { title, summary, seoDescription, cover } = project.data;
+const { title, summary, seoDescription, cover, coverAlt, location, completedYear } = project.data;
 const Story = await renderProjectStory(project);
 
 // Link previews show the cover, cropped to the 1200 x 630 card size.
@@ -34,9 +36,39 @@ const shareImage = await getImage({
   fit: 'cover',
   format: 'jpg',
 });
+
+// The main photograph, at its own proportions, for the structured data.
+const mainPhoto = await getImage({ src: cover, width: 1600, format: 'jpg' });
+const path = `/portfolio/${project.id}/`;
+const structuredData = [
+  projectJsonLd(
+    {
+      name: title,
+      description: seoDescription ?? summary,
+      path,
+      location,
+      image: {
+        url: mainPhoto.src,
+        width: Number(mainPhoto.attributes.width),
+        height: Number(mainPhoto.attributes.height),
+        alt: coverAlt,
+      },
+      completedYear,
+      // Credited on the page only when the project is marked for it.
+      designPartner: project.data.interiorDesignPartner ? site.designPartner : null,
+    },
+    Astro.site ?? Astro.url.origin,
+  ),
+];
 ---
 
-<BaseLayout title={title} description={seoDescription ?? summary} image={shareImage.src}>
+<BaseLayout
+  title={title}
+  description={seoDescription ?? summary}
+  image={shareImage.src}
+  breadcrumbs={projectCrumbs(title, path)}
+  structuredData={structuredData}
+>
   <ProjectArticle project={project} previous={previous} next={next}>
     <Story />
   </ProjectArticle>
