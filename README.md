@@ -38,6 +38,9 @@ into enquiries through a short intake form that notifies the office straight awa
 - **Plain-language legal pages.** A privacy policy and terms of use, in their own reading layout
   and linked from every footer. The privacy text describes the site as built (no cookies, no
   stored submissions), so it changes whenever that does.
+- **Visitor statistics without cookies.** Once launched, and once its token is set, every page
+  carries Cloudflare Web Analytics: no cookies, no consent banner, and a privacy page that
+  describes it only while it is on.
 - **Safe to maintain.** Content lives in Markdown with a strict schema, so a mistake fails the
   build instead of breaking the live site.
 
@@ -88,6 +91,10 @@ at `http://localhost:4321/style-guide/`. The project page template with made-up 
 
 Secrets are never committed. [.env.example](.env.example) lists the variable names; real values
 go in a git-ignored `.dev.vars` file locally and in Cloudflare's encrypted settings in production.
+
+`PUBLIC_CF_ANALYTICS_TOKEN` turns on the analytics beacon in a launched build. It is public (it
+appears in every page) and is set in the build settings once the owner adds the site in Cloudflare
+Web Analytics; see [ADR 3](docs/adr/0003-cookieless-analytics.md).
 
 ## Project layout
 
