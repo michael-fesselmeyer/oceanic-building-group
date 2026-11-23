@@ -125,6 +125,29 @@ content files by relative path. Astro generates responsive sizes in modern forma
 and writes width and height attributes, which prevents layout shift. Components must pass
 `widths` and `sizes` so phones download a small file.
 
+## Portfolio pages
+
+`/portfolio/` and one page per filter (`/portfolio/custom-homes/`, `/renovations/`, `/commercial/`
+and `/under-construction/`) share [`PortfolioLayout`](../src/layouts/PortfolioLayout.astro). The
+filters are defined in [`src/lib/portfolio.ts`](../src/lib/portfolio.ts): each has a slug, a
+label, its own title and description, and a rule for which projects it shows.
+
+- **No JavaScript.** The filter bar is a list of links to prerendered pages, with `aria-current`
+  on the current one. Each filter page has its own title, description and canonical address, and
+  the index links to all of them, so crawlers find them.
+- **Filters with no projects are not offered.** The bar lists only filters that match at least
+  one project, and is left out when no filter would narrow the list (for example when every
+  project is a custom home). A filter page whose list is empty still builds, shows a short
+  message with a link back, and is marked `noindex`.
+- **Static files, not a dynamic route.** The filter pages are separate `.astro` files so they take
+  priority over the project page at `/portfolio/[project]/`. A project whose id equals a filter
+  slug would therefore be unreachable, and a unit test fails if one is added.
+- **Layout.** Cards repeat a pattern of four widths on a 12-column grid (8, 4, 5, 7) and become one
+  column at 800px. Cards are `ProjectCard`s, so a cover, category and title are all one link.
+
+To add a filter, add it to `PORTFOLIO_FILTERS`, add a page next to the others that passes it to
+`PortfolioLayout`, and add it to the filter list in `tests/e2e/portfolio.spec.ts`.
+
 ## Intake form
 
 Planned design (see the roadmap for status):
