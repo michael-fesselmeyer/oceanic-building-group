@@ -239,15 +239,10 @@ const path = Astro.url.pathname;
     );
   }
 
+  /* Small laptops, tablets and phones: the navigation becomes a full-width sheet. The wordmark,
+     the five links and the contact button need about 960px in one line, so below that the links
+     wrapped and the bar pushed the page sideways; 1100px is the breakpoint above it. */
   @media (max-width: 1100px) {
-    .site-nav,
-    .site-nav ul {
-      gap: var(--space-5);
-    }
-  }
-
-  /* Tablet and phone: the navigation becomes a full-width sheet. */
-  @media (max-width: 800px) {
     /* Without popover support (Safari before 17 and other older browsers) the Menu button could
        not open anything: it stays hidden, the links wrap under the wordmark instead, and the
        taller header scrolls away rather than staying stuck to the top. The block below

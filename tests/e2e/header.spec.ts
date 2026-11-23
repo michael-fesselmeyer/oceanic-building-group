@@ -253,3 +253,26 @@ test.describe('phone menu without popover support', () => {
     expect(overflow).toBeLessThanOrEqual(0);
   });
 });
+
+test.describe('header widths', () => {
+  test('fits every width in one line, with the menu from 1100px down', async ({
+    page,
+  }, testInfo) => {
+    test.skip(Boolean(testInfo.project.use.isMobile), 'resizes a desktop window');
+    await page.goto('/process/');
+    for (const width of [801, 860, 960, 1024, 1100, 1101, 1280]) {
+      await page.setViewportSize({ width, height: 800 });
+      const state = await page.evaluate(() => ({
+        overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        menu: getComputedStyle(document.querySelector('.menu-button')!).display !== 'none',
+        // A link taller than one line of text has wrapped.
+        wrapped: [...document.querySelectorAll<HTMLElement>('.site-nav li a')].some(
+          (a) => a.offsetHeight > 0 && a.getClientRects().length > 1,
+        ),
+      }));
+      expect(state.overflow, `sideways scroll at ${width}px`).toBeLessThanOrEqual(0);
+      expect(state.menu, `menu button at ${width}px`).toBe(width <= 1100);
+      expect(state.wrapped, `wrapped link at ${width}px`).toBe(false);
+    }
+  });
+});

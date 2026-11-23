@@ -6,8 +6,8 @@
  * numbers are repeated where needed). The design is desktop-first: base
  * styles describe the wide layout and these queries simplify it.
  *
- *   @media (max-width: 1100px)  small laptop and tablet landscape
- *   @media (max-width: 800px)   tablet portrait: columns collapse, menu becomes a button
+ *   @media (max-width: 1100px)  small laptop and tablet landscape: menu becomes a button
+ *   @media (max-width: 800px)   tablet portrait: columns collapse
  *   @media (max-width: 520px)   phone
  */
 
