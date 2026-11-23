@@ -2,6 +2,7 @@
 // directly, so the draft rule and the sort order are applied in one place.
 import { getCollection, render, type CollectionEntry } from 'astro:content';
 import { launched } from './site';
+import { canShowMember } from './team';
 
 type Draftable = { data: { draft: boolean } };
 type Ordered = { data: { order: number } };
@@ -48,8 +49,16 @@ export async function getTowns() {
   return (await getCollection('towns', isVisible)).sort(byOrder);
 }
 
-export async function getTeam() {
-  return (await getCollection('team', isVisible)).sort(byOrder);
+export type TeamMember = CollectionEntry<'team'>;
+
+/**
+ * The team in display order. A real estate licensee without a brokerage is
+ * never returned, even in previews; see `canShowMember`.
+ */
+export async function getTeam(): Promise<TeamMember[]> {
+  return (await getCollection('team', isVisible))
+    .filter((member) => canShowMember(member.data))
+    .sort(byOrder);
 }
 
 export type Testimonial = CollectionEntry<'testimonials'>;

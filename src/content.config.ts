@@ -88,16 +88,55 @@ const towns = defineCollection({
   }),
 });
 
+// One file per person on the About page. The biography is the Markdown
+// body, as plain paragraphs; leave it empty until one is supplied.
+//
+// Florida requires a real estate licensee's advertising to name their
+// brokerage, so a licensee cannot be published until `brokerage` is filled
+// in. Until then the file must stay `draft: true`.
 const team = defineCollection({
   loader: markdown('team'),
   schema: ({ image }) =>
-    z.strictObject({
-      name: z.string().max(60),
-      role: z.string().max(60),
-      photo: image().optional(),
-      order: z.number().int().default(100),
-      draft: z.boolean().default(false),
-    }),
+    z
+      .strictObject({
+        /** As registered with any licensing board, for licensees. */
+        name: z.string().max(60, { error: 'The name is too long: keep it to 60 characters.' }),
+        /** Title as shown on the page, for example "Managing member". */
+        role: z.string().max(60, { error: 'The role is too long: keep it to 60 characters.' }),
+        /** A portrait, about 1600px tall. The page shows a text-only entry without one. */
+        photo: image().optional(),
+        /** True for anyone who holds a real estate license. */
+        realEstateLicensee: z
+          .boolean({ error: 'realEstateLicensee must be true or false.' })
+          .default(false),
+        /** The licensed name of the brokerage the licensee works under. */
+        brokerage: z
+          .string()
+          .trim()
+          .min(2, { error: 'The brokerage name is missing.' })
+          .max(100, { error: 'The brokerage name is too long: keep it to 100 characters.' })
+          .optional(),
+        order: z.number().int().default(100),
+        draft: z.boolean({ error: 'draft must be true or false.' }).default(false),
+      })
+      .superRefine((member, context) => {
+        if (member.realEstateLicensee && !member.brokerage && !member.draft) {
+          context.addIssue({
+            code: 'custom',
+            path: ['brokerage'],
+            message:
+              'A real estate licensee must name their brokerage before this entry can be published. Add the brokerage, or keep draft: true.',
+          });
+        }
+        if (member.brokerage && !member.realEstateLicensee) {
+          context.addIssue({
+            code: 'custom',
+            path: ['brokerage'],
+            message:
+              'A brokerage is only shown for a real estate licensee. Set realEstateLicensee: true, or remove the brokerage.',
+          });
+        }
+      }),
 });
 
 const testimonials = defineCollection({
