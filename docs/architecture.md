@@ -663,35 +663,58 @@ with the endpoint so it can show the form again, filled in.
    `minlength` and `pattern` attributes from these values, and the endpoint validates with
    `parseIntake()`, which returns one message per field. The messages are plain sentences grouped
    in objects so the business can reword them.
-2. **Works without JavaScript.** The form posts to `/api/intake/` with `method="post"`, and the
+2. **Follow-up questions.** Under the project type sit a few optional questions, defined in
+   `followUps` in the same file: where (the towns from the towns collection, through
+   `getTowns()`, then "Somewhere else") and when to start for every type; whether the lot is
+   owned and whether there are plans for a custom home; what kind of renovation; what kind of
+   building for commercial work (one line, 80 characters); and what an investor is interested
+   in. There is no budget question. Radio groups are fieldsets with legends, the town is a
+   select, and each is marked optional.
+   - **Revealed with CSS.** The questions stay hidden until a type is chosen, then the ones for
+     that type show, by `:has()` rules inside `@supports selector(:has(*))` that match each
+     question's `data-for` list. A new type with questions of its own needs a line in those
+     rules. A browser without `:has()` shows every question. Hidden questions are out of the
+     focus order, so focus moves from the type straight to its questions and on to the message.
+   - **Checked on the server.** `parseIntake()` keeps only answers to questions for the chosen
+     type whose value is on the list (the town against the published towns, the endpoint
+     passing `townChoices(await getTowns())`), and the building text when it fits on one line
+     within its limit. Everything else is dropped without an error: answers left over when a
+     visitor switches type (a hidden field still posts), values not on the list, and over-long
+     text. Follow-ups never stop an enquiry. Reading the towns brings the content data layer
+     (about 80 KB) into the Worker.
+   - **In the email.** Answers are kept in plain words, in form order, and listed under the
+     message as "About the project:" lines (`Where: Tequesta`, `Start: Within 6 months`). The
+     section is left out when nothing was answered. The idempotency key covers them, and the log
+     line names which questions were answered, never the answers.
+3. **Works without JavaScript.** The form posts to `/api/intake/` with `method="post"`, and the
    browser's own validation stops an incomplete form. The endpoint answers with a redirect to
    `/contact/thanks/` or with the form again; nothing needs a script.
-3. **Enhanced with a small script** (in the component, no dependencies, no schema library shipped
+4. **Enhanced with a small script** (in the component, no dependencies, no schema library shipped
    to the browser). It turns off the browser's bubbles, writes the message under each field, ties
    it to the control with `aria-describedby` and `aria-invalid`, lists every problem in a summary
    at the top of the form, and moves focus to the first answer to fix. After the first attempt,
    each message clears as the answer is corrected. It reads the messages from `data-` attributes
    rendered from the schema, so wording lives in one place. It also stops a second click from
    posting the same enquiry twice.
-4. **Honeypot.** A text field named `website` sits off-screen inside an `aria-hidden` wrapper with
+5. **Honeypot.** A text field named `website` sits off-screen inside an `aria-hidden` wrapper with
    `tabindex="-1"` and `autocomplete="off"`. It is moved off-screen rather than hidden with
    `display: none`, because some programs skip undisplayed fields. It is hidden from assistive
    technology and the tab order instead of labelled "leave this empty", so no visitor, sighted or
    not, ever meets an instruction that makes no sense to them. The endpoint drops any submission
    where `isHoneypotFilled()` is true and answers it like a success, so the sender learns nothing.
-5. **Turnstile.** The form carries Cloudflare's Turnstile widget, whose script loads on the contact
+6. **Turnstile.** The form carries Cloudflare's Turnstile widget, whose script loads on the contact
    page only. It adds a `cf-turnstile-response` token that the endpoint verifies with Cloudflare
    ([`src/lib/turnstile.ts`](../src/lib/turnstile.ts)). The site key is
    `PUBLIC_TURNSTILE_SITE_KEY`, read at build time; development and preview builds fall back to
    Cloudflare's always-pass test key, and a launched build without a key renders no widget (a
    test key would fail every visitor against a real secret).
-6. **No JavaScript, no token.** Without JavaScript the widget never runs, so the post has no
+7. **No JavaScript, no token.** Without JavaScript the widget never runs, so the post has no
    token. By default the endpoint still sends it, relying on the honeypot, and marks the email's
    subject `[spam check not run]`. If spam arrives that way, set `TURNSTILE_REQUIRED=true`: posts
    without a token then get the form back with a notice asking the visitor to turn JavaScript on
    or use the office details. A token that is present and fails (forged, expired or already used)
    is always refused, with the form kept and a fresh widget.
-7. **Leads are not stored.** The email to the office is the record.
+8. **Leads are not stored.** The email to the office is the record.
 
 ### The endpoint
 
@@ -803,8 +826,11 @@ length ([`src/lib/redact.ts`](../src/lib/redact.ts)). Failures name the provider
 ### Testing
 
 Unit tests cover the handler with a fake transport, the Resend and log transports, the notifier,
-the settings and the Turnstile check. In the browser tests, `tests/e2e/contact.spec.ts` covers the
-page on the static build, and two specs run against the built Worker in the same CI job:
+the settings, the Turnstile check, and the follow-up questions: which apply to each type, what is
+kept or dropped, and how the email lists them. In the browser tests,
+`tests/e2e/contact.spec.ts` covers the page on the static build, including which follow-up
+questions show for each type, the focus order through them and axe with each type chosen. Two
+specs run against the built Worker in the same CI job:
 
 - **The Workers under test** ([`tests/e2e/worker-under-test.ts`](../tests/e2e/worker-under-test.ts)).
   `playwright.config.ts` starts two copies of the built Worker with `astro preview`, both with the
@@ -821,6 +847,8 @@ page on the static build, and two specs run against the built Worker in the same
   the spam check, reaches the thank-you page and appears in the log as a redacted email (recipient,
   reply-to, length and idempotency key, which the test recomputes from the answers); with the
   always-fail secret it is refused and the form comes back with every answer and a fresh token;
+  a custom home with every follow-up answered arrives with all of them (the recomputed key covers
+  them, and the log names the questions answered);
   with JavaScript off it is sent flagged as unchecked, an answer only the server rejects comes back
   with everything kept and then goes through, and a filled spam trap shows a thank-you while
   nothing is sent. Every test also checks that no name, address, phone number or message appears
