@@ -239,9 +239,16 @@ in CSS:
   whole block sits behind `@supports (animation-timeline: --hero)`, and `--header-solid` is 1 by
   default, so a browser without scroll-driven animations gets the solid header from the start.
   With reduced motion the change is a single step instead of a fade.
-- **Phone menu.** The navigation is a `popover`: it opens, and closes on Escape or an outside tap,
-  with no JavaScript. Opening it makes the bar solid (`:has(:popover-open)`) so the bar and the
-  sheet read as one piece over a photograph.
+- **Menu below 1100px.** The navigation is a `popover`: it opens, and closes on Escape or an
+  outside tap, with no JavaScript. Opening it makes the bar solid (`:has(:popover-open)`) so the
+  bar and the sheet read as one piece over a photograph. It takes over at 1100px because the
+  wordmark, the five links and the contact button need about 960px in one line; a browser test
+  checks widths from 801px to 1280px for wrapping and sideways scroll.
+- **Without popover.** Every menu rule sits behind `@supports selector(:popover-open)`. A browser
+  without popover (Safari before 17) shows no Menu button, which could not open anything there:
+  the links wrap under the wordmark and the header scrolls with the page. A browser test removes
+  the attribute and those rules to check it. The header also declares `--header-solid: 1`
+  directly, so a browser without `@property` still gets the solid colors.
 - **Current page.** [`currentState`](../src/lib/nav.ts) compares paths with a trailing slash: the
   exact page gets `aria-current="page"` and a section link gets `aria-current="true"` (Portfolio
   while viewing a project). The home link matches only the home page. The marker is a thicker
@@ -784,17 +791,24 @@ and is unit tested in `tests/unit/link-check.test.ts`; no browser and no network
 
 ## Quality gates
 
-| Gate                         | Tool                    | Where        |
-| ---------------------------- | ----------------------- | ------------ |
-| Formatting                   | Prettier                | `verify`, CI |
-| Lint                         | ESLint                  | `verify`, CI |
-| Types and content validation | `astro check`           | `verify`, CI |
-| Unit tests                   | Vitest                  | `verify`, CI |
-| Browser and accessibility    | Playwright with axe     | CI           |
-| Performance, SEO             | Lighthouse (minimum 95) | CI           |
-| Secrets                      | gitleaks                | CI           |
-| Repository hygiene           | `scripts/check-hygiene` | `verify`, CI |
-| Internal links               | `scripts/check-links`   | `verify`, CI |
+| Gate                         | Tool                                        | Where        |
+| ---------------------------- | ------------------------------------------- | ------------ |
+| Formatting                   | Prettier                                    | `verify`, CI |
+| Lint                         | ESLint                                      | `verify`, CI |
+| Types and content validation | `astro check`                               | `verify`, CI |
+| Unit tests                   | Vitest                                      | `verify`, CI |
+| Browser and accessibility    | Playwright with axe, in Chromium and WebKit | CI           |
+| Performance, SEO             | Lighthouse (minimum 95)                     | CI           |
+| Secrets                      | gitleaks                                    | CI           |
+| Repository hygiene           | `scripts/check-hygiene`                     | `verify`, CI |
+| Internal links               | `scripts/check-links`                       | `verify`, CI |
+
+Browser tests run in four profiles: Chromium and WebKit (Safari's engine), each on a 1440 x 900
+desktop and on a phone (Pixel 7 and iPhone 15). Tests that differ by screen size read the
+`isMobile` fixture, never the project name. The intake endpoint test runs in Chromium only,
+because it checks server code. In WebKit, Tab moves only between form controls unless Option is
+held, so a keyboard test focuses links with `focus()` instead of pressing Tab. Firefox is checked
+by hand: it lacks cross-document view transitions and simply navigates.
 
 The secret scan reads every commit on every branch. A finding that has been checked by hand and is
 not a secret is listed by its fingerprint in [`.gitleaksignore`](../.gitleaksignore), with the
