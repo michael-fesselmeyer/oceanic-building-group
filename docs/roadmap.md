@@ -96,7 +96,7 @@ The site must not go live until each of these is true. `npm run launch-check` ch
 
 - High-resolution photographs for each project, and drone footage where it exists.
 - Commercial projects: at least three, with photographs and a short description.
-- Team biographies and portraits.
+- Team biographies and portraits, and the brokerage for the real estate agent on the team.
 - Interior design partner: which projects to credit, photographs of shared projects, client quotes.
 - Client testimonials: three to five to start.
 - Typical timelines for the stages of the process page. Only construction has one so far (11 to

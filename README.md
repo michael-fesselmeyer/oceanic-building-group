@@ -24,6 +24,9 @@ into enquiries through a short intake form that notifies the office straight awa
 - **A process page that reads like a sequence.** The stages of a build are one Markdown file
   each, shown in order with large numerals on a vertical rule (a plain ordered list on phones). A
   typical duration appears only on a stage whose file supplies one.
+- **An About page that works before the photographs.** The company story and the team, one
+  Markdown file per person. Entries read well in type alone and gain a portrait when one is added.
+  A real estate licensee cannot be published until their brokerage is named, as Florida requires.
 - **An interior design partner page.** `/interior-design/` introduces the builder's interior
   designer from a Markdown file, adds the projects and client quotes credited to the partner once
   they are marked, and ends with links to the partner's website and the contact page. Project
