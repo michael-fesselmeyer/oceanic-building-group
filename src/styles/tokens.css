@@ -89,10 +89,13 @@
   --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
 
   --header-height: 5.5rem;
+  /* Height of the wordmark in the header; its width follows. */
+  --wordmark-height: 3.25rem;
 }
 
 @media (max-width: 800px) {
   :root {
     --header-height: 4.25rem;
+    --wordmark-height: 2.5rem;
   }
 }
