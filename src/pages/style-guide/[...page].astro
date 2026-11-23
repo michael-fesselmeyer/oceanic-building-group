@@ -15,36 +15,12 @@ import StatList from '../../components/StatList.astro';
 import TextLink from '../../components/TextLink.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getProjects, type Project } from '../../lib/content';
+import { exampleProject } from '../../lib/examples';
 import { launched } from '../../lib/site';
 import { projectStats } from '../../lib/stats';
 
 export function getStaticPaths() {
   return launched ? [] : [{ params: { page: undefined } }];
-}
-
-/** A made-up project for showing edge cases the real content may not have yet. */
-function exampleProject(id: string, data: Partial<Project['data']>): Project {
-  return {
-    id,
-    collection: 'projects',
-    data: {
-      title: 'Example project',
-      location: 'Tequesta',
-      category: 'custom-home',
-      status: 'completed',
-      summary: 'A made-up project used only on the style guide page to show the card layout.',
-      cover: placeholder,
-      coverAlt: 'Placeholder image standing in for a project photograph',
-      gallery: [],
-      stats: {},
-      features: [],
-      interiorDesignPartner: false,
-      featured: false,
-      order: 100,
-      draft: true,
-      ...data,
-    },
-  };
 }
 
 const realProject = (await getProjects())[0];
@@ -243,6 +219,17 @@ const tokens = {
           </li>
         ))}
       </ul>
+    </section>
+
+    <section class="block" aria-labelledby="project-page">
+      <SectionHeading id="project-page" label="ProjectArticle">
+        Project page
+      </SectionHeading>
+      <p class="prose">
+        The project page template has its own example pages, filled with made-up projects:{' '}
+        <TextLink href="/style-guide/project/">every part filled in, with a gallery</TextLink> and{' '}
+        <TextLink href="/style-guide/project/sparse/">only the required fields</TextLink>.
+      </p>
     </section>
   </div>
 </BaseLayout>

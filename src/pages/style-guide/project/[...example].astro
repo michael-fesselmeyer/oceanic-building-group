@@ -1,0 +1,72 @@
+---
+// Style guide: the project page template filled with made-up projects.
+//
+//   /style-guide/project/         every part filled in, with a gallery,
+//                                 a design partner credit and both neighbors
+//   /style-guide/project/sparse/  only the required fields: under
+//                                 construction, a long title, no stats,
+//                                 features, gallery, location or neighbors
+//
+// Development and preview builds only, like the main style guide page.
+import ProjectArticle from '../../../components/project/ProjectArticle.astro';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import {
+  exampleDesignPartner,
+  exampleFullProject,
+  exampleProject,
+  exampleSparseProject,
+} from '../../../lib/examples';
+import { launched } from '../../../lib/site';
+
+export function getStaticPaths() {
+  if (launched) return [];
+  return [
+    {
+      params: { example: undefined },
+      props: {
+        project: exampleFullProject,
+        previous: exampleProject('example-previous', { title: 'Example Inlet Cottage' }),
+        next: exampleProject('example-next', { title: 'Example Beach Road Office' }),
+        designPartner: exampleDesignPartner,
+      },
+    },
+    { params: { example: 'sparse' }, props: { project: exampleSparseProject } },
+  ];
+}
+
+const { project, previous, next, designPartner } = Astro.props;
+---
+
+<BaseLayout
+  title={`Style guide: ${project.data.title}`}
+  description="The project page template filled with a made-up project, for checking changes during development."
+  noindex
+>
+  <ProjectArticle
+    project={project}
+    previous={previous}
+    next={next}
+    designPartner={designPartner ?? null}
+  >
+    {project.data.gallery.length > 0 ? (
+      <>
+        <p>
+          This is a made-up project. It exists so the project page can be checked with a gallery, a
+          design partner credit and links to the neighboring projects before real photographs
+          arrive.
+        </p>
+        <p>
+          The story comes from the Markdown body of the project file. It is set in ordinary
+          paragraphs at a comfortable reading width, next to the list of features.
+        </p>
+        <h2>A heading inside the story</h2>
+        <p>
+          Headings written in the Markdown are set smaller than the page sections, so they read as
+          part of the story.
+        </p>
+      </>
+    ) : (
+      <p>A short story, with no features, stats or photographs beside it.</p>
+    )}
+  </ProjectArticle>
+</BaseLayout>
