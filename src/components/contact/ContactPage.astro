@@ -9,16 +9,25 @@
 // Without JavaScript the browser's own validation stops an incomplete form;
 // the script at the bottom replaces it with messages written under each
 // field, a summary at the top and focus on the first answer to fix.
+//
+// Optional follow-up questions sit under the project type. CSS shows the
+// ones for the chosen type with :has(), with no script; a browser without
+// :has() shows them all, and the server keeps only the answers that belong
+// to the type that was sent.
 import Button from '../Button.astro';
 import TextLink from '../TextLink.astro';
+import { getTowns } from '../../lib/content';
 import {
   HONEYPOT_FIELD,
   INTAKE_ENDPOINT,
   PHONE_PATTERN,
+  followUps,
   limits,
   messages,
   notices,
   projectTypes,
+  townChoices,
+  type FormField,
   type IntakeField,
   type Notice,
 } from '../../lib/intake';
@@ -28,7 +37,7 @@ import { TURNSTILE_SCRIPT, formSiteKey } from '../../lib/turnstile';
 
 interface Props {
   /** What the visitor typed, to fill the form in again. */
-  values?: Partial<Record<IntakeField, string>>;
+  values?: Partial<Record<FormField, string>>;
   /** One message per answer that needs fixing, from the server's check. */
   errors?: Partial<Record<IntakeField, string>>;
   /** Why the form came back when the answers themselves were fine. */
@@ -36,6 +45,11 @@ interface Props {
 }
 
 const { values = {}, errors = {}, notice } = Astro.props;
+
+const towns = townChoices(await getTowns());
+/** `data-for` on each follow-up, matched by the reveal rules in the styles below. */
+const appliesTo = (types: 'every' | readonly string[]) =>
+  types === 'every' ? 'every' : types.join(' ');
 
 const { address } = site;
 const oneLineAddress = `${address.street}, ${address.city}, ${address.region} ${address.postalCode}`;
@@ -213,10 +227,81 @@ const summaryTitle =
         </p>
       </fieldset>
 
+      {/*
+       * Follow-up questions, all optional. Shown for the chosen project type
+       * by the reveal rules at the end of the styles; each one's data-for
+       * lists the types it belongs to. They have no data-field, so the
+       * script never marks them: no answer here can be wrong.
+       */}
+      <div class="follow-ups wide" data-follow-ups>
+        {followUps.map((question) => {
+          const id = `followUp-${question.field}`;
+          if (question.kind === 'choice') {
+            return (
+              <fieldset class="field wide choices follow-up" data-for={appliesTo(question.types)}>
+                <legend>
+                  {question.question} <span class="optional">(optional)</span>
+                </legend>
+                <div class="options">
+                  {question.choices.map((choice) => (
+                    <label class="option">
+                      <input
+                        id={`${id}-${choice.value}`}
+                        type="radio"
+                        name={question.field}
+                        value={choice.value}
+                        checked={values[question.field] === choice.value}
+                      />
+                      <span>{choice.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+            );
+          }
+          if (question.kind === 'town') {
+            return (
+              <div class="field follow-up" data-for={appliesTo(question.types)}>
+                <label for={id}>
+                  {question.question} <span class="optional">(optional)</span>
+                </label>
+                <select class="control" id={id} name={question.field}>
+                  <option value="">Choose a town</option>
+                  {towns.map((town) => (
+                    <option value={town.value} selected={values[question.field] === town.value}>
+                      {town.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            );
+          }
+          return (
+            <div class="field follow-up" data-for={appliesTo(question.types)}>
+              <label for={id}>
+                {question.question} <span class="optional">(optional)</span>
+              </label>
+              <p class="hint" id={`${id}-hint`}>
+                {question.hint}
+              </p>
+              <input
+                class="control"
+                id={id}
+                name={question.field}
+                type="text"
+                maxlength={question.maxLength}
+                value={values[question.field]}
+                aria-describedby={`${id}-hint`}
+              />
+            </div>
+          );
+        })}
+      </div>
+
       <div class="field wide" data-field>
         <label for="message">About your project</label>
         <p class="hint" id="message-hint">
-          Where it is, roughly when you would like to start, and anything you already know.
+          What you have in mind and anything you already know.
         </p>
         <textarea
           class="control"
@@ -727,6 +812,47 @@ const summaryTitle =
     font-size: var(--text-sm);
   }
 
+  /* Follow-up questions */
+
+  .follow-ups {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-5);
+    padding-left: var(--space-5);
+    border-left: 2px solid var(--color-border);
+  }
+
+  .follow-ups .option {
+    flex-grow: 0;
+  }
+
+  select.control {
+    cursor: pointer;
+  }
+
+  /*
+   * Reveal: with :has(), the questions stay hidden until a project type is
+   * chosen, then show for that type. Each project type with questions of
+   * its own needs a line in the second rule. Without :has() every question
+   * shows and the server ignores answers for other types.
+   */
+  @supports selector(:has(*)) {
+    .follow-ups,
+    .field.follow-up {
+      display: none;
+    }
+
+    .fields:has([name='projectType']:checked) .follow-ups,
+    .fields:has([name='projectType']:checked) .field.follow-up[data-for='every'],
+    .fields:has(#projectType-custom-home:checked) .field.follow-up[data-for~='custom-home'],
+    .fields:has(#projectType-renovation:checked) .field.follow-up[data-for~='renovation'],
+    .fields:has(#projectType-commercial:checked) .field.follow-up[data-for~='commercial'],
+    .fields:has(#projectType-investor-partnership:checked)
+      .field.follow-up[data-for~='investor-partnership'] {
+      display: grid;
+    }
+  }
+
   @media (max-width: 1100px) {
     .contact {
       column-gap: var(--space-7);
@@ -767,6 +893,20 @@ const summaryTitle =
 
     .options {
       flex-direction: column;
+    }
+
+    .follow-ups {
+      grid-template-columns: minmax(0, 1fr);
+      padding-left: var(--space-4);
+    }
+
+    /* Short answers sit side by side, so the optional questions stay compact. */
+    .follow-ups .options {
+      flex-direction: row;
+    }
+
+    .follow-ups .option {
+      flex-grow: 1;
     }
 
     .actions {

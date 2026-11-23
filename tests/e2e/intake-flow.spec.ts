@@ -10,7 +10,7 @@
 // itself, and email goes to the log transport.
 import { readFileSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';
-import { notices, parseIntake } from '../../src/lib/intake';
+import { notices, parseIntake, townChoices } from '../../src/lib/intake';
 import { leadKey } from '../../src/lib/intake-handler';
 import { failingWorker, passingWorker, type WorkerUnderTest } from './worker-under-test';
 
@@ -49,9 +49,12 @@ function visitor(message: string, overrides: Partial<Visitor> = {}): Visitor {
   };
 }
 
+/** The one town the follow-up test picks, as the towns collection names it. */
+const towns = townChoices([{ id: 'tequesta', data: { name: 'Tequesta' } }]);
+
 /** The idempotency key the Worker gives these answers; its log names the first 12 characters. */
-async function keyOf(person: Visitor): Promise<string> {
-  const parsed = parseIntake({ ...person });
+async function keyOf(person: Visitor, followUps: Record<string, string> = {}): Promise<string> {
+  const parsed = parseIntake({ ...person, ...followUps }, { towns });
   if (!parsed.success) throw new Error('test visitor is not valid');
   return (await leadKey(parsed.data)).slice(0, 12);
 }
@@ -119,6 +122,39 @@ test.describe('an enquiry with JavaScript on', () => {
       );
     expect(workerLog(passingWorker)).toContain(
       `[intake] sent: D., d***@***.test, phone ***42, Renovation, message ${person.message.length} characters, spam check passed`,
+    );
+    expectRedacted(workerLog(passingWorker), person);
+    expect(elsewhere).toEqual([]);
+  });
+
+  test('carries the follow-up answers for a custom home to the office', async ({ page }) => {
+    const elsewhere = await offline(page);
+    const person = visitor('A four bedroom home with a pool, facing the river.', {
+      projectType: 'custom-home',
+      projectLabel: 'Custom home',
+    });
+    const followUps = { town: 'tequesta', start: 'within-6-months', lot: 'yes', plans: 'not-yet' };
+    const key = await keyOf(person, followUps);
+
+    await page.goto('/contact/');
+    await fillIn(page, person);
+    await page.getByLabel('Where is the project?').selectOption({ label: 'Tequesta' });
+    await page.getByRole('radio', { name: 'Within 6 months' }).check();
+    await page
+      .getByRole('group', { name: 'Do you own the lot?' })
+      .getByRole('radio', { name: 'Yes' })
+      .check();
+    await page
+      .getByRole('group', { name: 'Do you have plans or an architect yet?' })
+      .getByRole('radio', { name: 'Not yet' })
+      .check();
+    await send(page).click();
+
+    await expect(page).toHaveURL(/\/contact\/thanks\/$/);
+    // The key covers the follow-up answers, so matching it shows they all arrived.
+    await expect.poll(() => workerLog(passingWorker)).toContain(`key ${key}`);
+    expect(workerLog(passingWorker)).toContain(
+      `message ${person.message.length} characters, spam check passed, follow-ups town start lot plans`,
     );
     expectRedacted(workerLog(passingWorker), person);
     expect(elsewhere).toEqual([]);
