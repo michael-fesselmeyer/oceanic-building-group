@@ -40,6 +40,8 @@ test.describe('/process/ page', () => {
       has: page.getByRole('heading', { name: 'Construction', exact: true }),
     });
     await expect(construction.locator('.duration')).toContainText('11 to 12 months');
+    // The figure is shown once, in the duration line, not repeated in the text above it.
+    expect((await construction.innerText()).match(/11 to 12 months/g)).toHaveLength(1);
   });
 
   test('ends with a link to the contact page', async ({ page }) => {

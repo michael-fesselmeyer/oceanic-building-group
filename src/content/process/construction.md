@@ -5,4 +5,4 @@ order: 50
 draft: false
 ---
 
-Once approvals are in, building begins against a realistic timeline that is set up front. A typical new home takes 11 to 12 months, depending on its square footage.
+Once approvals are in, building begins against a realistic timeline that is set up front. How long it takes depends mostly on the size of the home.
