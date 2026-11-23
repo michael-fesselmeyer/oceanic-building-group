@@ -106,6 +106,14 @@ const testimonials = defineCollection({
     /** Who said it, without a full name unless the client agreed: "Homeowner, Juno Beach". */
     attribution: z.string().max(80),
     project: reference('projects').optional(),
+    /**
+     * True when the quote is about the interior design partner's work. It is
+     * then shown on the interior design page instead of with the builder's
+     * own testimonials.
+     */
+    aboutDesignPartner: z
+      .boolean({ error: 'aboutDesignPartner must be true or false.' })
+      .default(false),
     order: z.number().int().default(100),
     draft: z.boolean().default(false),
   }),
@@ -122,4 +130,43 @@ const processSteps = defineCollection({
   }),
 });
 
-export const collections = { projects, services, towns, team, testimonials, processSteps };
+// The interior design partner's introduction on /interior-design/. One file
+// only; the biography is its Markdown body. The partner's name and website
+// are business facts and live in src/lib/site.ts.
+const designPartner = defineCollection({
+  loader: markdown('design-partner'),
+  schema: z.strictObject({
+    /** One or two sentences that open the page, under the partner's name. */
+    summary: z
+      .string()
+      .min(40, { error: 'The summary is too short: write at least 40 characters.' })
+      .max(220, { error: 'The summary is too long: keep it to 220 characters or fewer.' }),
+    seoDescription: z
+      .string()
+      .min(50, { error: 'The search description is too short: write at least 50 characters.' })
+      .max(160, {
+        error: 'The search description is too long: keep it to 160 characters or fewer.',
+      }),
+    /** Where the studio is, for example "New York City". */
+    basedIn: z
+      .string()
+      .max(60, { error: 'basedIn is too long: keep it to 60 characters or fewer.' })
+      .optional(),
+    /** Places the partner takes on work, one per line. */
+    worksIn: z
+      .array(z.string().max(40, { error: 'Each place in worksIn must be 40 characters or fewer.' }))
+      .max(12, { error: 'List at most 12 places in worksIn.' })
+      .default([]),
+    draft: z.boolean({ error: 'draft must be true or false.' }).default(false),
+  }),
+});
+
+export const collections = {
+  projects,
+  services,
+  towns,
+  team,
+  testimonials,
+  processSteps,
+  designPartner,
+};
