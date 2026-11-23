@@ -142,8 +142,8 @@ Components used by a single page type live in a subfolder named after it. `proje
 project page's parts: `ProjectArticle` (the whole page body), `ProjectGallery` and
 `ProjectPager`; see [Project pages](#project-pages). `design-partner/` holds
 `DesignPartnerArticle`, the body of the interior design page; see
-[Interior design page](#interior-design-page). `home/` holds `HomeHero` and `FeaturedProjects`;
-see [Home page](#home-page).
+[Interior design page](#interior-design-page). `home/` holds the home page's sections, from `HomeHero` to
+`ContactBand`; see [Home page](#home-page).
 
 Rules they share: optional data that is missing renders nothing (no empty wrappers, no
 placeholders), styles come only from tokens, and a parent spaces a component with its own layout
@@ -184,17 +184,21 @@ and empty stats, long titles, a project with no location). Check it after changi
 credit, both neighbors) and `/style-guide/project/sparse/` shows one with only the required
 fields. `/style-guide/interior-design/` shows the interior design page with a made-up partner,
 credited projects, testimonials and a long biography, and `/style-guide/interior-design/no-partner/`
-shows it with no partner set. `/style-guide/home/`, `/style-guide/home/one/` and
-`/style-guide/home/none/` show the top of the home page with four, one and no featured projects
-(one with a long title, one with no location). Their made-up data is in
+shows it with no partner set. `/style-guide/home/` shows every home page section filled with
+made-up content (four featured projects, one with a long title and one with no location, and three
+testimonials), `/style-guide/home/one/` one featured project and one testimonial, and
+`/style-guide/home/none/` the page with every collection empty and no design partner. Their made-up data is in
 [`src/lib/examples.ts`](../src/lib/examples.ts). These pages exist
 in development and preview builds only: their `getStaticPaths` return no pages when
 `PUBLIC_SITE_LAUNCHED` is `true`, and they are always marked `noindex`.
 
 ## Home page
 
-[`src/pages/index.astro`](../src/pages/index.astro) composes the sections in order. The
-sections still to come (services, process, design partner, contact) go below the featured projects.
+[`src/pages/index.astro`](../src/pages/index.astro) reads the content and composes the sections
+in order: hero, featured projects, services, process, design partner, testimonials and the contact
+band. Each section is a component in `src/components/home/` that takes plain data (the shapes are
+in [`src/lib/home.ts`](../src/lib/home.ts)), so the style guide can feed it made-up content. Every
+section but the hero and the contact band renders nothing when it has nothing to show.
 
 - **Hero photograph.** The first featured project (lowest `order`) supplies the photograph, and a
   caption line under the text names it and links to its page. `splitFeatured()` in
@@ -218,8 +222,27 @@ sections still to come (services, process, design partner, contact) go below the
   portrait one set lower on the right (4 columns, spanning two rows) and a medium landscape one
   under the first (5 columns). A single card is shown large on its own. At 800px the pattern
   becomes two columns, and at 520px one, with the portrait card inset.
-- **Copy.** The headline, tagline and service area come from [`src/lib/site.ts`](../src/lib/site.ts).
-  Experience is the principals' 30+ years, never the company's age.
+- **Services.** [`HomeServices`](../src/components/home/HomeServices.astro) lists the `services`
+  collection as a numbered, ruled index beside a short introduction that stays in view on wide
+  screens. Each title links to its page and the whole row is clickable.
+- **Process.** [`HomeProcess`](../src/components/home/HomeProcess.astro) shows only the stage
+  titles of `processSteps`, numbered from their position, along a ruled timeline on a sand band:
+  one row on wide screens, four and then two columns below 1100px and 800px, a plain list on
+  phones. A stage's typical length appears only when its file has one. It links to `/process/`.
+- **Design partner.** [`HomePartner`](../src/components/home/HomePartner.astro) sets the partner's
+  name beside one sentence about working together, her summary and where she is based, with a
+  link to `/interior-design/`. It is not rendered while `site.designPartner` is `null`.
+- **Testimonials.** [`HomeTestimonials`](../src/components/home/HomeTestimonials.astro) shows
+  quotes from `getTestimonials()` (those about the design partner stay on her page): the first
+  set large with `PullQuote`, up to two more smaller beside each other. A quote names its project
+  only when that project is published. With no published testimonial the section is left out.
+- **Contact band.** [`ContactBand`](../src/components/home/ContactBand.astro) is always the last
+  section. It sits on the pale ocean surface, and the footer meets it with no gap (the band
+  removes the footer's top margin when it ends `<main>`). The office's address is in the footer, so
+  the band does not repeat it.
+- **Copy.** The headline, tagline, service area and the services introduction come from
+  [`src/lib/site.ts`](../src/lib/site.ts). Experience is the principals' 30+ years, never the
+  company's age.
 
 ## Project pages
 
