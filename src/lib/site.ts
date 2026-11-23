@@ -81,3 +81,6 @@ export const navigation = [
 ] as const;
 
 export const contactLink = { label: 'Start a Project', href: '/contact/' } as const;
+
+/** The index of the towns the business serves. Linked from the footer. */
+export const areasLink = { label: 'Areas We Serve', href: '/areas/' } as const;
