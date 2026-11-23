@@ -5,6 +5,7 @@
 // on wide screens it is a row of links; at 800px and below it becomes a
 // popover opened by the Menu button (closes on Escape and outside tap).
 import { contactLink, navigation } from '../lib/site';
+import Wordmark from './Wordmark.astro';
 
 const current = Astro.url.pathname;
 const isCurrent = (href: string) => current === href || current.startsWith(href);
@@ -12,9 +13,8 @@ const isCurrent = (href: string) => current === href || current.startsWith(href)
 
 <header class="site-header">
   <div class="container bar">
-    <a class="wordmark" href="/">
-      <span class="wordmark-name">Oceanic</span>
-      <span class="wordmark-sub label">Building Group</span>
+    <a class="home-link" href="/">
+      <Wordmark />
     </a>
 
     <button class="menu-button label" type="button" popovertarget="site-menu">
@@ -56,25 +56,9 @@ const isCurrent = (href: string) => current === href || current.startsWith(href)
     height: var(--header-height);
   }
 
-  .wordmark {
-    display: grid;
-    gap: 0.15em;
+  .home-link {
+    flex-shrink: 0;
     color: var(--color-heading);
-    text-decoration: none;
-    line-height: 1;
-  }
-
-  .wordmark-name {
-    font-family: var(--font-display);
-    font-size: 1.75rem;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-  }
-
-  .wordmark-sub {
-    font-size: 0.625rem;
-    letter-spacing: 0.34em;
   }
 
   .menu-button {
