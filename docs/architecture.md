@@ -102,6 +102,9 @@ the browser; the choice, its limits and what it collects are in
 - Component styles are scoped inside each `.astro` file.
 - The design is desktop-first. Base styles describe the wide layout and `max-width` queries at
   1100px, 800px and 520px simplify it.
+- The footer keeps one section gap (`--section-gap`) above itself, so a page never ends with
+  bottom padding of its own. The home page's contact band is the one exception: it removes the
+  footer's margin so the two meet. `tests/e2e/layout.spec.ts` checks one page of each type.
 - Typefaces: Newsreader for headings, Hanken Grotesk for text. Both are self-hosted through
   Astro's fonts API, so no request leaves the site.
 
