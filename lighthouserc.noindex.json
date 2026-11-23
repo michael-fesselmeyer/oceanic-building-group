@@ -3,7 +3,7 @@
     "collect": {
       "staticDistDir": "./dist/client",
       "url": ["http://localhost/404.html", "http://localhost/contact/thanks/"],
-      "numberOfRuns": 1,
+      "numberOfRuns": 3,
       "settings": {
         "chromeFlags": "--no-sandbox --headless=new",
         "skipAudits": ["is-crawlable"],
