@@ -73,7 +73,8 @@ or force-push without the repository owner's say-so.
   without it.
 - **Images** are imported from `src/assets` and rendered with Astro's `<Image>` or `<Picture>`
   with explicit `widths` and `sizes`. Every image has real alt text. Masters are at most 2400px
-  on the long edge.
+  on the long edge; bring project photographs in with `npm run photos:import`, which also
+  removes location and camera data.
 - **Accessibility:** one `h1` per page, headings in order, visible focus, 4.5:1 text contrast,
   and motion that respects `prefers-reduced-motion`.
 - **Performance budgets are bugs when missed.** Fix the page in the same pull request. Never
