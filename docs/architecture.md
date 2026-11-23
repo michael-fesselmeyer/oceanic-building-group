@@ -715,10 +715,12 @@ with the endpoint so it can show the form again, filled in.
    where `isHoneypotFilled()` is true and answers it like a success, so the sender learns nothing.
 6. **Turnstile.** The form carries Cloudflare's Turnstile widget, whose script loads on the contact
    page only. It adds a `cf-turnstile-response` token that the endpoint verifies with Cloudflare
-   ([`src/lib/turnstile.ts`](../src/lib/turnstile.ts)). The site key is
-   `PUBLIC_TURNSTILE_SITE_KEY`, read at build time; development and preview builds fall back to
-   Cloudflare's always-pass test key, and a launched build without a key renders no widget (a
-   test key would fail every visitor against a real secret).
+   ([`src/lib/turnstile.ts`](../src/lib/turnstile.ts)). Cloudflare's answer must also name the host
+   the form was posted to, so a token solved anywhere else the site key allows (a preview host,
+   `localhost`) is refused. The site key is `PUBLIC_TURNSTILE_SITE_KEY`, read at build time;
+   development and preview builds fall back to Cloudflare's always-pass test key, and a launched
+   build without a key renders no widget (a test key would fail every visitor against a real
+   secret).
 7. **No JavaScript, no token.** Without JavaScript the widget never runs, so the post has no
    token. By default the endpoint still sends it, relying on the honeypot, and marks the email's
    subject `[spam check not run]`. If spam arrives that way, set `TURNSTILE_REQUIRED=true`: posts
