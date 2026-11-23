@@ -389,6 +389,16 @@ content files by relative path. Astro generates responsive sizes in modern forma
 and writes width and height attributes, which prevents layout shift. Components must pass
 `widths` and `sizes` so phones download a small file.
 
+The photograph a page opens with (the home hero and the project cover) is its Largest
+Contentful Paint. The browser would only find it in the body, after the font preloads in the
+head, and on a slow connection it would wait behind about 160KB of fonts. So
+[`src/lib/hero-photo.ts`](../src/lib/hero-photo.ts) computes the photograph's sources once:
+the page renders them and passes the AVIF ones to `BaseLayout` as `preloadImages`, which writes
+`<link rel="preload" as="image">` with `imagesrcset`, `imagesizes` and `fetchpriority="high"`
+ahead of the fonts. Both come from the same call, so the addresses match and nothing downloads
+twice; `tests/e2e/hero-preload.spec.ts` checks the match, the order and the single download. A
+new page that opens with a photograph should do the same; one that opens with text needs nothing.
+
 Project photographs come in through `npm run photos:import -- <folder> <project-id>`
 ([`scripts/import-photos.mjs`](../scripts/import-photos.mjs), with the work in
 [`scripts/photo-import.mjs`](../scripts/photo-import.mjs)), using sharp, which Astro already
