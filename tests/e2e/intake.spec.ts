@@ -5,6 +5,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 import { messages } from '../../src/lib/intake';
+import { SECURITY_HEADERS } from '../../src/lib/security-headers';
 
 const visitor = {
   name: 'Dana Rivera',
@@ -124,5 +125,43 @@ test.describe('intake endpoint', () => {
       maxRedirects: 0,
     });
     expect(response.status()).toBe(403);
+  });
+});
+
+test.describe('security headers', () => {
+  const expectHeaders = (headers: Record<string, string>) => {
+    for (const [name, value] of Object.entries(SECURITY_HEADERS)) {
+      expect(headers[name.toLowerCase()], name).toContain(value);
+    }
+  };
+
+  test('static pages carry every header from public/_headers', async ({ request }) => {
+    const response = await request.get('/process/');
+    expect(response.status()).toBe(200);
+    expectHeaders(response.headers());
+  });
+
+  test('every kind of endpoint response carries them too', async ({ request }) => {
+    const origin = { Origin: test.info().project.use.baseURL! };
+    const redirect = await request.post('/api/intake/', {
+      form: { website: 'https://spam.example.test' },
+      headers: origin,
+      maxRedirects: 0,
+    });
+    const formAgain = await request.post('/api/intake/', {
+      form: { name: visitor.name, email: 'not-an-address' },
+      headers: origin,
+    });
+    const refused = await request.post('/api/intake/', {
+      data: { name: visitor.name },
+      headers: origin,
+    });
+
+    expect([redirect.status(), formAgain.status(), refused.status()]).toEqual([303, 422, 415]);
+    for (const response of [redirect, formAgain, refused]) expectHeaders(response.headers());
+    // The form sent back also gets Astro's policy, with Turnstile allowed for its widget.
+    expect(formAgain.headers()['content-security-policy']).toMatch(
+      /script-src 'self' https:\/\/challenges\.cloudflare\.com/,
+    );
   });
 });
