@@ -1,6 +1,6 @@
 // Every page reads content through this file, never through astro:content
 // directly, so the draft rule and the sort order are applied in one place.
-import { getCollection, type CollectionEntry } from 'astro:content';
+import { getCollection, render, type CollectionEntry } from 'astro:content';
 import { launched } from './site';
 
 type Draftable = { data: { draft: boolean } };
@@ -46,4 +46,11 @@ export async function getTestimonials() {
 
 export async function getProcessSteps() {
   return (await getCollection('processSteps', isVisible)).sort(byOrder);
+}
+
+export type ProcessStep = CollectionEntry<'processSteps'>;
+
+/** The stage's description, rendered from the Markdown body. */
+export async function renderProcessStep(step: ProcessStep) {
+  return (await render(step)).Content;
 }
