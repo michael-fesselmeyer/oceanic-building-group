@@ -1,0 +1,83 @@
+---
+// A row of facts: square feet, bedrooms, build time. Values are set large
+// in the serif, labels small underneath.
+//
+//   stats  Label and value pairs in display order. A pair whose value is
+//          missing, null or blank is skipped; when none are left the
+//          component renders nothing at all. For a project, pass
+//          `projectStats(project.data.stats)` from src/lib/stats.ts.
+//   label  Accessible name for the list, for example "Project facts".
+import { visibleStats, type Stat } from '../lib/stats';
+
+interface Props {
+  stats: readonly Stat[];
+  label?: string;
+}
+
+const { stats, label } = Astro.props;
+const shown = visibleStats(stats);
+---
+
+{shown.length > 0 && (
+  <dl class="stat-list" aria-label={label}>
+    {shown.map((stat) => (
+      <div class="stat">
+        <dt class="label">{stat.label}</dt>
+        <dd>{stat.value}</dd>
+      </div>
+    ))}
+  </dl>
+)}
+
+<style>
+  .stat-list {
+    display: grid;
+    grid-auto-columns: 1fr;
+    grid-auto-flow: column;
+    margin: 0;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .stat {
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: flex-end;
+    gap: var(--space-2);
+    padding: var(--space-5) var(--space-5) 0 0;
+  }
+
+  .stat + .stat {
+    padding-left: var(--space-5);
+    border-left: 1px solid var(--color-border);
+  }
+
+  dt {
+    color: var(--color-text-muted);
+  }
+
+  dd {
+    margin: 0;
+    color: var(--color-heading);
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    line-height: var(--leading-tight);
+  }
+
+  @media (max-width: 800px) {
+    .stat-list {
+      grid-template-columns: repeat(2, 1fr);
+      grid-auto-flow: row;
+    }
+
+    /* Two columns: rule between the pair, not before every second row. */
+    .stat + .stat {
+      border-left: 0;
+      padding-left: 0;
+    }
+
+    .stat:nth-child(even) {
+      padding-left: var(--space-5);
+      border-left: 1px solid var(--color-border);
+    }
+  }
+</style>
