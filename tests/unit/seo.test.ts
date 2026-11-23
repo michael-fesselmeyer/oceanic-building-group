@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { canonicalUrl, formatPhone, pageTitle } from '../../src/lib/seo';
+import {
+  canonicalUrl,
+  DEFAULT_SHARE_IMAGE,
+  formatPhone,
+  pageTitle,
+  shareImageUrl,
+} from '../../src/lib/seo';
 
 describe('pageTitle', () => {
   it('puts the page name before the site name', () => {
@@ -37,6 +43,31 @@ describe('canonicalUrl', () => {
   it('drops query strings and fragments', () => {
     expect(canonicalUrl('/contact/?ref=ad#form', site)).toBe(
       'https://builders.example.test/contact/',
+    );
+  });
+});
+
+describe('shareImageUrl', () => {
+  const site = 'https://builders.example.test';
+
+  it('falls back to the default card as an absolute address', () => {
+    expect(shareImageUrl(undefined, site)).toBe(
+      `https://builders.example.test${DEFAULT_SHARE_IMAGE.path}`,
+    );
+    expect(shareImageUrl('  ', site)).toBe(
+      `https://builders.example.test${DEFAULT_SHARE_IMAGE.path}`,
+    );
+  });
+
+  it('resolves a root-relative image against the site', () => {
+    expect(shareImageUrl('/_astro/porch.abc123.jpg', site)).toBe(
+      'https://builders.example.test/_astro/porch.abc123.jpg',
+    );
+  });
+
+  it('keeps an absolute image as it is', () => {
+    expect(shareImageUrl('https://cdn.example.test/porch.jpg', site)).toBe(
+      'https://cdn.example.test/porch.jpg',
     );
   });
 });

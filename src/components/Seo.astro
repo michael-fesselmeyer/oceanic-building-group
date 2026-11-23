@@ -1,13 +1,13 @@
 ---
 // Everything search engines and link previews read from <head>.
-import { canonicalUrl, pageTitle } from '../lib/seo';
+import { canonicalUrl, DEFAULT_SHARE_IMAGE, pageTitle, shareImageUrl } from '../lib/seo';
 import { launched, site } from '../lib/site';
 
 interface Props {
   /** Page name. Leave out on the home page. */
   title?: string;
   description: string;
-  /** Absolute or root-relative address of the share image. */
+  /** Absolute or root-relative address of the share image. Defaults to the brand card. */
   image?: string;
   /** Keeps this page out of search engines even after launch. */
   noindex?: boolean;
@@ -16,7 +16,10 @@ interface Props {
 const { title, description, image, noindex = false } = Astro.props;
 const fullTitle = pageTitle(site.name, title, site.tagline);
 const canonical = canonicalUrl(Astro.url.pathname, Astro.site ?? Astro.url.origin);
-const shareImage = image ? new URL(image, Astro.site ?? Astro.url.origin).href : undefined;
+const shareImage = shareImageUrl(image, Astro.site ?? Astro.url.origin);
+// Size and description are only known for the default card.
+const isDefaultImage = !image?.trim();
+const defaultImageAlt = `${site.name} wordmark in white on navy, with the line “${site.tagline}”`;
 const hidden = noindex || !launched;
 ---
 
@@ -30,5 +33,12 @@ const hidden = noindex || !launched;
 <meta property="og:title" content={fullTitle} />
 <meta property="og:description" content={description} />
 <meta property="og:url" content={canonical} />
-{shareImage && <meta property="og:image" content={shareImage} />}
-<meta name="twitter:card" content={shareImage ? 'summary_large_image' : 'summary'} />
+<meta property="og:image" content={shareImage} />
+{isDefaultImage && (
+  <>
+    <meta property="og:image:width" content={String(DEFAULT_SHARE_IMAGE.width)} />
+    <meta property="og:image:height" content={String(DEFAULT_SHARE_IMAGE.height)} />
+    <meta property="og:image:alt" content={defaultImageAlt} />
+  </>
+)}
+<meta name="twitter:card" content="summary_large_image" />
