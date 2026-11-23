@@ -52,6 +52,28 @@ design partner, navigation) live in [`src/lib/site.ts`](../src/lib/site.ts).
 tag and drafts stay visible, so preview deployments can be shared without being indexed. The
 Lighthouse job in CI builds with it set to `true` so the audit measures the launched site.
 
+## Sitemap and share images
+
+- **Sitemap.** `@astrojs/sitemap` writes `/sitemap-index.xml` and `/sitemap-0.xml` at build time,
+  listing every built page except the 404 and the style guide (`isSitemapPage` in
+  [`src/lib/sitemap.ts`](../src/lib/sitemap.ts)). It is registered in `astro.config.mjs` **only
+  on a launched build**. Before launch every page is `noindex`, so there is nothing to list: no
+  sitemap file exists and `robots.txt` names none. A launched build has no drafts and no style
+  guide pages, so the sitemap needs no rule for them, and a page added later is listed without
+  editing anything. `robots.txt` (`robotsTxt()`) always allows crawling and names the sitemap by
+  absolute address once launched.
+- **Share images.** Every page has an absolute `og:image` and `twitter:image` at 1200 x 630, with
+  `og:image:width`, `og:image:height` and `og:image:alt`. A project page uses its cover and a
+  service page uses its cover once it has one, both cropped to the card as JPEG by
+  `shareImageFor` in [`src/lib/share-image.ts`](../src/lib/share-image.ts); a page passes the
+  result to `BaseLayout` as `image`, `imageAlt` and `imageSize`. Every other page uses the default
+  brand card.
+- **Tests.** `tests/unit/sitemap.test.ts` covers the exclusion rule and `robots.txt`;
+  `tests/e2e/share.spec.ts` reads every built page's share tags by page type; and
+  `tests/e2e/sitemap.spec.ts` checks that a pre-launch build has no sitemap and that a launched
+  build lists exactly the built pages. CI runs the sitemap spec in both the browser job
+  (pre-launch build) and the Lighthouse job (launched build).
+
 ## Styling
 
 - [`src/styles/tokens.css`](../src/styles/tokens.css) defines every color, type size, space and
@@ -86,7 +108,7 @@ tokens; edit the script, never the output.
 - The wordmark is drawn in `currentColor`: navy on white by default, white over photography when
   the header sets its color to white. Its height is the `--wordmark-height` token.
 - `Seo.astro` always writes an absolute `og:image`. Pages pass `image` to override the default
-  card. Unit tests check that the manifest and the theme color match the tokens and that each file
+  card (see [Sitemap and share images](#sitemap-and-share-images)). Unit tests check that the manifest and the theme color match the tokens and that each file
   has the size its tag states; a browser test checks every built page's icon links and share image.
 
 ## Structured data
