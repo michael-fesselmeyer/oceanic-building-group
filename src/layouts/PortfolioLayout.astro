@@ -140,7 +140,7 @@ const countLabel = `${projects.length} ${projects.length === 1 ? 'project' : 'pr
   .kicker a {
     text-decoration-line: underline;
     text-decoration-color: transparent;
-    text-underline-offset: 0.25em;
+    text-underline-offset: var(--underline-offset-loose);
     transition: text-decoration-color var(--duration-fast) var(--ease-out);
   }
 
@@ -179,7 +179,7 @@ const countLabel = `${projects.length} ${projects.length === 1 ? 'project' : 'pr
     text-decoration-line: underline;
     text-decoration-color: transparent;
     text-decoration-thickness: 1px;
-    text-underline-offset: 0.5em;
+    text-underline-offset: var(--underline-offset-tab);
     transition:
       color var(--duration-fast) var(--ease-out),
       text-decoration-color var(--duration-fast) var(--ease-out);
@@ -191,7 +191,7 @@ const countLabel = `${projects.length} ${projects.length === 1 ? 'project' : 'pr
 
   .filters a[aria-current='page'] {
     color: var(--color-heading);
-    font-weight: 600;
+    font-weight: var(--weight-strong);
     text-decoration-color: var(--color-link);
     text-decoration-thickness: 2px;
   }

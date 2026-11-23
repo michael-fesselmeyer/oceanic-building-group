@@ -1,6 +1,7 @@
 /*
  * Design tokens. Components use these custom properties and never a raw
- * color, font size or spacing value, so the whole look can be tuned here.
+ * color, font, weight, size or spacing value, so the whole look can be tuned
+ * here. `npm run hygiene` enforces it (see docs/architecture.md, Styling).
  *
  * Breakpoints (custom properties cannot be used inside @media, so the
  * numbers are repeated where needed). The design is desktop-first: base
@@ -45,10 +46,21 @@
   /* Form controls need a 3:1 outline against the page; text-muted gives it. */
   --color-control-border: var(--color-ink-600);
   --color-error: var(--color-red-700);
+  /* Rules and quieter text on a strong (navy) surface, mixed from the text color over it. */
+  --color-border-on-strong: color-mix(in srgb, var(--color-text-on-strong) 20%, transparent);
+  --color-text-muted-on-strong: color-mix(in srgb, var(--color-text-on-strong) 75%, transparent);
+  /* A rule over the darkened photograph of the home page hero. */
+  --color-border-on-photo: color-mix(in srgb, var(--color-text-on-strong) 35%, transparent);
 
   /* Typography. The font variables are defined in astro.config.mjs. */
   --font-display: var(--font-newsreader), Georgia, serif;
   --font-body: var(--font-hanken), system-ui, sans-serif;
+
+  /* Weights. A new typeface may need different numbers for the same roles. */
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-strong: 600;
+  --weight-heading: var(--weight-regular);
 
   /* Fluid type scale: the first value is the phone size, the last the desktop size. */
   --text-xs: 0.8125rem;
@@ -66,6 +78,17 @@
 
   /* Small capitals labels ("RESIDENTIAL", "VIEW PROJECT"). */
   --tracking-label: 0.16em;
+  /* The before and after tags on a photograph: smaller boxes, a little tighter. */
+  --tracking-tag: 0.12em;
+  /* Headings sit slightly tighter than the display face's default. */
+  --tracking-heading: -0.01em;
+
+  /* Distance from text to its underline: links in running text, roomier links, the phone
+     menu's large links, and tab-like navigation (header links, portfolio filters). */
+  --underline-offset: 0.2em;
+  --underline-offset-loose: 0.25em;
+  --underline-offset-menu: 0.3em;
+  --underline-offset-tab: 0.5em;
 
   /* How far an opening quotation mark hangs into the margin. */
   --hang-quote: 0.45em;
@@ -95,9 +118,32 @@
   --width-map: 26rem;
   /* Tallest a gallery photograph is shown, so a portrait one fits on screen whole. */
   --photo-max-height: 85svh;
+  /* Scrolling each build-story caption has to itself on wide screens. */
+  --height-stage: 70svh;
+  /* Opening paragraph beside the contact form. */
+  --width-lede: 30rem;
+  /* Narrowest the contact form's privacy note gets before the submit button wraps below it. */
+  --width-note: 16rem;
+  /* Contents column of the legal pages, and the same on small laptops. */
+  --width-sidebar: 14rem;
+  --width-sidebar-narrow: 11rem;
+  /* Round icon buttons (48px: comfortable for a thumb) and the icons inside them. */
+  --size-tap-target: 3rem;
+  --size-icon: 1.5rem;
 
   --radius-sm: 2px;
   --radius-pill: 999px;
+
+  /* Lines thicker than a hairline: the accent bar of an error message. Hairlines (1px, 2px)
+     stay in components; see the style check in scripts/check-hygiene.mjs. */
+  --border-accent: 3px;
+
+  /* Gap between an element and its focus ring, and the wider one around a photograph frame. */
+  --focus-offset: 3px;
+  --focus-offset-wide: 4px;
+
+  /* Frosted glass behind the header once it turns solid. */
+  --header-blur: 10px;
 
   --duration-fast: 150ms;
   --duration-slow: 600ms;

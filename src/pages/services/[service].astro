@@ -169,7 +169,7 @@ const slotSizes = [
     color: var(--color-ocean-300);
     text-decoration-line: underline;
     text-decoration-color: transparent;
-    text-underline-offset: 0.25em;
+    text-underline-offset: var(--underline-offset-loose);
     transition: text-decoration-color var(--duration-fast) var(--ease-out);
   }
 
@@ -247,7 +247,7 @@ const slotSizes = [
 
   .siblings a[aria-current='page'] {
     color: var(--color-heading);
-    font-weight: 600;
+    font-weight: var(--weight-strong);
     box-shadow: inset 2px 0 0 var(--color-link);
     padding-left: var(--space-3);
   }
