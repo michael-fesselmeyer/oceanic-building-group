@@ -53,6 +53,31 @@ describe('verifyTurnstile', () => {
     ).toEqual({ success: false, errorCodes: ['missing-input-response'] });
   });
 
+  it('refuses a token solved on another host', async () => {
+    const fetcher = vi.fn(async () => json({ success: true, hostname: 'preview.example.test' }));
+    const verify = (hostname?: string) =>
+      verifyTurnstile({ secret: 's', token: 't', hostname, fetch: fetcher });
+
+    expect(await verify('site.example.test')).toEqual({
+      success: false,
+      errorCodes: ['hostname-mismatch'],
+    });
+    expect(isServiceFailure(['hostname-mismatch'])).toBe(false);
+    expect(await verify('preview.example.test')).toEqual({ success: true });
+  });
+
+  it('refuses an answer that names no host when one is expected', async () => {
+    const fetcher = vi.fn(async () => json({ success: true }));
+    expect(
+      await verifyTurnstile({
+        secret: 's',
+        token: 't',
+        hostname: 'site.example.test',
+        fetch: fetcher,
+      }),
+    ).toEqual({ success: false, errorCodes: ['hostname-mismatch'] });
+  });
+
   it('returns the error codes of a failed token', async () => {
     const fetcher = vi.fn(async () =>
       json({ success: false, 'error-codes': ['invalid-input-response'] }),

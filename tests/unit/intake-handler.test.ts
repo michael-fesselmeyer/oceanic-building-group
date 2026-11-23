@@ -109,6 +109,7 @@ describe('handleIntake', () => {
         secret: TEST_KEYS.secretAlwaysPasses,
         token: TOKEN,
         remoteIp: '192.0.2.1',
+        hostname: 'site.example.test',
       }),
     );
     expect(sent).toHaveLength(1);
