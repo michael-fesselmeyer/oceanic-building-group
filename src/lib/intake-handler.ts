@@ -56,7 +56,8 @@ export function createIntakeSetup(
 ): IntakeSetup {
   const config = readIntakeConfig(env, { dev: options.dev });
   if (!config.ok) return { config };
-  return { config, notifier: createLeadNotifier(config.config.email, options) };
+  for (const warning of config.warnings) options.logger.warn(`[intake] ${warning}`);
+  return { config, notifier: createLeadNotifier(config.config, options) };
 }
 
 export interface IntakeDeps {

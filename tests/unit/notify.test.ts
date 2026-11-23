@@ -208,7 +208,7 @@ describe('createNotifier', () => {
       { dev: true },
     );
     if (!config.ok) throw new Error('expected settings');
-    const result = await createLeadNotifier(config.config.email, { logger }).notify(lead);
+    const result = await createLeadNotifier(config.config, { logger }).notify(lead);
     expect(result.delivered).toBe(true);
     expect(lines[0]).toMatch(/^\[intake\] email not sent \(log transport\)/);
   });
@@ -233,7 +233,9 @@ describe('readIntakeConfig', () => {
           from: production.LEAD_FROM_EMAIL,
           to: ['office@example.test', 'sales@example.test'],
         },
+        sms: null,
       },
+      warnings: [],
     });
   });
 

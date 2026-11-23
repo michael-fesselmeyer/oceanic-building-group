@@ -13,6 +13,11 @@ export const INTAKE_ENV_NAMES = [
   'LEAD_NOTIFICATION_EMAIL',
   'TURNSTILE_SECRET_KEY',
   'TURNSTILE_REQUIRED',
+  'SMS_ENABLED',
+  'TWILIO_ACCOUNT_SID',
+  'TWILIO_AUTH_TOKEN',
+  'TWILIO_FROM_NUMBER',
+  'LEAD_NOTIFICATION_PHONE',
 ] as const;
 
 export type IntakeEnv = Partial<Record<(typeof INTAKE_ENV_NAMES)[number], string | undefined>>;
@@ -21,6 +26,15 @@ export type EmailConfig =
   | { transport: 'resend'; apiKey: string; from: string; to: string[] }
   | { transport: 'log'; from: string; to: string[] };
 
+/** Text messages through Twilio. Present only when SMS_ENABLED is "true" and complete. */
+export interface SmsConfig {
+  accountSid: string;
+  authToken: string;
+  /** The sending number, in international form: +15615550100. */
+  from: string;
+  to: string[];
+}
+
 export interface IntakeConfig {
   turnstile: {
     secret: string;
@@ -28,10 +42,16 @@ export interface IntakeConfig {
     required: boolean;
   };
   email: EmailConfig;
+  /** Off (null) unless switched on; see readSmsConfig. */
+  sms: SmsConfig | null;
 }
 
+/**
+ * `problems` stop the form (the email channel cannot work). `warnings` do
+ * not: they describe an optional channel that was left off.
+ */
 export type IntakeConfigResult =
-  { ok: true; config: IntakeConfig } | { ok: false; problems: string[] };
+  { ok: true; config: IntakeConfig; warnings: string[] } | { ok: false; problems: string[] };
 
 const address = z.email();
 
@@ -42,6 +62,48 @@ function parseRecipients(value: string): string[] | null {
     .map((item) => item.trim())
     .filter(Boolean);
   return list.every((item) => address.safeParse(item).success) ? list : null;
+}
+
+/** A phone number in international form, as Twilio expects: +15615550100. */
+const PHONE = /^\+[1-9]\d{9,14}$/;
+
+/**
+ * The SMS settings. With SMS_ENABLED anything but "true" nothing else is
+ * read, so no SMS variable is ever required. When it is "true" but a value is
+ * missing or malformed, SMS stays off and a warning names the variables:
+ * a broken optional channel must not stop the email.
+ */
+export function readSmsConfig(env: IntakeEnv): { sms: SmsConfig | null; warnings: string[] } {
+  const value = (name: keyof IntakeEnv) => env[name]?.trim() || undefined;
+  if (value('SMS_ENABLED') !== 'true') return { sms: null, warnings: [] };
+
+  const accountSid = value('TWILIO_ACCOUNT_SID');
+  const authToken = value('TWILIO_AUTH_TOKEN');
+  const from = value('TWILIO_FROM_NUMBER');
+  const to = (value('LEAD_NOTIFICATION_PHONE') ?? '')
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+  const missing: string[] = [];
+  if (!accountSid) missing.push('TWILIO_ACCOUNT_SID');
+  if (!authToken) missing.push('TWILIO_AUTH_TOKEN');
+  if (!from) missing.push('TWILIO_FROM_NUMBER');
+  if (to.length === 0) missing.push('LEAD_NOTIFICATION_PHONE');
+
+  const warnings: string[] = [];
+  if (missing.length > 0) warnings.push(`SMS is off: ${missing.join(', ')} not set`);
+  if (from && !PHONE.test(from)) {
+    warnings.push(
+      'SMS is off: TWILIO_FROM_NUMBER is not in international form (a plus sign, country code and number)',
+    );
+  }
+  if (to.some((number) => !PHONE.test(number))) {
+    warnings.push('SMS is off: LEAD_NOTIFICATION_PHONE holds a number not in international form');
+  }
+  if (warnings.length > 0) return { sms: null, warnings };
+
+  return { sms: { accountSid: accountSid!, authToken: authToken!, from: from!, to }, warnings };
 }
 
 /**
@@ -81,11 +143,15 @@ export function readIntakeConfig(env: IntakeEnv, { dev }: { dev: boolean }): Int
       ? { transport, apiKey: apiKey!, from: from!, to }
       : { transport: 'log', from: from ?? 'website@example.test', to };
 
+  const { sms, warnings } = readSmsConfig(env);
+
   return {
     ok: true,
     config: {
       turnstile: { secret, required: value('TURNSTILE_REQUIRED') === 'true' },
       email,
+      sms,
     },
+    warnings,
   };
 }
