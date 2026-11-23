@@ -52,7 +52,8 @@ const graph = pageGraph({
 
 <title>{fullTitle}</title>
 <meta name="description" content={description} />
-<link rel="canonical" href={canonical} />
+{/* A page kept out of search has no canonical address: the 404 page has none to give. */}
+{!noindex && <link rel="canonical" href={canonical} />}
 {hidden && <meta name="robots" content="noindex, nofollow" />}
 
 <meta property="og:type" content="website" />
