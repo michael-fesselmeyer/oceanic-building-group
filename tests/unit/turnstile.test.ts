@@ -79,6 +79,7 @@ describe('verifyTurnstile', () => {
     expect(isServiceFailure(['timeout-or-duplicate'])).toBe(false);
     expect(isServiceFailure(['invalid-input-secret'])).toBe(true);
     expect(isServiceFailure(['internal-error'])).toBe(true);
+    expect(isServiceFailure(['bad-request'])).toBe(true);
   });
 });
 
