@@ -122,4 +122,4 @@ export function turnstileSiteKey(configured: string | undefined, launched: boole
 }
 
 /** The site key for this build's contact form, or null for no widget. */
-export const formSiteKey = turnstileSiteKey(import.meta.env.PUBLIC_TURNSTILE_SITE_KEY, launched);
+export const formSiteKey = turnstileSiteKey(import.meta.env?.PUBLIC_TURNSTILE_SITE_KEY, launched);
