@@ -22,7 +22,8 @@ Some steps depend on others, so the order is not the same as the section order.
 4. Section 4: Turnstile. Section 5: Resend (needs the domain from step 2).
 5. Section 3: set the settings and secrets, then rebuild.
 6. Section 7.1: a rehearsal on the temporary address before the domain is switched on.
-7. Section 6.4 to 6.7, then section 7.2 and 7.3: custom domain, `www`, going live, checks.
+7. Section 6.4 to 6.7, then section 7.2 to 7.4: custom domain, `www`, the form's rate limit,
+   going live, checks. Section 7.5 once the site is live.
 
 **Owner approval.** Creating or changing anything on the hosting account, DNS or any paid service
 needs the repository owner's approval first (see `AGENTS.md`). Everything below that creates an
@@ -419,7 +420,24 @@ from search engines on the `workers.dev` address.
    `data-cf-beacon` attribute). Do not paste the whole snippet.
 4. Set it as the build variable `PUBLIC_CF_ANALYTICS_TOKEN` (section 3.1). It is public.
 
-### 7.3 Switch on, rebuild, check
+### 7.3 Limit how fast one visitor can send the form
+
+**Not run. Owner approval needed.** Free: the Free plan includes one rate-limiting rule. It stops
+a flood of posts from one address using up the day's email allowance (100 a day on Resend's free
+plan), which would turn away genuine enquiries until midnight UTC. It does not stop a slow,
+steady sender; the spam check does that.
+
+1. Dashboard, the domain, Security, WAF, Rate limiting rules, Create rule.
+2. Name: `Enquiry form`.
+3. If incoming requests match: URI Path equals `/api/intake/` **and** Request Method equals
+   `POST`.
+4. With the same characteristics: IP.
+5. When rate exceeds: 5 requests per 10 seconds.
+6. Then take action: Block, for 10 seconds (the Free plan's period and block length).
+7. Deploy. To test it, send the form a few times in quick succession from one browser: the sixth
+   post within ten seconds gets Cloudflare's block page, and a post a few seconds later works.
+
+### 7.4 Switch on, rebuild, check
 
 1. Confirm `npm run launch-check` passes all six gates (section 1) on `main`.
 2. Confirm sections 4 and 5 are done and the rehearsal worked.
@@ -441,7 +459,7 @@ from search engines on the `workers.dev` address.
 | Analytics          | Load a page with developer tools, Network tab                                                                                         | A request for `beacon.min.js` from `static.cloudflareinsights.com`. The dashboard shows the visit after a few minutes. Ad blockers hide it.                                                               |
 | Lighthouse         | Run each page type through [PageSpeed Insights](https://pagespeed.web.dev/), or locally `npx lighthouse https://example.test/ --view` | 95 or more in all four categories, as CI requires. Miss it: it is a bug to fix in a pull request, not a budget to raise.                                                                                  |
 
-### 7.4 Tell the search engines
+### 7.5 Tell the search engines
 
 Both are free and need an account with the business's login.
 
@@ -513,8 +531,8 @@ again before launch, since providers change them. [ADR 2](adr/0002-lead-email-tr
 | Single redirect rules   | 10 per zone.                                                                                                                                        | One is used.                                                                                                                                                                                                                                                                                |
 | Workers Logs (optional) | 200,000 events a day with 3 days of history today. Cloudflare says its logs move to a new pricing model on 2026-12-01 with 0.5 GB a day and 7 days. | The site does not depend on stored logs. `wrangler tail` and the dashboard's live logs are enough to test. Check the current numbers before relying on stored logs.                                                                                                                         |
 
-If spam reaches the Resend cap, follow ADR 2: set `TURNSTILE_REQUIRED=true` and add a Cloudflare
-rate-limiting rule on `/api/intake/`. Anything beyond the free tiers (an upgrade, text messages,
+If spam reaches the Resend cap even with the rate-limiting rule (section 7.3), follow ADR 2: set
+`TURNSTILE_REQUIRED=true`. Anything beyond the free tiers (an upgrade, text messages,
 a paid plan) needs the owner's approval first.
 
 ## What was not verified
