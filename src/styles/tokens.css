@@ -104,6 +104,10 @@
   --header-height: 5.5rem;
   /* Height of the wordmark in the header; its width follows. */
   --wordmark-height: 3.25rem;
+  /* Darkness of the scrim behind the header text while the header sits over a photograph.
+     Worst case is a white photograph: tests/unit/header.test.ts checks white text on it stays
+     at 4.5:1 or better. */
+  --header-scrim-strength: 70%;
 }
 
 @media (max-width: 800px) {

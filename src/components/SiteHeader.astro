@@ -4,16 +4,28 @@
 // The navigation is one <nav> that behaves two ways with no JavaScript:
 // on wide screens it is a row of links; at 800px and below it becomes a
 // popover opened by the Menu button (closes on Escape and outside tap).
+//
+// Props:
+//   overHero  The page opens with a full-bleed photograph (the first element in <main>).
+//             The header then floats transparent over it, with white text and a scrim behind
+//             the text, and turns solid once the page scrolls past the photograph. In browsers
+//             without scroll-driven animations, and on every page without a hero, the header
+//             is solid from the start. Set through the `overHero` prop of BaseLayout.
+import { currentState } from '../lib/nav';
 import { contactLink, navigation } from '../lib/site';
 import Wordmark from './Wordmark.astro';
 
-const current = Astro.url.pathname;
-const isCurrent = (href: string) => current === href || current.startsWith(href);
+interface Props {
+  overHero?: boolean;
+}
+
+const { overHero = false } = Astro.props;
+const path = Astro.url.pathname;
 ---
 
-<header class="site-header">
+<header class:list={['site-header', { 'over-hero': overHero }]}>
   <div class="container bar">
-    <a class="home-link" href="/">
+    <a class="home-link" href="/" aria-current={currentState(path, '/')}>
       <Wordmark />
     </a>
 
@@ -25,7 +37,7 @@ const isCurrent = (href: string) => current === href || current.startsWith(href)
       <ul role="list">
         {navigation.map((item) => (
           <li>
-            <a href={item.href} aria-current={isCurrent(item.href) ? 'page' : undefined}>
+            <a href={item.href} aria-current={currentState(path, item.href)}>
               {item.label}
             </a>
           </li>
@@ -39,13 +51,97 @@ const isCurrent = (href: string) => current === href || current.startsWith(href)
 </header>
 
 <style>
+  /*
+   * One number drives the header's look: 0 is "over a photograph" (transparent, white text,
+   * scrim), 1 is "solid" (navy on white). It is 1 unless a scroll-driven animation below moves
+   * it, so a browser without support, and any page without a hero, gets the solid header.
+   */
+  @property --header-solid {
+    syntax: '<number>';
+    inherits: true;
+    initial-value: 1;
+  }
+
+  @keyframes header-solidify {
+    from {
+      --header-solid: 0;
+    }
+
+    to {
+      --header-solid: 1;
+    }
+  }
+
   .site-header {
+    --header-strong: color-mix(
+      in srgb,
+      var(--color-heading) calc(var(--header-solid) * 100%),
+      var(--color-text-on-strong)
+    );
+    --header-link: color-mix(
+      in srgb,
+      var(--color-text) calc(var(--header-solid) * 100%),
+      var(--color-text-on-strong)
+    );
+
     position: sticky;
     top: 0;
     z-index: 10;
-    background: color-mix(in srgb, var(--color-page) 92%, transparent);
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid var(--color-border);
+    background: color-mix(in srgb, var(--color-page) calc(var(--header-solid) * 92%), transparent);
+    backdrop-filter: blur(calc(var(--header-solid) * 10px));
+    border-bottom: 1px solid
+      color-mix(in srgb, var(--color-border) calc(var(--header-solid) * 100%), transparent);
+  }
+
+  /* Scrim: darkens the top of the photograph behind the header text. It is taller than the
+     header so it fades out instead of ending in an edge, and it is gone once the header is solid. */
+  .site-header::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto 0;
+    z-index: -1;
+    height: calc(var(--header-height) * 1.8);
+    background: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--color-navy-950) var(--header-scrim-strength), transparent) 55%,
+      color-mix(in srgb, var(--color-navy-950) calc(var(--header-scrim-strength) / 3), transparent)
+        80%,
+      transparent
+    );
+    opacity: calc(1 - var(--header-solid));
+    pointer-events: none;
+  }
+
+  /*
+   * Over a hero (supporting browsers only): the header leaves the page flow so the photograph
+   * starts at the top of the screen, and the hero's own view timeline (declared in BaseLayout)
+   * drives --header-solid from 0 to 1 across the last header-height of scrolling before the
+   * photograph ends. Opening the phone menu makes it solid at once so the bar and the sheet
+   * read as one piece.
+   */
+  @supports (animation-timeline: --hero) and (timeline-scope: --hero) {
+    .site-header.over-hero {
+      position: fixed;
+      inset: 0 0 auto 0;
+      animation: header-solidify 1ms linear both;
+      animation-timeline: --hero;
+      animation-range: exit calc(100% - var(--header-height)) exit 100%;
+    }
+
+    .site-header.over-hero:has(.site-nav:popover-open) {
+      animation: none;
+    }
+  }
+
+  /* Reduced motion: no gradual fade, the header switches in one step. */
+  @media (prefers-reduced-motion: reduce) {
+    .site-header.over-hero {
+      animation-timing-function: steps(1, jump-end);
+    }
+  }
+
+  .site-header :focus-visible {
+    outline-color: var(--header-strong);
   }
 
   .bar {
@@ -58,16 +154,16 @@ const isCurrent = (href: string) => current === href || current.startsWith(href)
 
   .home-link {
     flex-shrink: 0;
-    color: var(--color-heading);
+    color: var(--header-strong);
   }
 
   .menu-button {
     display: none;
     padding: var(--space-3) var(--space-4);
-    border: 1px solid var(--color-heading);
+    border: 1px solid var(--header-strong);
     border-radius: var(--radius-pill);
     background: none;
-    color: var(--color-heading);
+    color: var(--header-strong);
     cursor: pointer;
   }
 
@@ -90,33 +186,53 @@ const isCurrent = (href: string) => current === href || current.startsWith(href)
     gap: var(--space-6);
   }
 
+  /* Hover draws a thin underline; the current page or section keeps a thicker one, so the
+     marker does not depend on color. */
   .site-nav li a {
-    color: var(--color-text);
+    color: var(--header-link);
     font-size: var(--text-sm);
     font-weight: 500;
-    text-decoration: none;
-    padding-block: var(--space-2);
-    border-bottom: 1px solid transparent;
-    transition: border-color var(--duration-fast) var(--ease-out);
+    text-decoration: underline;
+    text-decoration-color: transparent;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.5em;
+    transition: text-decoration-color var(--duration-fast) var(--ease-out);
   }
 
-  .site-nav li a:hover,
-  .site-nav li a[aria-current='page'] {
-    border-bottom-color: var(--color-heading);
+  .site-nav li a:hover {
+    text-decoration-color: currentColor;
   }
 
+  .site-nav li a[aria-current] {
+    text-decoration-color: currentColor;
+    text-decoration-thickness: 2px;
+  }
+
+  /* Inverts over a photograph: a white button with navy text. */
   .contact-button {
     padding: var(--space-3) var(--space-5);
     border-radius: var(--radius-pill);
-    background: var(--color-surface-strong);
-    color: var(--color-text-on-strong);
+    background: color-mix(
+      in srgb,
+      var(--color-surface-strong) calc(var(--header-solid) * 100%),
+      var(--color-white)
+    );
+    color: color-mix(
+      in srgb,
+      var(--color-text-on-strong) calc(var(--header-solid) * 100%),
+      var(--color-heading)
+    );
     text-decoration: none;
     white-space: nowrap;
     transition: background var(--duration-fast) var(--ease-out);
   }
 
   .contact-button:hover {
-    background: var(--color-ocean-600);
+    background: color-mix(
+      in srgb,
+      var(--color-ocean-600) calc(var(--header-solid) * 100%),
+      var(--color-ocean-050)
+    );
   }
 
   @media (max-width: 1100px) {
@@ -160,6 +276,7 @@ const isCurrent = (href: string) => current === href || current.startsWith(href)
       font-family: var(--font-display);
       font-size: var(--text-xl);
       border-bottom: 1px solid var(--color-border);
+      text-underline-offset: 0.3em;
     }
 
     .contact-button {

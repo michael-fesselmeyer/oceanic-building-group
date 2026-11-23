@@ -12,7 +12,10 @@ const featured = await getFeaturedProjects();
 const hero = featured[0];
 ---
 
-<BaseLayout description="Custom homes, renovations and commercial construction in Jupiter and the Palm Beaches, built by a team with more than 30 years of experience.">
+<BaseLayout
+  overHero
+  description="Custom homes, renovations and commercial construction in Jupiter and the Palm Beaches, built by a team with more than 30 years of experience."
+>
   <section class="hero">
     {hero && (
       <Image
