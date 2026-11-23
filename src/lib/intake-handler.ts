@@ -4,8 +4,11 @@
 // shared schema, checks the Turnstile token and hands the lead to the
 // notifier. The route turns the outcome into a redirect or a page.
 import {
+  followUps,
   isHoneypotFilled,
   parseIntake,
+  type Choice,
+  type FormField,
   type Intake,
   type IntakeField,
   type Notice,
@@ -28,10 +31,17 @@ import { TURNSTILE_FIELD, isServiceFailure, verifyTurnstile } from './turnstile'
 export const MAX_BODY_BYTES = 64 * 1024;
 
 const FORM_TYPES = new Set(['application/x-www-form-urlencoded', 'multipart/form-data']);
-const FIELDS: IntakeField[] = ['name', 'email', 'phone', 'projectType', 'message'];
+const FIELDS: FormField[] = [
+  'name',
+  'email',
+  'phone',
+  'projectType',
+  'message',
+  ...followUps.map((question) => question.field),
+];
 
 /** What the visitor typed, to put back in the form when it is shown again. */
-export type FormValues = Partial<Record<IntakeField, string>>;
+export type FormValues = Partial<Record<FormField, string>>;
 
 export type IntakeOutcome =
   /** The office was notified. */
@@ -63,6 +73,8 @@ export function createIntakeSetup(
 export interface IntakeDeps {
   /** Settings, and the notifier built from them (absent when the settings have problems). */
   setup: IntakeSetup;
+  /** The town question's options (`townChoices`), from the towns collection. */
+  towns?: readonly Choice[];
   logger: Logger;
   verify?: typeof verifyTurnstile;
   fetch?: typeof fetch;
@@ -129,6 +141,7 @@ export async function leadKey(intake: Intake): Promise<string> {
     intake.phone ?? '',
     intake.projectType,
     intake.message,
+    intake.followUps.map(({ field, answer }) => [field, answer]),
   ]);
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
   const hex = [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0'));
@@ -161,7 +174,7 @@ export async function handleIntake(request: Request, deps: IntakeDeps): Promise<
     if (fields[field] !== undefined) values[field] = fields[field];
   }
 
-  const parsed = parseIntake(values);
+  const parsed = parseIntake(values, { towns: deps.towns });
   if (!parsed.success) {
     logger.info(`[intake] invalid: ${Object.keys(parsed.errors).join(', ')}`);
     return { kind: 'invalid', values, errors: parsed.errors };

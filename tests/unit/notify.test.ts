@@ -19,6 +19,7 @@ const intake: Intake = {
   phone: '(561) 555-0142',
   projectType: 'renovation',
   message: 'A kitchen and two bathrooms in a 1980s house.',
+  followUps: [],
 };
 const lead: Lead = { intake, spamCheck: 'passed', key: 'lead-test-1' };
 
@@ -53,6 +54,38 @@ describe('formatLeadEmail', () => {
     ]) {
       expect(text).toContain(line);
     }
+  });
+
+  it('lists the follow-up answers in plain words under the message', () => {
+    const { text } = formatLeadEmail({
+      ...lead,
+      intake: {
+        ...intake,
+        followUps: [
+          { field: 'town', answer: 'Harbor Point' },
+          { field: 'start', answer: 'Within 6 months' },
+          { field: 'renovation', answer: 'The whole home' },
+        ],
+      },
+    });
+    expect(text).toContain(
+      [
+        intake.message,
+        '',
+        'About the project:',
+        'Where: Harbor Point',
+        'Start: Within 6 months',
+        'Renovation: The whole home',
+        '',
+        '--',
+      ].join('\n'),
+    );
+  });
+
+  it('leaves the follow-up section out when none were answered', () => {
+    const { text } = formatLeadEmail(lead);
+    expect(text).not.toContain('About the project:');
+    expect(text).toContain(`${intake.message}\n\n--`);
   });
 
   it('says when no phone number was given', () => {
