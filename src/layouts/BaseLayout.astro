@@ -24,6 +24,8 @@ interface Props {
   imageSize?: { width: number; height: number };
   /** Keeps the page out of search engines even after launch. */
   noindex?: boolean;
+  /** Leaves out the canonical link. Only for the 404 page, which has no address of its own. */
+  noCanonical?: boolean;
   /** Breadcrumb trail from the home page to this page. Pass it on nested pages only. */
   breadcrumbs?: Crumb[];
   /** Extra JSON-LD nodes for this page (see src/lib/structured-data.ts). */
@@ -43,6 +45,7 @@ const {
   imageAlt,
   imageSize,
   noindex,
+  noCanonical,
   breadcrumbs,
   structuredData,
   overHero = false,
@@ -61,6 +64,7 @@ const {
       imageAlt={imageAlt}
       imageSize={imageSize}
       noindex={noindex}
+      noCanonical={noCanonical}
       breadcrumbs={breadcrumbs}
       structuredData={structuredData}
     />

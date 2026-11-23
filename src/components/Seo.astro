@@ -16,6 +16,11 @@ interface Props {
   imageSize?: { width: number; height: number };
   /** Keeps this page out of search engines even after launch. */
   noindex?: boolean;
+  /**
+   * Leaves out the canonical link. Only for a page with no address of its own,
+   * such as the 404 page, which is served at whatever address was not found.
+   */
+  noCanonical?: boolean;
   /** Trail from the home page down to this page, for nested pages. */
   breadcrumbs?: Crumb[];
   /** Extra JSON-LD nodes for this page, such as a project description. */
@@ -29,6 +34,7 @@ const {
   imageAlt,
   imageSize,
   noindex = false,
+  noCanonical = false,
   breadcrumbs,
   structuredData,
 } = Astro.props;
@@ -52,8 +58,8 @@ const graph = pageGraph({
 
 <title>{fullTitle}</title>
 <meta name="description" content={description} />
-{/* A page kept out of search has no canonical address: the 404 page has none to give. */}
-{!noindex && <link rel="canonical" href={canonical} />}
+{/* The 404 page has no address of its own to give, so it opts out with noCanonical. */}
+{!noCanonical && <link rel="canonical" href={canonical} />}
 {hidden && <meta name="robots" content="noindex, nofollow" />}
 
 <meta property="og:type" content="website" />
