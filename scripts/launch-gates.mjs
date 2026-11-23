@@ -332,7 +332,24 @@ export function checkTeam(files) {
 }
 
 // ---------------------------------------------------------------------------
-// Lighthouse (lighthouserc.json and the latest CI run on main)
+// Lighthouse (lighthouserc.json, lighthouserc.noindex.json and the latest CI run on main)
+
+/**
+ * The Lighthouse configs CI runs: pages meant to be indexed, then pages that
+ * are noindex on purpose. A file that does not exist is skipped.
+ */
+export const LIGHTHOUSE_CONFIGS = ['lighthouserc.json', 'lighthouserc.noindex.json'];
+
+/**
+ * Every address the Lighthouse job audits, across its configs.
+ * @param {string} root
+ * @returns {string[]}
+ */
+export function readLighthouseUrls(root) {
+  return LIGHTHOUSE_CONFIGS.map((file) => join(root, file))
+    .filter((path) => existsSync(path))
+    .flatMap((path) => JSON.parse(readFileSync(path, 'utf8'))?.ci?.collect?.url ?? []);
+}
 
 /** Page files that are never part of the launched site, or are not pages. */
 const NOT_LAUNCHED = [/^api\//, /^style-guide\//];
@@ -470,7 +487,10 @@ export function checkLighthouse({ pageFiles, lighthouseUrls, ci }) {
   const next = [];
   if (missing.length > 0) {
     problems.push(`${coverage}; missing: ${missing.map((type) => type.name).join(', ')}.`);
-    next.push('Add an address for each missing page type to collect.url in lighthouserc.json.');
+    next.push(
+      'Add an address for each missing page type to collect.url in lighthouserc.json ' +
+        '(or lighthouserc.noindex.json for a page that is noindex on purpose).',
+    );
   }
 
   let ciLine = '';
@@ -556,14 +576,13 @@ export function readLatestCi(root) {
  */
 export function gatherInputs(root, { readCi = readLatestCi } = {}) {
   const read = (/** @type {string} */ file) => readFileSync(join(root, file), 'utf8');
-  const lighthouse = JSON.parse(read('lighthouserc.json'));
   return {
     siteSource: read('src/lib/site.ts'),
     astroConfigSource: read('astro.config.mjs'),
     wranglerSource: read('wrangler.jsonc'),
     content: readContent(root),
     pageFiles: readPageFiles(root),
-    lighthouseUrls: /** @type {string[]} */ (lighthouse?.ci?.collect?.url ?? []),
+    lighthouseUrls: readLighthouseUrls(root),
     ci: readCi(root),
   };
 }
