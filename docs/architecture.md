@@ -84,11 +84,17 @@ the browser; the choice, its limits and what it collects are in
 - **One switch.** [`src/lib/analytics.ts`](../src/lib/analytics.ts) returns the beacon only when
   the site is launched and `PUBLIC_CF_ANALYTICS_TOKEN` is set (both read at build time). Previews
   and local builds never count visits. A token in the wrong shape stops the build.
-- **Where.** [`Analytics.astro`](../src/components/Analytics.astro) adds one deferred module script
-  at the end of `<body>` through `BaseLayout`, so every page has it and none waits for it.
+- **Where.** [`Analytics.astro`](../src/components/Analytics.astro) renders, at the end of
+  `<body>` through `BaseLayout`, a `<template>` holding the beacon's address and settings and a
+  small bundled script ([`src/lib/analytics-loader.ts`](../src/lib/analytics-loader.ts)) that adds
+  the beacon after the `load` event, once the browser is idle. Written as a plain deferred
+  script, the beacon was fetched from Cloudflare's domain while a page's opening photograph was
+  still painting, and on a slow phone connection that second connection held back the Largest
+  Contentful Paint by more than a second. A visitor who leaves before the page has loaded is not
+  counted.
 - **Privacy page.** Its analytics paragraph is rendered from the same switch, so the page says the
   site collects statistics exactly when it does.
-- **Tests.** A unit test covers the switch; a browser test checks that the preview build has no
+- **Tests.** Unit tests cover the switch and the loader's timing; a browser test checks that the preview build has no
   beacon on any page; the Lighthouse job builds the launched site with a made-up token and blocks
   only the beacon's report, so the script's cost counts against the budget.
 

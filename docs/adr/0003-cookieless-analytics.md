@@ -24,9 +24,11 @@ Figures were read from each provider's pricing and documentation pages on the da
 
 ## Decision
 
-Use **Cloudflare Web Analytics** with the manual beacon (a deferred module script) added to every
-page by `src/components/Analytics.astro`, only when the site is launched and
-`PUBLIC_CF_ANALYTICS_TOKEN` is set.
+Use **Cloudflare Web Analytics** with the manual beacon added to every page by
+`src/components/Analytics.astro`, only when the site is launched and `PUBLIC_CF_ANALYTICS_TOKEN`
+is set. The beacon is added after the page's `load` event (see `src/lib/analytics-loader.ts`), so
+it never competes with the page's own content; a visitor who leaves before the page has loaded is
+not counted.
 
 ## Why
 
@@ -35,8 +37,8 @@ page by `src/components/Analytics.astro`, only when the site is launched and
 - **Free with no overage.** Nothing is billed at any volume, unlike Umami's per-event overage.
 - **No banner needed.** No cookies, no local storage and no cross-site identifiers, which matches
   what the privacy policy already promised.
-- **Small.** The beacon is about 10 KB compressed, loads as a module after the page is parsed,
-  and sends one report per page view.
+- **Small.** The beacon is about 10 KB compressed, loads after the page has loaded, and sends one
+  report per page view.
 
 ## Limits and what the site does near them
 
