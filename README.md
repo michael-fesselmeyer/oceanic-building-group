@@ -17,6 +17,10 @@ into enquiries through a short intake form that notifies the office straight awa
   data, and a performance budget enforced in CI.
 - **Desktop and phone as equals.** The wide layout is designed for large screens; media queries
   simplify it for tablets and phones.
+- **An intake form that works everywhere.** The contact page's form validates in the browser
+  with no JavaScript; with it, plain-language messages appear under each field, in a summary, and
+  focus moves to the first answer to fix. One schema in `src/lib/intake.ts` holds the rules and
+  wording for the page and the server alike, and a hidden honeypot field catches spam programs.
 - **Plain-language legal pages.** A privacy policy and terms of use, in their own reading layout
   and linked from every footer. The privacy text describes the site as built (no cookies, no
   stored submissions), so it changes whenever that does.

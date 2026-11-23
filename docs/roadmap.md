@@ -19,7 +19,7 @@ one or a few issues.
 | `/process/`                    | Our Process       | The stages of a build with typical timelines                                             |
 | `/about/`                      | About             | The company story and team                                                               |
 | `/areas/` and `/areas/<town>/` | Areas We Serve    | One page per town with its local projects                                                |
-| `/contact/`                    | Contact           | Intake form, office details, map                                                         |
+| `/contact/`                    | Contact           | Intake form, office details, a directions link (no embedded map)                         |
 | `/privacy/`, `/terms/`         | Legal             | Plain-language privacy policy and terms of use, linked from the footer                   |
 
 ## Phases

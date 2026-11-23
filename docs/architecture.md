@@ -54,7 +54,8 @@ Lighthouse job in CI builds with it set to `true` so the audit measures the laun
 ## Styling
 
 - [`src/styles/tokens.css`](../src/styles/tokens.css) defines every color, type size, space and
-  timing as a custom property. Brand colors were sampled from the logo.
+  timing as a custom property. Brand colors were sampled from the logo; `--color-error` and
+  `--color-control-border` cover form feedback and input outlines.
 - [`src/styles/base.css`](../src/styles/base.css) holds the reset, element defaults and three
   shared helpers (`.container`, `.label`, `.visually-hidden`).
 - Component styles are scoped inside each `.astro` file.
@@ -183,15 +184,40 @@ To add a filter, add it to `PORTFOLIO_FILTERS`, add a page next to the others th
 
 ## Intake form
 
-Planned design (see the roadmap for status):
+`/contact/` ([`src/pages/contact.astro`](../src/pages/contact.astro)) holds the form beside the
+office details. The server endpoint is planned (see the roadmap); until it exists the form's POST
+to `/api/intake/` gets a 404.
 
-1. The form posts to a server endpoint. It works without JavaScript; a small script may enhance
-   it with inline validation.
-2. The endpoint validates the fields with a schema shared with the client, verifies the Turnstile
-   token, and drops submissions that fill the hidden honeypot field.
-3. A notifier sends the lead through each enabled channel. Email is always on; SMS sits behind
-   `SMS_ENABLED` and stays off until the messaging account is approved.
-4. Leads are not stored. The email to the office is the record.
+1. **One schema.** [`src/lib/intake.ts`](../src/lib/intake.ts) defines the fields (name, email,
+   optional phone, project type, message), their length limits, the project types with their
+   display labels, and every error message a visitor can see. The page renders its inputs and
+   `required`, `maxlength`, `minlength` and `pattern` attributes from these values, and the
+   endpoint validates with `parseIntake()`, which returns one message per field. The messages are
+   plain sentences grouped in one object so the business can reword them.
+2. **Works without JavaScript.** The form posts to `/api/intake/` with `method="post"`, and the
+   browser's own validation stops an incomplete form.
+3. **Enhanced with a small script** (in the page, no dependencies, no schema library shipped to the
+   browser). It turns off the browser's bubbles, writes the message under each field, ties it to
+   the control with `aria-describedby` and `aria-invalid`, lists every problem in a summary at the
+   top of the form, and moves focus to the first answer to fix. After the first attempt, each
+   message clears as the answer is corrected. It reads the messages from `data-` attributes
+   rendered from the schema, so wording lives in one place.
+4. **Honeypot.** A text field named `website` sits off-screen inside an `aria-hidden` wrapper with
+   `tabindex="-1"` and `autocomplete="off"`. It is moved off-screen rather than hidden with
+   `display: none`, because some programs skip undisplayed fields. It is hidden from assistive
+   technology and the tab order instead of labelled "leave this empty", so no visitor, sighted or
+   not, ever meets an instruction that makes no sense to them. The endpoint drops any submission
+   where `isHoneypotFilled()` is true.
+5. **Spam check slot.** A comment in the form marks where the endpoint work adds the Cloudflare
+   Turnstile widget. No third-party script loads on the page until then.
+6. The endpoint verifies the Turnstile token and validates with the shared schema. A notifier
+   sends the lead through each enabled channel. Email is always on; SMS sits behind `SMS_ENABLED`
+   and stays off until the messaging account is approved.
+7. Leads are not stored. The email to the office is the record.
+
+The office address comes from [`src/lib/site.ts`](../src/lib/site.ts); the phone number and
+license number appear only once they are set there. The directions link opens Google Maps with
+the address; there is no embedded map, so the page loads nothing from a third party.
 
 Recipients and keys are secrets, listed by name in [`.env.example`](../.env.example).
 
