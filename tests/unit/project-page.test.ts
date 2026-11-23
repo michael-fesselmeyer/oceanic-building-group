@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   aspectRatio,
+  buildStoryStages,
   formatProgressDate,
   isoDay,
   latestProgressDate,
@@ -98,5 +99,51 @@ describe('progress updates', () => {
     expect(latest && isoDay(latest)).toBe('2026-03-20');
     expect(latestProgressDate({ status: 'under-construction', progress: [] })).toBeNull();
     expect(latestProgressDate({ status: 'completed', progress: updates })).toBeNull();
+  });
+});
+
+describe('build story', () => {
+  const shot = (iso: string, caption: string, photo = true) => ({
+    date: new Date(iso),
+    caption,
+    ...(photo ? { photo: `${caption}.jpg` } : {}),
+  });
+  const progress = [
+    shot('2025-06-02', 'framing'),
+    shot('2025-03-10', 'slab'),
+    shot('2025-09-15', 'trim', false),
+    shot('2025-06-02', 'roof'),
+    shot('2025-11-20', 'handover'),
+  ];
+
+  it('tells the stages of a finished project oldest first, same-day stages in file order', () => {
+    expect(
+      buildStoryStages({ status: 'completed', progress }).map((stage) => stage.caption),
+    ).toEqual(['slab', 'framing', 'roof', 'handover']);
+  });
+
+  it('needs at least three photographed stages', () => {
+    const two = [
+      shot('2025-03-10', 'slab'),
+      shot('2025-06-02', 'roof'),
+      shot('2025-09-15', 'trim', false),
+    ];
+    expect(buildStoryStages({ status: 'completed', progress: two })).toEqual([]);
+    expect(buildStoryStages({ status: 'completed', progress: [] })).toEqual([]);
+    expect(buildStoryStages({ status: 'completed', progress: progress.slice(0, 3) })).toHaveLength(
+      0,
+    );
+    expect(buildStoryStages({ status: 'completed', progress: progress.slice(0, 4) })).toHaveLength(
+      3,
+    );
+  });
+
+  it('is never told while the project is under construction', () => {
+    expect(buildStoryStages({ status: 'under-construction', progress })).toEqual([]);
+  });
+
+  it('leaves the original list untouched', () => {
+    buildStoryStages({ status: 'completed', progress });
+    expect(progress[0]!.caption).toBe('framing');
   });
 });

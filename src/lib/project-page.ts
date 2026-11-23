@@ -90,3 +90,26 @@ export function latestProgressDate(data: {
   if (data.status !== 'under-construction') return null;
   return progressNewestFirst(data.progress)[0]?.date ?? null;
 }
+
+/** The fewest photographed stages that make a build story worth showing. */
+export const BUILD_STORY_MIN_STAGES = 3;
+
+/**
+ * The stages of a finished project's "How it was built" story: its progress
+ * updates that have a photograph, oldest first. Updates from the same day keep
+ * their order in the file. Empty unless the project is completed and has at
+ * least `BUILD_STORY_MIN_STAGES` photographed updates; under construction,
+ * the updates are shown as construction progress instead.
+ */
+export function buildStoryStages<T extends Dated & { photo?: unknown }>(data: {
+  status: 'completed' | 'under-construction';
+  progress: readonly T[];
+}): (T & { photo: NonNullable<T['photo']> })[] {
+  if (data.status !== 'completed') return [];
+  const stages = progressNewestFirst(
+    data.progress.filter((update): update is T & { photo: NonNullable<T['photo']> } =>
+      Boolean(update.photo),
+    ),
+  ).reverse();
+  return stages.length >= BUILD_STORY_MIN_STAGES ? stages : [];
+}
