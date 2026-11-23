@@ -79,7 +79,7 @@ export const launched: boolean = import.meta.env?.PUBLIC_SITE_LAUNCHED === 'true
  * page template can be audited while every real project is still a draft.
  * Never set it for a deployment.
  */
-export const auditFixtures: boolean = import.meta.env.PUBLIC_AUDIT_FIXTURES === 'true';
+export const auditFixtures: boolean = import.meta.env?.PUBLIC_AUDIT_FIXTURES === 'true';
 
 /** Main navigation, in display order. Paths always end in "/". */
 export const navigation = [
