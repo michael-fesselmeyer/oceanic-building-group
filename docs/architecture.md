@@ -24,15 +24,15 @@ recipes for editing it are in [content-guide.md](content-guide.md). Schemas are 
 [`src/content.config.ts`](../src/content.config.ts) and are strict: an unknown or misspelled
 field fails the build.
 
-| Collection      | Holds                                                          | Used by                               |
-| --------------- | -------------------------------------------------------------- | ------------------------------------- |
-| `projects`      | Photographs, stats, story, category, town, progress updates    | Portfolio, project pages, home, towns |
-| `services`      | One page per service line                                      | Services pages, home                  |
-| `towns`         | One page per service-area town                                 | Town pages, project filters           |
-| `team`          | Name, role, optional portrait and biography; licensee details  | About                                 |
-| `testimonials`  | Quote and attribution; `aboutDesignPartner` marks partner ones | Home, project pages, Interior Design  |
-| `processSteps`  | The stages of a build, in order                                | Our Process, home                     |
-| `designPartner` | One file: the partner's summary, places, biography             | Interior Design                       |
+| Collection      | Holds                                                          | Used by                                |
+| --------------- | -------------------------------------------------------------- | -------------------------------------- |
+| `projects`      | Photographs, stats, story, category, town, progress updates    | Portfolio, project pages, home, towns  |
+| `services`      | One page per service line                                      | Services pages, home                   |
+| `towns`         | One page per service-area town, with map coordinates           | Town pages, Areas map, project filters |
+| `team`          | Name, role, optional portrait and biography; licensee details  | About                                  |
+| `testimonials`  | Quote and attribution; `aboutDesignPartner` marks partner ones | Home, project pages, Interior Design   |
+| `processSteps`  | The stages of a build, in order                                | Our Process, home                      |
+| `designPartner` | One file: the partner's summary, places, biography             | Interior Design                        |
 
 Rules that apply to all of them:
 
@@ -436,9 +436,9 @@ To add a filter, add it to `PORTFOLIO_FILTERS`, add a page next to the others th
 
 ## Areas pages
 
-`/areas/` lists the towns and `/areas/<town>/` has one page per town, from one Markdown file each in
-`src/content/towns/`. The schema is unchanged: `name`, `county`, `summary`, `seoDescription`,
-`order`, `draft` and a Markdown body.
+`/areas/` lists the towns beside a drawn map of the coast, and `/areas/<town>/` has one page per
+town, from one Markdown file each in `src/content/towns/`. The fields are `name`, `county`,
+`latitude`, `longitude`, `summary`, `seoDescription`, `order`, `draft` and a Markdown body.
 
 - **Local copy.** Each town's file is written for that town: its setting, the building rules that
   apply there, and how permits work. Every claim about a code, a permit or a municipality is
@@ -455,12 +455,59 @@ To add a filter, add it to `PORTFOLIO_FILTERS`, add a page next to the others th
 - **Page parts.** Opening band with a link back to `/areas/`, the Markdown body beside a list of all
   towns, the town's projects, the services, and a call to action. The footer links to `/areas/`
   (`areasLink` in `src/lib/site.ts`); the main navigation does not.
+- **Map.** The index draws the coast from Hobe Sound to Wellington as inline SVG at build time:
+  the Atlantic shore, the Intracoastal Waterway, the Loxahatchee River and a mark for each town
+  that links to its page, labeled with its name and, where there are projects, their count. There
+  is no map service, no tiles and no script.
+  - _Coordinates._ Each town's `latitude` and `longitude` are required. The schema refuses a town
+    outside `TOWN_BOUNDS` (latitude 26.62 to 27.1, longitude -80.3 to -80.03, northern Palm Beach
+    and southern Martin counties), a margin inside the drawn area, so a mark never falls off the
+    map. The current values are the internal points of each place in the Census Bureau's 2023
+    Gazetteer, rounded to four decimals (about 10 m).
+  - _Projection._ `createProjection` in [`src/lib/areas-map.ts`](../src/lib/areas-map.ts) is
+    equirectangular: longitude is multiplied by the cosine of the map's middle latitude so a mile
+    east and a mile north are the same length, and north is up. At this size the distortion is
+    well under a pixel. The drawing is 400 units wide, about the width it is shown at, so the labels'
+    CSS sizes come out close to the token sizes.
+  - _Labels._ `placeTowns` puts each label to the right of its mark, or to the left when the right
+    would leave the map or cover a label or mark already placed, working north to south from an
+    estimate of the text's width. The browser test measures the real labels and fails if any two
+    overlap; a new town that collides needs a smarter rule there, not a hand-placed exception.
+  - _Geography._ [`src/lib/coast-geography.ts`](../src/lib/coast-geography.ts) holds the outlines
+    as longitude and latitude pairs, about 700 points. Source: US Census Bureau, public domain (works
+    of the US Government, no licence needed). The coastline is the 2023 cartographic boundary file
+    of counties at 1:500,000 (`cb_2023_us_county_500k`), Martin and Palm Beach counties dissolved and
+    clipped to `MAP_BOUNDS`. The Intracoastal Waterway and the Loxahatchee River are the named
+    water bodies (Intracoastal Waterway, Hobe Sound, Jupiter Sound, South Jupiter Narrows, Lake
+    Worth, Lake Worth Creek, Little Lake Worth; Loxahatchee River and its forks) from the 2024
+    TIGER/Line area hydrography of the same counties (`tl_2024_12085_areawater`,
+    `tl_2024_12099_areawater`), merged. Both were simplified with mapshaper
+    (`-simplify interval=60`, dropping points closer than about 60 m) and written out with four
+    decimals.
+  - _Regenerating._ Only needed to move or enlarge the map. Download the three files into an empty
+    folder outside the repository, run the clip, filter and simplify steps above with mapshaper,
+    and write the result in the same shape as the existing module: the coastline from the north
+    edge to the south edge, then the water outlines. Keep the conversion script outside the
+    repository too; only the coordinate module is committed. Raise `MAP_BOUNDS` and `TOWN_BOUNDS`
+    together, and keep the module small: the whole map is inlined in the page.
+  - _Accessibility._ The SVG has a title and a description that names the towns, and the town
+    list beside it carries the same links, so nothing depends on the picture. Hover and keyboard
+    focus look the same: a ring around the mark and the name underlined in the link color. Labels
+    have a halo in the page color so they stay legible over the coast.
+  - _Layout._ Beside the list from 4 of 12 columns on a wide screen (5 below 1100px), and sticky so
+    it stays in view while the list scrolls. Below 800px it follows the list at up to
+    `--width-map`. Below 520px it is left out: at phone width the labels would be too small to read
+    or tap, and the list says the same thing.
 - **Search.** Titles read "Building in <town>". Each town page carries breadcrumbs (Home, Areas We
   Serve, the town) through `townCrumbs`, and the sitemap lists every page automatically.
 - **Tests.** `tests/unit/towns.test.ts` covers the helpers; `tests/e2e/areas.spec.ts` walks the
   files in `src/content/towns/` and checks each page (one heading, local copy, services and contact
   links, title and description, axe, no sideways scroll), the index, the footer link, a town with
-  projects, a town without, the project-to-town link and the breadcrumbs.
+  projects, a town without, the project-to-town link and the breadcrumbs. For the map,
+  `tests/unit/areas-map.test.ts` covers the projection, the bounds, every town file's coordinates,
+  the geography and label placement, and the browser test checks the map's title and description,
+  a labeled link to every town, project counts, that no two labels overlap, that hover and focus
+  look the same, and that phones leave it out.
 
 ## Services pages
 
