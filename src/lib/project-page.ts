@@ -42,3 +42,51 @@ export function projectFacts(data: {
     return text ? [{ label, value: text }] : [];
   });
 }
+
+/** The fields of a progress update that ordering and dates depend on. */
+export interface Dated {
+  date: Date;
+}
+
+/**
+ * Progress updates newest first. Updates from the same day keep the reverse
+ * of their order in the file, so the one written last, the latest, leads.
+ */
+export function progressNewestFirst<T extends Dated>(updates: readonly T[]): T[] {
+  return updates
+    .map((update, index) => ({ update, index }))
+    .sort((a, b) => b.update.date.getTime() - a.update.date.getTime() || b.index - a.index)
+    .map(({ update }) => update);
+}
+
+/**
+ * A progress date as visitors read it: "March 4, 2026". Dates in content
+ * files have no time of day and are read as midnight UTC, so they are
+ * formatted in UTC to stay on the day that was written.
+ */
+export function formatProgressDate(date: Date): string {
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    timeZone: 'UTC',
+  });
+}
+
+/** The machine-readable form for a <time datetime> attribute: "2026-03-04". */
+export function isoDay(date: Date): string {
+  return date.toISOString().slice(0, 10);
+}
+
+/**
+ * The date of the latest progress update of an under-construction project,
+ * or null when there is none to show. Completed projects show their gallery
+ * instead, so their progress is not shown.
+ */
+export function latestProgressDate(data: {
+  status: 'completed' | 'under-construction';
+  progress: readonly Dated[];
+}): Date | null {
+  if (data.status !== 'under-construction') return null;
+  return progressNewestFirst(data.progress)[0]?.date ?? null;
+}
