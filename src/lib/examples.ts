@@ -6,6 +6,7 @@ import placeholder from '../assets/placeholders/placeholder-wide.jpg';
 import type { Project } from './content';
 import type { DesignPartnerIntro } from './design-partner';
 import type { DesignPartner } from './site';
+import type { TeamCard } from './team';
 
 /** A made-up project. Pass only the fields an example needs to change. */
 export function exampleProject(id: string, data: Partial<Project['data']>): Project {
@@ -105,5 +106,34 @@ export const exampleDesignPartnerQuotes = [
   {
     quote: 'Calm, patient and very good with color.',
     attribution: 'Homeowner, Tequesta',
+  },
+];
+
+/** Made-up team members: a portrait with a biography, a licensee, and a long name with neither. */
+export const exampleTeam: TeamCard[] = [
+  {
+    id: 'example-principal',
+    name: 'Alex Example',
+    role: 'Managing member',
+    photo: placeholderTall,
+    brokerage: null,
+    bio: [
+      'A made-up principal, used on the style guide to show a team entry with a portrait.',
+      'A second paragraph shows how a longer biography is spaced.',
+    ],
+  },
+  {
+    id: 'example-agent',
+    name: 'Sam Example',
+    role: 'Real estate agent',
+    brokerage: 'Example Realty',
+    bio: [],
+  },
+  {
+    id: 'example-long-name',
+    name: 'Christopher Alexander Montgomery-Example',
+    role: 'Project manager for commercial construction',
+    brokerage: null,
+    bio: [],
   },
 ];
