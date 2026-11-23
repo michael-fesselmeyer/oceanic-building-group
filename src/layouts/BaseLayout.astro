@@ -17,9 +17,15 @@ interface Props {
   image?: string;
   /** Keeps the page out of search engines even after launch. */
   noindex?: boolean;
+  /**
+   * The page opens with a full-bleed photograph. The header floats over it and turns solid
+   * once the page scrolls past it. The first element inside <main> must be that photograph
+   * section. Leave out on pages without one: they keep the solid header.
+   */
+  overHero?: boolean;
 }
 
-const { title, description, image, noindex } = Astro.props;
+const { title, description, image, noindex, overHero = false } = Astro.props;
 ---
 
 <!doctype html>
@@ -38,11 +44,11 @@ const { title, description, image, noindex } = Astro.props;
     <Font cssVariable="--font-newsreader" preload={[{ style: 'normal' }]} />
     <Font cssVariable="--font-hanken" preload />
   </head>
-  <body>
+  <body class:list={{ 'over-hero': overHero }}>
     <a class="skip-link" href="#main">
       Skip to content
     </a>
-    <SiteHeader />
+    <SiteHeader overHero={overHero} />
     <main id="main" tabindex="-1">
       <slot />
     </main>
@@ -63,5 +69,22 @@ const { title, description, image, noindex } = Astro.props;
 
   main:focus {
     outline: none;
+  }
+
+  /*
+   * Hero pages: the first element in <main> gets a view timeline, and the body shares it with
+   * the header (a sibling of <main>), which animates against it. The inset starts the timeline
+   * at the header's bottom edge, so it ends when the photograph has scrolled out from under
+   * the header. Browsers without these features ignore the block.
+   */
+  @supports (view-timeline: --hero) and (timeline-scope: --hero) {
+    body.over-hero {
+      timeline-scope: --hero;
+    }
+
+    body.over-hero main > :global(:first-child) {
+      view-timeline: --hero block;
+      view-timeline-inset: var(--header-height) 0;
+    }
   }
 </style>
