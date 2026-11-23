@@ -81,8 +81,8 @@ Project setup, design tokens, page shell, content schemas, tests, CI and reposit
 2. "How it was built": a finished project's progress photographs as a stage-by-stage story (done;
    shows once a project has three photographed updates).
 3. A map of where the company builds, on the Areas page (done).
-4. Before-and-after comparisons on project pages (waiting for the business's renovation
-   photographs once merged).
+4. Before-and-after comparisons on project pages (done; shows once a project has photograph
+   pairs).
 5. The opening photograph is preloaded ahead of the fonts, and the analytics beacon loads after
    the page, so pages that open with a photograph keep their speed budget (done).
 
