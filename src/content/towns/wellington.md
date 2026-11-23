@@ -1,6 +1,8 @@
 ---
 name: Wellington
 county: Palm Beach County
+latitude: 26.649
+longitude: -80.2672
 summary: A village in western Palm Beach County known for its equestrian community, where a protected preserve area covers nearly a third of the developable land.
 seoDescription: Building in Wellington, Florida. the Equestrian Preserve Area, barns and arenas, the Village's building department and Florida Building Code wind requirements.
 order: 7

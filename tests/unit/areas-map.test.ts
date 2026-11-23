@@ -1,3 +1,5 @@
+import { readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   MAP_BOUNDS,
@@ -64,6 +66,25 @@ describe('isWithin and the town bounds', () => {
     expect(isWithin(TOWN_BOUNDS, 26.65, -80.27)).toBe(true); // Wellington
     expect(isWithin(TOWN_BOUNDS, 27.2, -80.25)).toBe(false); // Stuart, farther north
     expect(isWithin(TOWN_BOUNDS, 26.36, -80.08)).toBe(false); // Boca Raton, farther south
+  });
+});
+
+describe('town files', () => {
+  const folder = join(import.meta.dirname, '../../src/content/towns');
+  const towns = readdirSync(folder)
+    .filter((file) => file.endsWith('.md') && !file.startsWith('_'))
+    .map((file) => {
+      const front = readFileSync(join(folder, file), 'utf8').match(/^---\n([\s\S]*?)\n---/)?.[1];
+      const field = (name: string) => Number(front?.match(new RegExp(`^${name}: (.+)$`, 'm'))?.[1]);
+      return { file, latitude: field('latitude'), longitude: field('longitude') };
+    });
+
+  it('has towns to check', () => {
+    expect(towns.length).toBeGreaterThan(0);
+  });
+
+  it.each(towns)('$file has coordinates on the map', ({ latitude, longitude }) => {
+    expect(isWithin(TOWN_BOUNDS, latitude, longitude)).toBe(true);
   });
 });
 

@@ -1,6 +1,8 @@
 ---
 name: Palm Beach Gardens
 county: Palm Beach County
+latitude: 26.8488
+longitude: -80.1671
 summary: A city in northern Palm Beach County, home to PGA National, where many neighborhoods are golf and gated communities that review plans before the city does.
 seoDescription: Building in Palm Beach Gardens, Florida. community architectural review, the City's online permitting, flood maps and Florida Building Code wind requirements.
 order: 5

@@ -1,6 +1,8 @@
 ---
 name: Hobe Sound
 county: Martin County
+latitude: 27.0727
+longitude: -80.1424
 summary: A community in Martin County, just north of the Palm Beach County line, near Jonathan Dickinson State Park and the barrier island of Jupiter Island.
 seoDescription: Building in Hobe Sound, Florida. Martin County permits, the coastal construction control line, and how Jupiter Island differs from the mainland.
 order: 6

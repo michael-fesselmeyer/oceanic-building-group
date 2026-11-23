@@ -1,6 +1,8 @@
 ---
 name: Tequesta
 county: Palm Beach County
+latitude: 26.9649
+longitude: -80.1132
 summary: A village on the Loxahatchee River in northern Palm Beach County, with its own building department and a floodplain permit step for homes in mapped flood zones.
 seoDescription: Building in the Village of Tequesta, Florida. Loxahatchee River sites, floodplain development permits, elevation certificates and the building department.
 order: 3

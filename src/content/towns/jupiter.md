@@ -1,6 +1,8 @@
 ---
 name: Jupiter
 county: Palm Beach County
+latitude: 26.9186
+longitude: -80.1169
 summary: Where the Loxahatchee River and the Intracoastal Waterway meet the Atlantic at Jupiter Inlet, so many homes here are built for water, wind and flood rules.
 seoDescription: Building in Jupiter, Florida. waterfront and oceanfront sites, flood maps, the coastal construction control line and the Town's online permit portal.
 order: 1

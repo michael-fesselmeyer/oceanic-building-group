@@ -1,6 +1,8 @@
 ---
 name: Juno Beach
 county: Palm Beach County
+latitude: 26.8755
+longitude: -80.0596
 summary: A town on the Atlantic where oceanfront building meets sea turtle nesting season, the coastal construction control line and wind-rated construction.
 seoDescription: Building in Juno Beach, Florida. oceanfront sites, the coastal construction control line, sea turtle lighting approval and wind-rated construction.
 order: 4
