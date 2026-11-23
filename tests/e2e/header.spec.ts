@@ -210,3 +210,46 @@ test.describe('phone menu without JavaScript', () => {
     await expect(menu).toBeHidden();
   });
 });
+
+test.describe('phone menu without popover support', () => {
+  // Older browsers (Safari before 17) know neither the popover attribute nor :popover-open, so
+  // they drop every rule behind `@supports selector(:popover-open)`. Recreate that here: remove
+  // the attribute and those rules (and the scroll-timeline ones, which such browsers lack too).
+  test('shows every link under the wordmark, with no dead Menu button', async ({
+    page,
+  }, testInfo) => {
+    test.skip(!testInfo.project.use.isMobile, 'the menu button only shows on small screens');
+    await page.goto('/');
+    const removed = await page.evaluate(() => {
+      document.querySelector('#site-menu')!.removeAttribute('popover');
+      let count = 0;
+      const strip = (list: CSSRuleList) => {
+        for (let i = list.length - 1; i >= 0; i--) {
+          const rule = list[i];
+          if (
+            rule instanceof CSSSupportsRule &&
+            /popover-open|animation-timeline|view-timeline/.test(rule.conditionText)
+          ) {
+            const parent = rule.parentRule as CSSGroupingRule | null;
+            if (parent) parent.deleteRule(i);
+            else rule.parentStyleSheet!.deleteRule(i);
+            count++;
+          } else if ('cssRules' in rule) {
+            strip((rule as CSSGroupingRule).cssRules);
+          }
+        }
+      };
+      for (const sheet of Array.from(document.styleSheets)) strip(sheet.cssRules);
+      return count;
+    });
+    expect(removed).toBeGreaterThan(0);
+
+    await expect(page.getByRole('button', { name: 'Menu' })).toBeHidden();
+    const nav = page.getByRole('navigation', { name: 'Main' });
+    for (const link of await nav.getByRole('link').all()) await expect(link).toBeInViewport();
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
+    expect(overflow).toBeLessThanOrEqual(0);
+  });
+});
