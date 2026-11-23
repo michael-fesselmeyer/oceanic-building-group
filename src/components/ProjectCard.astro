@@ -11,6 +11,8 @@
 //                 grid that becomes one column at 800px.
 //   eager         Load the cover straight away; only for a card at the top
 //                 of a page.
+//   ratio         Shape of the cover, "3 / 2" by default. Editorial layouts
+//                 mix in a portrait "4 / 5" to vary the rhythm.
 //
 // Wrap cards in <ul role="list"> with one <li> per card.
 import Photo from './Photo.astro';
@@ -21,6 +23,7 @@ interface Props {
   headingLevel?: 2 | 3 | 4;
   sizes?: string;
   eager?: boolean;
+  ratio?: string;
 }
 
 const {
@@ -28,6 +31,7 @@ const {
   headingLevel = 3,
   sizes = '(max-width: 800px) 100vw, 50vw',
   eager = false,
+  ratio = '3 / 2',
 } = Astro.props;
 
 const { title, location, category, status, cover, coverAlt } = project.data;
@@ -43,7 +47,7 @@ const place = location.trim();
       alt={coverAlt}
       widths={[480, 800, 1200, 1600]}
       sizes={sizes}
-      ratio="3 / 2"
+      ratio={ratio}
       eager={eager}
     />
   </div>
