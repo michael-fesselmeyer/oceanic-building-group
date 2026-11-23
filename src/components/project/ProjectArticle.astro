@@ -1,8 +1,9 @@
 ---
 // Everything on a project page below the site header: title and facts, the
 // full-bleed cover photograph, stats, story and features, construction
-// progress (under-construction projects only), the gallery, the story of
-// how it was built (completed projects with enough progress photographs), the
+// progress (under-construction projects only), the gallery, before-and-after
+// comparisons, the story of how it was built (completed projects with enough
+// progress photographs), the
 // interior design credit and the links to the neighboring projects. Used by
 // src/pages/portfolio/[project].astro, and by the style guide with made-up
 // projects to show the edge cases.
@@ -17,11 +18,13 @@
 // The project's story (its Markdown body) goes in the default slot. An
 // empty story is left out.
 //
-// Every optional part (stats, features, progress, gallery, build story, credit, neighbors)
+// Every optional part (stats, features, progress, gallery, before and after,
+// build story, credit, neighbors)
 // is left out entirely when the project has nothing for it.
 import Photo from '../Photo.astro';
 import StatList from '../StatList.astro';
 import TextLink from '../TextLink.astro';
+import BeforeAfter from './BeforeAfter.astro';
 import ProjectBuildStory from './ProjectBuildStory.astro';
 import ProjectGallery from './ProjectGallery.astro';
 import ProjectPager from './ProjectPager.astro';
@@ -56,6 +59,7 @@ const {
   cover,
   coverAlt,
   gallery,
+  beforeAfter,
   stats,
   features,
   interiorDesignPartner,
@@ -185,6 +189,19 @@ const LONG_TITLE = 48;
           Photographs
         </h2>
         <ProjectGallery photos={gallery} label={`Photographs of ${title}`} />
+      </div>
+    </section>
+  )}
+
+  {beforeAfter.length > 0 && (
+    <section class="container compare-band" aria-labelledby="compare-heading">
+      <h2 class="label section-label" id="compare-heading">
+        Before and after
+      </h2>
+      <div class="compare-list">
+        {beforeAfter.map((pair) => (
+          <BeforeAfter {...pair} />
+        ))}
       </div>
     </section>
   )}
@@ -376,6 +393,19 @@ const LONG_TITLE = 48;
 
   .gallery-band .section-label {
     margin-bottom: var(--space-5);
+  }
+
+  .compare-band {
+    margin-top: var(--section-gap);
+  }
+
+  .compare-band .section-label {
+    margin-bottom: var(--space-5);
+  }
+
+  .compare-list {
+    display: grid;
+    gap: var(--space-8);
   }
 
   .build-band {
