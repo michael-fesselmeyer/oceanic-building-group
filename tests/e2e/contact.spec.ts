@@ -14,7 +14,11 @@ const escape = (text: string) => new RegExp(text.replace(/[.*+?^${}()|[\]\\]/g, 
 const form = (page: Page) => page.getByRole('form', { name: 'Project enquiry' });
 const send = (page: Page) => page.getByRole('button', { name: 'Send enquiry' });
 
-/** Records every request to the intake endpoint and answers it, since the endpoint is not built yet. */
+/**
+ * The static test server runs no server code, so these tests record each post
+ * to the intake endpoint and answer it themselves. intake.spec.ts posts to the
+ * real endpoint in the built Worker.
+ */
 async function captureSubmissions(page: Page) {
   const bodies: string[] = [];
   await page.route('**/api/intake/', async (route) => {
@@ -24,9 +28,30 @@ async function captureSubmissions(page: Page) {
   return bodies;
 }
 
+/**
+ * Keeps Cloudflare's spam-check script out of these tests, so they need no
+ * network and post exactly what the visitor typed. The widget's own markup is
+ * still checked.
+ */
+async function blockSpamCheck(page: Page) {
+  await page.route('https://challenges.cloudflare.com/**', (route) => route.abort());
+}
+
 test.describe('contact page', () => {
   test.beforeEach(async ({ page }) => {
+    await blockSpamCheck(page);
     await page.goto('/contact/');
+  });
+
+  test("has a slot for the spam check with Cloudflare's test key", async ({ page }) => {
+    // Preview builds use the always-pass test key; launched builds need a real one.
+    await expect(form(page).locator('.cf-turnstile')).toHaveAttribute(
+      'data-sitekey',
+      '1x00000000000000000000AA',
+    );
+    await expect(
+      page.locator('script[src="https://challenges.cloudflare.com/turnstile/v0/api.js"]'),
+    ).toHaveCount(1);
   });
 
   test('has one main heading and a matching title', async ({ page }) => {
@@ -157,6 +182,10 @@ test.describe('contact page', () => {
 
 test.describe('contact page without JavaScript', () => {
   test.use({ javaScriptEnabled: false });
+
+  test.beforeEach(async ({ page }) => {
+    await blockSpamCheck(page);
+  });
 
   test('the browser stops an incomplete enquiry', async ({ page }) => {
     const submissions = await captureSubmissions(page);
