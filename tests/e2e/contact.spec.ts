@@ -159,7 +159,71 @@ test.describe('contact page', () => {
     expect(Object.fromEntries(sent)).toEqual({
       ...visitor,
       projectType: 'investor-partnership',
+      // Optional follow-ups left blank. Radio groups with nothing chosen send nothing.
+      town: '',
+      building: '',
       website: '',
+    });
+  });
+
+  test('asks follow-up questions only once a project type is chosen, and only its own', async ({
+    page,
+  }) => {
+    const where = page.getByLabel('Where is the project?');
+    const lot = page.getByRole('group', { name: 'Do you own the lot?' });
+    const building = page.getByLabel('What kind of building?');
+    await expect(where).toBeHidden();
+    await expect(lot).toBeHidden();
+
+    await page.getByRole('radio', { name: 'Custom home' }).check();
+    await expect(where).toBeVisible();
+    await expect(page.getByRole('group', { name: 'When would you like to start?' })).toBeVisible();
+    await expect(lot).toBeVisible();
+    await expect(building).toBeHidden();
+
+    await page.getByRole('radio', { name: 'Commercial' }).check();
+    await expect(building).toBeVisible();
+    await expect(lot).toBeHidden();
+    await expect(page.getByRole('group', { name: 'What kind of renovation?' })).toBeHidden();
+  });
+
+  test('moves focus from the project type straight to its follow-up questions', async ({
+    page,
+    browserName,
+  }) => {
+    // Safari's Tab key skips buttons, radios and menus unless the visitor turns that on.
+    test.skip(browserName === 'webkit', 'WebKit tabs only to text fields by default');
+    const renovation = page.getByRole('radio', { name: 'Renovation' });
+    await renovation.check();
+    await renovation.focus();
+    await page.keyboard.press('Tab');
+    await expect(page.getByLabel('Where is the project?')).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(page.getByRole('radio', { name: 'Within 6 months' })).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(page.getByRole('radio', { name: 'A room or two' })).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(page.getByLabel('About your project')).toBeFocused();
+  });
+
+  test('sends the follow-up answers with the enquiry', async ({ page }) => {
+    const submissions = await captureSubmissions(page);
+    await page.getByLabel('Name').fill(visitor.name);
+    await page.getByLabel('Email').fill(visitor.email);
+    await page.getByRole('radio', { name: 'Commercial' }).check();
+    await page.getByLabel('Where is the project?').selectOption({ label: 'Somewhere else' });
+    await page.getByLabel('What kind of building?').fill('A small medical office');
+    await page.getByRole('radio', { name: 'Not sure yet' }).check();
+    await page.getByLabel('About your project').fill(visitor.message);
+    await send(page).click();
+
+    await expect(page.getByRole('heading', { name: 'Thank you' })).toBeVisible();
+    const sent = Object.fromEntries(new URLSearchParams(submissions[0]));
+    expect(sent).toMatchObject({
+      projectType: 'commercial',
+      town: 'elsewhere',
+      building: 'A small medical office',
+      start: 'not-sure',
     });
   });
 
@@ -170,6 +234,15 @@ test.describe('contact page', () => {
     await page.keyboard.press('Enter');
     await expect(page.locator('[data-error-summary]')).toBeVisible();
     expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+  });
+
+  test('has no accessibility violations with every follow-up question showing', async ({
+    page,
+  }) => {
+    for (const type of ['Custom home', 'Renovation', 'Commercial', 'Investor partnership']) {
+      await page.getByRole('radio', { name: type }).check();
+      expect((await new AxeBuilder({ page }).analyze()).violations, type).toEqual([]);
+    }
   });
 
   test('never scrolls sideways', async ({ page }) => {
