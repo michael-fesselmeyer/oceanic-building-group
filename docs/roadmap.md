@@ -75,11 +75,23 @@ Project setup, design tokens, page shell, content schemas, tests, CI and reposit
 3. Analytics that needs no cookie banner.
 4. Launch checklist script covering the gates below.
 
-### 7. After launch
+### 7. Feature additions
+
+1. Follow-up questions on the enquiry form, chosen by project type (done).
+2. "How it was built": a finished project's progress photographs as a stage-by-stage story (done;
+   shows once a project has three photographed updates).
+3. A map of where the company builds, on the Areas page (done).
+4. Before-and-after comparisons on project pages (waiting for the business's renovation
+   photographs once merged).
+5. The opening photograph is preloaded ahead of the fonts, and the analytics beacon loads after
+   the page, so pages that open with a photograph keep their speed budget (done).
+
+### 8. After launch
 
 1. SMS notifications switched on.
 2. A visual content editor, if the owner wants one.
-3. An interactive construction-sequence feature for a flagship project.
+3. An interactive construction-sequence feature for a flagship project, building on the "How it
+   was built" story.
 
 ## Launch gates
 
@@ -96,6 +108,8 @@ The site must not go live until each of these is true. `npm run launch-check` ch
 ## Content still needed from the business
 
 - High-resolution photographs for each project, and drone footage where it exists.
+- Stage-by-stage construction photographs for finished projects (three or more each), and
+  before-and-after pairs, taken from the same spot, for renovations.
 - Commercial projects: at least three, with photographs and a short description.
 - Team biographies and portraits, and the brokerage for the real estate agent on the team.
 - Interior design partner: which projects to credit, photographs of shared projects, client quotes.
