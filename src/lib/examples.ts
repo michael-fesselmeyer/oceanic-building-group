@@ -4,6 +4,7 @@
 import placeholderTall from '../assets/placeholders/placeholder-tall.jpg';
 import placeholder from '../assets/placeholders/placeholder-wide.jpg';
 import type { Project } from './content';
+import type { DesignPartnerIntro } from './design-partner';
 import type { DesignPartner } from './site';
 
 /** A made-up project. Pass only the fields an example needs to change. */
@@ -69,3 +70,40 @@ export const exampleSparseProject = exampleProject('example-sparse-project', {
   summary:
     'A made-up project with only the required fields, used on the style guide to show what a project page leaves out.',
 });
+
+/** The made-up partner's introduction, with a long list of places. */
+export const exampleDesignPartnerIntro: DesignPartnerIntro = {
+  summary:
+    'A made-up interior design studio, used on the style guide to show the interior design page with every section filled in.',
+  basedIn: 'Palm Beach Gardens',
+  worksIn: ['Jupiter', 'Tequesta', 'Juno Beach', 'Hobe Sound', 'Stuart', 'Wellington'],
+};
+
+/** Projects credited to the made-up partner. */
+export const exampleDesignPartnerProjects = [
+  exampleProject('example-credited-home', {
+    title: 'Example Intracoastal Residence',
+    location: 'Jupiter',
+    interiorDesignPartner: true,
+  }),
+  exampleProject('example-credited-renovation', {
+    title: 'Example Island Cottage Renovation',
+    location: 'Jupiter Inlet Colony',
+    category: 'renovation',
+    interiorDesignPartner: true,
+  }),
+];
+
+/** Made-up quotes about the made-up partner: one tied to a project, one not. */
+export const exampleDesignPartnerQuotes = [
+  {
+    quote:
+      'They found the rooms we did not know we wanted, and every piece of furniture arrived the week we moved in.',
+    attribution: 'Homeowner, Jupiter',
+    source: 'Example Intracoastal Residence',
+  },
+  {
+    quote: 'Calm, patient and very good with color.',
+    attribution: 'Homeowner, Tequesta',
+  },
+];
