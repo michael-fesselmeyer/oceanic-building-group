@@ -1,0 +1,370 @@
+---
+// Style guide: every shared component and variant on one page, including
+// the edge cases (missing caption, empty stats, long text), so a change to a
+// component can be checked in one place.
+//
+// Development and preview builds only. getStaticPaths returns no pages once
+// PUBLIC_SITE_LAUNCHED is "true", so the launched site has no /style-guide/.
+import placeholder from '../../assets/placeholders/placeholder-wide.jpg';
+import Button from '../../components/Button.astro';
+import Photo from '../../components/Photo.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import PullQuote from '../../components/PullQuote.astro';
+import SectionHeading from '../../components/SectionHeading.astro';
+import StatList from '../../components/StatList.astro';
+import TextLink from '../../components/TextLink.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getProjects, type Project } from '../../lib/content';
+import { launched } from '../../lib/site';
+import { projectStats } from '../../lib/stats';
+
+export function getStaticPaths() {
+  return launched ? [] : [{ params: { page: undefined } }];
+}
+
+/** A made-up project for showing edge cases the real content may not have yet. */
+function exampleProject(id: string, data: Partial<Project['data']>): Project {
+  return {
+    id,
+    collection: 'projects',
+    data: {
+      title: 'Example project',
+      location: 'Tequesta',
+      category: 'custom-home',
+      status: 'completed',
+      summary: 'A made-up project used only on the style guide page to show the card layout.',
+      cover: placeholder,
+      coverAlt: 'Placeholder image standing in for a project photograph',
+      gallery: [],
+      stats: {},
+      features: [],
+      interiorDesignPartner: false,
+      featured: false,
+      order: 100,
+      draft: true,
+      ...data,
+    },
+  };
+}
+
+const realProject = (await getProjects())[0];
+const cards: Project[] = [
+  realProject ??
+    exampleProject('example-residence', { title: 'Example Residence', location: 'Jupiter' }),
+  exampleProject('example-long-title', {
+    title: 'A Riverfront Renovation With a Deliberately Long Title That Wraps',
+    location: 'Jupiter Inlet Colony',
+    category: 'renovation',
+    status: 'under-construction',
+  }),
+  exampleProject('example-no-location', {
+    title: 'Commercial Build-Out',
+    location: '',
+    category: 'commercial',
+  }),
+];
+
+const fullStats = projectStats({
+  livingSqFt: 4200,
+  totalSqFt: 6150,
+  bedrooms: 5,
+  bathrooms: '5.2',
+  buildMonths: 14,
+});
+const partialStats = projectStats({ bedrooms: 3, buildMonths: 1 });
+const emptyStats = projectStats({});
+
+const tokens = {
+  colors: [
+    'navy-950',
+    'navy-900',
+    'navy-700',
+    'ocean-600',
+    'ocean-300',
+    'ocean-050',
+    'sand-300',
+    'sand-100',
+    'sand-050',
+    'ink-900',
+    'ink-600',
+  ],
+};
+---
+
+<BaseLayout
+  title="Style guide"
+  description="Every shared component and variant on one page, for checking changes during development."
+  noindex
+>
+  <div class="container guide">
+    <header class="intro">
+      <p class="label">Development only</p>
+      <h1>Style guide</h1>
+      <p class="lede">
+        Every shared component and its variants, including the edge cases. This page is never built
+        for the launched site.
+      </p>
+    </header>
+
+    <section class="block" aria-labelledby="palette">
+      <SectionHeading id="palette" label="Tokens">
+        Palette
+      </SectionHeading>
+      <ul role="list" class="swatches">
+        {tokens.colors.map((name) => (
+          <li>
+            <span class="swatch" style={`--swatch: var(--color-${name})`} />
+            <code>--color-{name}</code>
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <section class="block" aria-labelledby="buttons">
+      <SectionHeading id="buttons" label="Button and TextLink">
+        Actions
+      </SectionHeading>
+      <div class="specimen">
+        <h3 class="specimen-title label">On light</h3>
+        <div class="row">
+          <Button href="/contact/">Start a Project</Button>
+          <Button href="/portfolio/" variant="quiet">
+            View the portfolio
+          </Button>
+          <Button type="submit">Send enquiry</Button>
+        </div>
+        <p class="prose">
+          A text link sits inside a sentence:{' '}
+          <TextLink href="/process/">read how a build runs from first sketch to handover</TextLink>,
+          then come back here.
+        </p>
+      </div>
+      <div class="specimen strong">
+        <h3 class="specimen-title label">Inverse, on navy</h3>
+        <div class="row">
+          <Button href="/contact/" inverse>
+            Start a Project
+          </Button>
+          <Button href="/portfolio/" variant="quiet" inverse>
+            View the portfolio
+          </Button>
+        </div>
+        <p class="prose">
+          On dark surfaces the same link turns white:{' '}
+          <TextLink href="/about/" inverse>
+            meet the team
+          </TextLink>{' '}
+          and see who builds the homes.
+        </p>
+      </div>
+    </section>
+
+    <section class="block" aria-labelledby="headings">
+      <SectionHeading id="headings" label="SectionHeading">
+        Section headings
+      </SectionHeading>
+      <div class="specimen stack">
+        <SectionHeading level={3} label="With a label">
+          Level three, with a label
+        </SectionHeading>
+        <SectionHeading level={3}>Level three, no label</SectionHeading>
+        <SectionHeading level={4} label="Centered" align="center">
+          Level four, centered
+        </SectionHeading>
+        <SectionHeading level={3} label="Long text">
+          A section heading long enough to show how the measure keeps it to a few balanced lines
+        </SectionHeading>
+      </div>
+    </section>
+
+    <section class="block" aria-labelledby="photos">
+      <SectionHeading id="photos" label="Photo">
+        Photographs
+      </SectionHeading>
+      <div class="photo-grid">
+        <Photo
+          src={placeholder}
+          alt="Placeholder image standing in for a photograph, shown at its own shape"
+          widths={[480, 800, 1200]}
+          sizes="(max-width: 800px) 100vw, 60vw"
+          caption="With a caption. Captions sit under a hairline rule in a smaller, muted face."
+        />
+        <Photo
+          src={placeholder}
+          alt="Placeholder image standing in for a photograph, cropped to a portrait shape"
+          widths={[400, 800]}
+          sizes="(max-width: 800px) 100vw, 30vw"
+          ratio="4 / 5"
+        />
+      </div>
+    </section>
+
+    <section class="block" aria-labelledby="quotes">
+      <SectionHeading id="quotes" label="PullQuote">
+        Pull quotes
+      </SectionHeading>
+      <div class="stack">
+        <PullQuote attribution="Homeowner, Juno Beach" source="Example Residence">
+          They kept us informed every single week, and the house was finished the month they said it
+          would be.
+        </PullQuote>
+        <PullQuote>Without an attribution, the caption is left out entirely.</PullQuote>
+      </div>
+    </section>
+
+    <section class="block" aria-labelledby="stats">
+      <SectionHeading id="stats" label="StatList">
+        Project facts
+      </SectionHeading>
+      <div class="stack">
+        <div class="specimen">
+          <h3 class="specimen-title label">Every value present</h3>
+          <StatList stats={fullStats} label="Example project facts" />
+        </div>
+        <div class="specimen">
+          <h3 class="specimen-title label">Some values missing</h3>
+          <StatList stats={partialStats} label="Example project facts, partial" />
+        </div>
+        <div class="specimen">
+          <h3 class="specimen-title label">No values: renders nothing below this line</h3>
+          <StatList stats={emptyStats} />
+        </div>
+      </div>
+    </section>
+
+    <section class="block" aria-labelledby="cards">
+      <SectionHeading id="cards" label="ProjectCard">
+        Project cards
+      </SectionHeading>
+      <ul role="list" class="cards">
+        {cards.map((project) => (
+          <li>
+            <ProjectCard project={project} sizes="(max-width: 800px) 100vw, 33vw" />
+          </li>
+        ))}
+      </ul>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .guide {
+    padding-block: var(--space-8) var(--section-gap);
+  }
+
+  .intro {
+    display: grid;
+    gap: var(--space-5);
+    max-width: var(--width-prose);
+  }
+
+  .intro .label {
+    color: var(--color-link);
+  }
+
+  .lede {
+    font-size: var(--text-lg);
+  }
+
+  .block {
+    display: grid;
+    gap: var(--space-7);
+    margin-top: var(--section-gap);
+    padding-top: var(--space-7);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .stack {
+    display: grid;
+    gap: var(--space-7);
+  }
+
+  .specimen {
+    display: grid;
+    gap: var(--space-5);
+  }
+
+  .specimen.strong {
+    padding: var(--space-7);
+    background: var(--color-surface-strong);
+    color: var(--color-text-on-strong);
+  }
+
+  .specimen-title {
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+  }
+
+  .strong .specimen-title {
+    color: var(--color-ocean-300);
+  }
+
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-5) var(--space-6);
+  }
+
+  .prose {
+    max-width: var(--width-prose);
+  }
+
+  .swatches {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: var(--space-5);
+  }
+
+  .swatches li {
+    display: grid;
+    gap: var(--space-2);
+    font-size: var(--text-xs);
+  }
+
+  .swatch {
+    aspect-ratio: 1;
+    border: 1px solid var(--color-border);
+    background: var(--swatch);
+  }
+
+  .photo-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    align-items: start;
+    gap: var(--space-6);
+  }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-7) var(--space-6);
+  }
+
+  @media (max-width: 1100px) {
+    .swatches {
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    .cards {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 800px) {
+    .photo-grid,
+    .cards {
+      grid-template-columns: 1fr;
+    }
+
+    .specimen.strong {
+      padding: var(--space-5);
+    }
+  }
+
+  @media (max-width: 520px) {
+    .swatches {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+</style>
