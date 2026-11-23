@@ -106,22 +106,52 @@ export function readSmsConfig(env: IntakeEnv): { sms: SmsConfig | null; warnings
   return { sms: { accountSid: accountSid!, authToken: authToken!, from: from!, to }, warnings };
 }
 
+export interface ReadOptions {
+  /** The development server, which fills in safe defaults. */
+  dev: boolean;
+  /** A launched build (PUBLIC_SITE_LAUNCHED), which refuses development-only settings. */
+  launched?: boolean;
+}
+
+/** Cloudflare's test secrets, which the spam check answers itself without asking Cloudflare. */
+const TEST_SECRETS: ReadonlySet<string> = new Set([
+  TEST_KEYS.secretAlwaysPasses,
+  TEST_KEYS.secretAlwaysFails,
+  TEST_KEYS.secretTokenSpent,
+]);
+
 /**
  * Turns the environment into settings. `dev` (the development server) fills
  * in safe defaults: the log transport and Cloudflare's always-pass test
  * secret. A built site gets no defaults, so a missing secret in production
  * stops the form with a logged problem instead of sending nothing silently.
+ * A launched build also refuses the settings meant only for development and
+ * tests (a Turnstile test secret, the log transport): with them the spam check
+ * would pass everything, or every enquiry would go to a log, and nothing
+ * would show it.
  */
-export function readIntakeConfig(env: IntakeEnv, { dev }: { dev: boolean }): IntakeConfigResult {
+export function readIntakeConfig(
+  env: IntakeEnv,
+  { dev, launched = false }: ReadOptions,
+): IntakeConfigResult {
   const problems: string[] = [];
   const value = (name: keyof IntakeEnv) => env[name]?.trim() || undefined;
 
   const secret = value('TURNSTILE_SECRET_KEY') ?? (dev ? TEST_KEYS.secretAlwaysPasses : undefined);
   if (!secret) problems.push('TURNSTILE_SECRET_KEY is not set');
+  else if (launched && TEST_SECRETS.has(secret)) {
+    problems.push(
+      'TURNSTILE_SECRET_KEY is a Cloudflare test secret, which a launched site must not use',
+    );
+  }
 
   const transport = value('EMAIL_TRANSPORT') ?? (dev ? 'log' : 'resend');
   if (transport !== 'resend' && transport !== 'log') {
     problems.push('EMAIL_TRANSPORT must be "resend" or "log"');
+  } else if (launched && transport === 'log') {
+    problems.push(
+      'EMAIL_TRANSPORT is "log", which sends nothing; a launched site must use "resend"',
+    );
   }
 
   const recipients = value('LEAD_NOTIFICATION_EMAIL');

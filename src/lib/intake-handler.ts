@@ -62,9 +62,9 @@ export interface IntakeSetup {
 /** Reads the settings and builds the notifier from them. */
 export function createIntakeSetup(
   env: IntakeEnv,
-  options: { dev: boolean; logger: Logger; fetch?: typeof fetch },
+  options: { dev: boolean; launched?: boolean; logger: Logger; fetch?: typeof fetch },
 ): IntakeSetup {
-  const config = readIntakeConfig(env, { dev: options.dev });
+  const config = readIntakeConfig(env, { dev: options.dev, launched: options.launched });
   if (!config.ok) return { config };
   for (const warning of config.warnings) options.logger.warn(`[intake] ${warning}`);
   return { config, notifier: createLeadNotifier(config.config, options) };

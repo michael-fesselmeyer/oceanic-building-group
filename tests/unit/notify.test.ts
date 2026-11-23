@@ -306,6 +306,39 @@ describe('readIntakeConfig', () => {
     expect(result.ok).toBe(false);
   });
 
+  it('refuses a Turnstile test secret on a launched site', () => {
+    for (const secret of [
+      '1x0000000000000000000000000000000AA',
+      '2x0000000000000000000000000000000AA',
+      '3x0000000000000000000000000000000AA',
+    ]) {
+      const env = { ...production, TURNSTILE_SECRET_KEY: secret };
+      expect(readIntakeConfig(env, { dev: false, launched: true })).toEqual({
+        ok: false,
+        problems: [
+          'TURNSTILE_SECRET_KEY is a Cloudflare test secret, which a launched site must not use',
+        ],
+      });
+      // Preview builds and the browser tests run unlaunched with the test secrets.
+      expect(readIntakeConfig(env, { dev: false }).ok).toBe(true);
+    }
+  });
+
+  it('refuses the log transport on a launched site', () => {
+    const env = { ...production, EMAIL_TRANSPORT: 'log' };
+    expect(readIntakeConfig(env, { dev: false, launched: true })).toEqual({
+      ok: false,
+      problems: [
+        'EMAIL_TRANSPORT is "log", which sends nothing; a launched site must use "resend"',
+      ],
+    });
+    expect(readIntakeConfig(env, { dev: false }).ok).toBe(true);
+  });
+
+  it('accepts a complete production setup on a launched site', () => {
+    expect(readIntakeConfig(production, { dev: false, launched: true }).ok).toBe(true);
+  });
+
   it('turns on the required spam check only for the exact value "true"', () => {
     const on = readIntakeConfig({ ...production, TURNSTILE_REQUIRED: 'true' }, { dev: false });
     const off = readIntakeConfig({ ...production, TURNSTILE_REQUIRED: 'yes' }, { dev: false });
