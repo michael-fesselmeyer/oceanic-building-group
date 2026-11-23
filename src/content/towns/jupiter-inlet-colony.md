@@ -2,7 +2,7 @@
 name: Jupiter Inlet Colony
 county: Palm Beach County
 summary: A small town in northern Palm Beach County near Jupiter Inlet, with its own Town Hall and its own Building Department.
-seoDescription: Building in the Town of Jupiter Inlet Colony, Florida. the Town's own building department, contractor registration, flood rules and wind-rated construction.
+seoDescription: Building in the Town of Jupiter Inlet Colony, Florida. The Town's own building department, contractor registration, flood rules and wind-rated construction.
 order: 2
 draft: false
 ---
@@ -15,4 +15,4 @@ The Town runs its own Building Department, which issues permits and performs ins
 
 ## Building for the coast
 
-Homes here are built to the Florida Building Code's wind provisions for coastal sites. In a wind-borne debris region, the code calls for protected openings: impact-rated windows and doors or approved shutters. The flood map for the specific lot sets the minimum floor height, and Palm Beach County's floodplain rules apply the same standard to a renovation that costs half or more of the building's market value.
+Homes here are built to the Florida Building Code's wind provisions for coastal sites. In a wind-borne debris region, the code calls for protected openings: impact-rated windows and doors or approved shutters. The flood map for the specific lot is the starting point for floor height. The Town administers its own floodplain management as a participant in the National Flood Insurance Program, and under that program's substantial improvement rule, a renovation that costs half or more of a building's market value brings the whole building up to the standard for new construction. A community can set a stricter threshold, so we confirm the Town's requirements before a scope is set.
