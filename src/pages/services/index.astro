@@ -1,0 +1,273 @@
+---
+// /services/: introduces the four service lines as an editorial index. The
+// first service leads in larger type; the rest follow as ruled rows, each
+// linking to its page. A row shows how many portfolio projects relate to it
+// only when there are some.
+import Button from '../../components/Button.astro';
+import TextLink from '../../components/TextLink.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getProjects, getServices } from '../../lib/content';
+import { portfolioPath } from '../../lib/portfolio';
+import { relatedProjects, servicePath } from '../../lib/services';
+import { contactLink, site } from '../../lib/site';
+
+const services = await getServices();
+const projects = await getProjects();
+
+const rows = services.map((service, index) => ({
+  service,
+  number: String(index + 1).padStart(2, '0'),
+  href: servicePath(service.id),
+  count: relatedProjects(service.id, projects).length,
+}));
+
+const description =
+  'Custom homes, renovations, commercial construction and investor partnerships from Oceanic Building Group in Jupiter and the Palm Beaches.';
+---
+
+<BaseLayout title="Services" description={description}>
+  <div class="container services">
+    <header class="head">
+      <p class="label kicker">What we do</p>
+      <h1>Services</h1>
+      <p class="intro">
+        {site.name} builds custom homes, renovations and commercial projects in {site.serviceArea},
+        led by principals with more than 30 years of experience.
+      </p>
+    </header>
+
+    {rows.length > 0 ? (
+      <ol role="list" class="index">
+        {rows.map(({ service, number, href, count }, position) => (
+          <li class:list={['row', { lead: position === 0 }]}>
+            <p class="number" aria-hidden="true">
+              {number}
+            </p>
+            <div class="text">
+              <h2>
+                <a href={href}>{service.data.title}</a>
+              </h2>
+              <p class="summary">{service.data.summary}</p>
+            </div>
+            <p class="aside">
+              {count > 0 && (
+                <span class="count">
+                  {count} {count === 1 ? 'project' : 'projects'} in the portfolio
+                </span>
+              )}
+              <span class="more label" aria-hidden="true">
+                Read more
+              </span>
+            </p>
+          </li>
+        ))}
+      </ol>
+    ) : (
+      <p class="empty">Our services will be described here soon.</p>
+    )}
+
+    <aside class="closing" aria-label="Next steps">
+      <p class="closing-text">
+        Looking for finished work first?{' '}
+        <TextLink href={portfolioPath()}>Browse the portfolio</TextLink>.
+      </p>
+      <Button href={contactLink.href}>{contactLink.label}</Button>
+    </aside>
+  </div>
+</BaseLayout>
+
+<style>
+  .services {
+    padding-block: var(--space-8) var(--section-gap);
+  }
+
+  .head {
+    max-width: var(--width-prose);
+  }
+
+  .kicker {
+    color: var(--color-link);
+  }
+
+  h1 {
+    margin-top: var(--space-4);
+    font-size: var(--text-3xl);
+  }
+
+  .intro {
+    margin-top: var(--space-5);
+    font-size: var(--text-lg);
+    line-height: var(--leading-snug);
+    color: var(--color-text-muted);
+  }
+
+  .index {
+    margin-top: var(--space-8);
+    border-top: 1px solid var(--color-heading);
+  }
+
+  .row {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 5fr 3fr;
+    gap: var(--space-5) var(--space-6);
+    align-items: start;
+    padding-block: var(--space-6);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .number {
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    line-height: var(--leading-tight);
+    color: var(--color-link);
+  }
+
+  h2 {
+    font-size: var(--text-2xl);
+  }
+
+  /* The whole row is clickable through the title link. */
+  h2 a {
+    color: inherit;
+    text-decoration-line: underline;
+    text-decoration-color: transparent;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+    transition: text-decoration-color var(--duration-fast) var(--ease-out);
+  }
+
+  h2 a::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+
+  h2 a:focus-visible {
+    outline: none;
+  }
+
+  h2 a:focus-visible::after {
+    outline: 2px solid var(--color-focus);
+    outline-offset: calc(-1 * var(--space-1));
+  }
+
+  .row:hover h2 a,
+  h2 a:focus-visible {
+    text-decoration-color: currentColor;
+  }
+
+  .summary {
+    max-width: var(--width-prose);
+    margin-top: var(--space-4);
+    color: var(--color-text-muted);
+  }
+
+  .aside {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--space-3);
+    text-align: right;
+  }
+
+  .count {
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+
+  .more {
+    color: var(--color-link);
+  }
+
+  /* The first service leads: more room above, a larger title and summary. */
+  .lead {
+    padding-block: var(--space-8);
+  }
+
+  .lead h2 {
+    font-size: var(--text-3xl);
+  }
+
+  .lead .summary {
+    font-size: var(--text-lg);
+    line-height: var(--leading-snug);
+  }
+
+  .lead .number {
+    font-size: var(--text-2xl);
+  }
+
+  .empty {
+    margin-top: var(--space-8);
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    color: var(--color-heading);
+  }
+
+  .closing {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-5) var(--space-6);
+    margin-top: var(--space-8);
+  }
+
+  .closing-text {
+    font-size: var(--text-lg);
+  }
+
+  @media (max-width: 1100px) {
+    .row {
+      grid-template-columns: 1fr 6fr 3fr;
+    }
+  }
+
+  @media (max-width: 800px) {
+    .services {
+      padding-top: var(--space-7);
+    }
+
+    .index {
+      margin-top: var(--space-7);
+    }
+
+    .row {
+      grid-template-columns: 1fr 5fr;
+    }
+
+    .aside {
+      grid-column: 2;
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: baseline;
+      justify-content: space-between;
+      text-align: left;
+    }
+
+    .lead {
+      padding-block: var(--space-7);
+    }
+  }
+
+  @media (max-width: 520px) {
+    .row {
+      grid-template-columns: 1fr;
+      gap: var(--space-3);
+      padding-block: var(--space-5);
+    }
+
+    .aside {
+      grid-column: auto;
+    }
+
+    .lead {
+      padding-block: var(--space-6);
+    }
+
+    .closing {
+      margin-top: var(--space-7);
+    }
+  }
+</style>

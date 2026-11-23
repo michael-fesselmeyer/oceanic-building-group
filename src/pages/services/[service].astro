@@ -1,0 +1,396 @@
+---
+// One page per service at /services/<file name>/: a navy opening band (with
+// the service's photograph beside the title once it has one), the Markdown
+// description next to a list of all the services, related projects from the
+// portfolio and a closing call to action. Without a photograph the band is
+// set in type alone. A service with no related projects leaves that section
+// out entirely.
+import Button from '../../components/Button.astro';
+import Photo from '../../components/Photo.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import SectionHeading from '../../components/SectionHeading.astro';
+import TextLink from '../../components/TextLink.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getProjects, getServices, renderServiceBody, type Service } from '../../lib/content';
+import {
+  RELATED_LIMIT,
+  SERVICES_PATH,
+  relatedPortfolioLink,
+  relatedProjects,
+  servicePath,
+} from '../../lib/services';
+import { contactLink } from '../../lib/site';
+
+export async function getStaticPaths() {
+  const services = await getServices();
+  return services.map((service, index) => ({
+    params: { service: service.id },
+    props: { service, number: String(index + 1).padStart(2, '0') },
+  }));
+}
+
+interface Props {
+  service: Service;
+  number: string;
+}
+
+const { service, number } = Astro.props;
+const { title, summary, seoDescription, cover, coverAlt } = service.data;
+
+const Body = await renderServiceBody(service);
+const services = await getServices();
+const related = relatedProjects(service.id, await getProjects());
+const shown = related.slice(0, RELATED_LIMIT);
+const portfolioLink = relatedPortfolioLink(service.id);
+const photo = cover && coverAlt ? { src: cover, alt: coverAlt } : undefined;
+
+// Two related projects sit side by side at different widths; one stands alone.
+const slotSizes = [
+  '(max-width: 800px) 100vw, (max-width: 1100px) 58vw, 44rem',
+  '(max-width: 800px) 100vw, (max-width: 1100px) 41vw, 31rem',
+];
+---
+
+<BaseLayout title={title} description={seoDescription}>
+  <article>
+    <header class="opening">
+      <div class="container opening-grid">
+        <div class="opening-text">
+          <p class="label kicker">
+            <a href={SERVICES_PATH}>Services</a>
+          </p>
+          <h1>{title}</h1>
+          <p class="lede">{summary}</p>
+        </div>
+        {photo ? (
+          <div class="opening-photo">
+            <Photo
+              src={photo.src}
+              alt={photo.alt}
+              widths={[480, 800, 1200]}
+              sizes="(max-width: 800px) 100vw, 40vw"
+              ratio="4 / 5"
+              eager
+            />
+          </div>
+        ) : (
+          <p class="numeral" aria-hidden="true">
+            {number}
+          </p>
+        )}
+      </div>
+    </header>
+
+    <div class="container body">
+      <nav class="siblings" aria-label="All services">
+        <p class="label">Our services</p>
+        <ul role="list">
+          {services.map((item) => (
+            <li>
+              <a
+                href={servicePath(item.id)}
+                aria-current={item.id === service.id ? 'page' : undefined}
+              >
+                {item.data.title}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      <div class="prose">
+        <Body />
+      </div>
+    </div>
+
+    {shown.length > 0 && (
+      <section class="container related" aria-labelledby="related-heading">
+        <SectionHeading id="related-heading" label="From the portfolio">
+          Related projects
+        </SectionHeading>
+        <ul role="list" class="related-list">
+          {shown.map((project, index) => (
+            <li class={`related-${index + 1}`}>
+              <ProjectCard project={project} sizes={slotSizes[index]} />
+            </li>
+          ))}
+          {portfolioLink && (
+            <li class="related-more">
+              <p>
+                <TextLink href={portfolioLink.path}>{portfolioLink.label}</TextLink>
+              </p>
+            </li>
+          )}
+        </ul>
+      </section>
+    )}
+
+    <aside class="closing" aria-labelledby="closing-heading">
+      <div class="container closing-grid">
+        <h2 id="closing-heading">Tell us about your project</h2>
+        <p class="closing-action">
+          <Button href={contactLink.href}>{contactLink.label}</Button>
+        </p>
+      </div>
+    </aside>
+  </article>
+</BaseLayout>
+
+<style>
+  .opening {
+    padding-block: var(--space-8);
+    background: var(--color-surface-strong);
+    color: var(--color-text-on-strong);
+  }
+
+  .opening-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: var(--space-6);
+    align-items: end;
+  }
+
+  .opening-text {
+    grid-column: 1 / span 8;
+  }
+
+  .kicker a {
+    color: var(--color-ocean-300);
+    text-decoration-line: underline;
+    text-decoration-color: transparent;
+    text-underline-offset: 0.25em;
+    transition: text-decoration-color var(--duration-fast) var(--ease-out);
+  }
+
+  .kicker a:hover {
+    text-decoration-color: currentColor;
+  }
+
+  h1 {
+    margin-top: var(--space-4);
+    color: var(--color-text-on-strong);
+    font-size: var(--text-3xl);
+  }
+
+  .lede {
+    max-width: var(--width-prose);
+    margin-top: var(--space-5);
+    font-size: var(--text-lg);
+    line-height: var(--leading-snug);
+  }
+
+  /* With no photograph yet, the service's number carries the right-hand side. */
+  .numeral {
+    grid-column: 10 / span 3;
+    justify-self: end;
+    font-family: var(--font-display);
+    font-size: var(--text-4xl);
+    line-height: var(--leading-tight);
+    color: var(--color-ocean-300);
+    border-bottom: 1px solid var(--color-ocean-300);
+    padding-bottom: var(--space-3);
+  }
+
+  .opening-photo {
+    grid-column: 9 / span 4;
+  }
+
+  .body {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: var(--space-6);
+    padding-block: var(--space-8);
+  }
+
+  .siblings {
+    grid-column: 1 / span 3;
+    align-self: start;
+    position: sticky;
+    top: calc(var(--header-height) + var(--space-6));
+  }
+
+  .siblings .label {
+    color: var(--color-text-muted);
+  }
+
+  .siblings ul {
+    margin-top: var(--space-4);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .siblings li {
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .siblings a {
+    display: block;
+    padding-block: var(--space-3);
+    color: var(--color-text-muted);
+    text-decoration: none;
+    transition: color var(--duration-fast) var(--ease-out);
+  }
+
+  .siblings a:hover {
+    color: var(--color-heading);
+  }
+
+  .siblings a[aria-current='page'] {
+    color: var(--color-heading);
+    font-weight: 600;
+    box-shadow: inset 2px 0 0 var(--color-link);
+    padding-left: var(--space-3);
+  }
+
+  .prose {
+    grid-column: 5 / span 7;
+    max-width: var(--width-prose);
+  }
+
+  /* The first paragraph opens the text; the rest is set at body size. */
+  .prose > :global(p:first-child) {
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    line-height: var(--leading-snug);
+    color: var(--color-heading);
+  }
+
+  .prose :global(h2) {
+    margin-top: var(--space-7);
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--color-border);
+    font-size: var(--text-2xl);
+  }
+
+  .prose :global(p) {
+    margin-top: var(--space-4);
+  }
+
+  .prose > :global(p:first-child) {
+    margin-top: 0;
+  }
+
+  .prose :global(ul) {
+    margin: var(--space-4) 0 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .prose :global(li) {
+    padding-block: var(--space-3);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .related {
+    padding-bottom: var(--section-gap);
+  }
+
+  .related-list {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    align-items: end;
+    gap: var(--space-7) var(--space-6);
+    margin-top: var(--space-6);
+  }
+
+  .related-1 {
+    grid-column: span 7;
+  }
+
+  .related-2 {
+    grid-column: span 5;
+  }
+
+  .related-more {
+    grid-column: 1 / -1;
+  }
+
+  /* No fill: the footer keeps its own space above it, and a band would leave a gap. */
+  .closing {
+    padding-block: var(--space-7) 0;
+  }
+
+  .closing-grid {
+    display: flex;
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--color-heading);
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-5) var(--space-6);
+  }
+
+  .closing h2 {
+    font-size: var(--text-2xl);
+  }
+
+  @media (max-width: 1100px) {
+    .opening-text {
+      grid-column: 1 / span 9;
+    }
+
+    .numeral {
+      grid-column: 10 / span 3;
+    }
+
+    .siblings {
+      grid-column: 1 / span 4;
+    }
+
+    .prose {
+      grid-column: 5 / span 8;
+    }
+  }
+
+  @media (max-width: 800px) {
+    .opening {
+      padding-block: var(--space-7);
+    }
+
+    .opening-text,
+    .numeral,
+    .opening-photo,
+    .siblings,
+    .prose {
+      grid-column: 1 / -1;
+    }
+
+    .numeral {
+      justify-self: start;
+      font-size: var(--text-3xl);
+    }
+
+    .body {
+      padding-block: var(--space-7);
+    }
+
+    /* The list of services moves below the text, as a short footer to it. */
+    .siblings {
+      position: static;
+      order: 2;
+    }
+
+    .related-list > li {
+      grid-column: 1 / -1;
+    }
+
+    .closing {
+      padding-top: var(--space-6);
+    }
+  }
+
+  @media (max-width: 520px) {
+    .opening-grid {
+      gap: var(--space-5);
+    }
+
+    /* A decoration only; on a phone it would float below the text. */
+    .numeral {
+      display: none;
+    }
+
+    .related-list {
+      gap: var(--space-6);
+    }
+  }
+</style>
