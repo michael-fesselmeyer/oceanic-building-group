@@ -1,0 +1,168 @@
+---
+// Construction progress on an under-construction project's page: one entry
+// per update, newest first, each with its date and caption and, when it has
+// one, a photograph. Photographs open in the shared lightbox, which shows
+// the date and caption under the large image.
+//
+//   updates  The project's `progress` entries, in any order; they are
+//            sorted here. An empty list renders nothing at all.
+//   label    Accessible name for the list and the lightbox, for example
+//            "Progress at River House".
+//
+// Hooks: the list carries `data-gallery` and each update `data-gallery-item`
+// and an id ("progress-1" is the newest), so an update can be linked to.
+import type { ImageMetadata } from 'astro';
+import { getImage } from 'astro:assets';
+import Photo from '../Photo.astro';
+import Lightbox from './Lightbox.astro';
+import { formatProgressDate, isoDay, progressNewestFirst } from '../../lib/project-page';
+
+interface Props {
+  updates: readonly { date: Date; caption: string; photo?: ImageMetadata; alt?: string }[];
+  label: string;
+}
+
+const { updates, label } = Astro.props;
+const ordered = progressNewestFirst(updates);
+/** The widest large version for the lightbox; a smaller master is not enlarged. */
+const LARGE_WIDTH = 2400;
+const large = await Promise.all(
+  ordered.map((update) =>
+    update.photo
+      ? getImage({
+          src: update.photo,
+          width: Math.min(LARGE_WIDTH, update.photo.width),
+          format: 'webp',
+        })
+      : undefined,
+  ),
+);
+const hasPhotos = ordered.some((update) => update.photo);
+---
+
+{ordered.length > 0 && (
+  <>
+    <ol role="list" class="progress" aria-label={label} data-gallery>
+      {ordered.map((update, index) => {
+        const when = (
+          <time class="date" datetime={isoDay(update.date)}>
+            {formatProgressDate(update.date)}
+          </time>
+        );
+        return (
+          <li class="update" id={`progress-${index + 1}`} data-gallery-item>
+            {update.photo ? (
+              <figure>
+                <a class="photo-link" href={large[index]!.src} data-gallery-link>
+                  <Photo
+                    src={update.photo}
+                    alt={update.alt ?? ''}
+                    widths={[480, 800, 1200, 1600]}
+                    sizes="(max-width: 800px) 92vw, 44rem"
+                    ratio="3 / 2"
+                  />
+                </a>
+                <figcaption class="text">
+                  {when}
+                  <span class="visually-hidden">. </span>
+                  <span class="caption">{update.caption}</span>
+                </figcaption>
+              </figure>
+            ) : (
+              <div class="no-photo">
+                <p class="text">
+                  {when}
+                  <span class="visually-hidden">. </span>
+                  <span class="caption">{update.caption}</span>
+                </p>
+              </div>
+            )}
+          </li>
+        );
+      })}
+    </ol>
+    {hasPhotos && <Lightbox label={label} />}
+  </>
+)}
+
+<style>
+  .progress {
+    display: grid;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .update {
+    padding-block: var(--space-7);
+    border-bottom: 1px solid var(--color-border);
+    scroll-margin-top: calc(var(--header-height) + var(--space-5));
+  }
+
+  /* The photograph on the left, its date and caption beside it on the right.
+     An update without a photograph keeps its text in the same column. */
+  figure,
+  .no-photo {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    align-items: start;
+    gap: var(--space-6);
+    margin: 0;
+  }
+
+  .no-photo .text {
+    grid-column: 2;
+  }
+
+  .photo-link {
+    display: block;
+    cursor: zoom-in;
+  }
+
+  .text {
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  .date {
+    color: var(--color-heading);
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    line-height: var(--leading-snug);
+  }
+
+  .caption {
+    color: var(--color-text-muted);
+    text-wrap: pretty;
+  }
+
+  /* The newest update leads with a short rule in the accent color. */
+  .update:first-child .date::before {
+    content: '';
+    display: block;
+    width: var(--space-6);
+    margin-bottom: var(--space-3);
+    border-top: 2px solid var(--color-link);
+  }
+
+  @media (max-width: 1100px) {
+    figure,
+    .no-photo {
+      grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    }
+  }
+
+  @media (max-width: 800px) {
+    .update {
+      padding-block: var(--space-6);
+    }
+
+    figure,
+    .no-photo {
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--space-4);
+    }
+
+    .no-photo .text {
+      grid-column: 1;
+    }
+  }
+</style>

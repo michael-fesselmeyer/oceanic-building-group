@@ -1,7 +1,8 @@
 ---
 // One project in a grid or list: cover photograph, category, title and
-// location, linking to the project page at /portfolio/<id>/. The whole card
-// is clickable, but there is a single link (on the title), so screen readers
+// location, linking to the project page at /portfolio/<id>/. An
+// under-construction project with progress updates also shows the date of
+// the latest one. The whole card is clickable, but there is a single link (on the title), so screen readers
 // hear it once.
 //
 //   project       A projects collection entry, from src/lib/content.ts.
@@ -17,6 +18,7 @@
 // Wrap cards in <ul role="list"> with one <li> per card.
 import Photo from './Photo.astro';
 import { PROJECT_CATEGORY_LABELS, type Project } from '../lib/content';
+import { formatProgressDate, isoDay, latestProgressDate } from '../lib/project-page';
 
 interface Props {
   project: Project;
@@ -38,6 +40,8 @@ const { title, location, category, status, cover, coverAlt } = project.data;
 const Heading = `h${headingLevel}` as const;
 const href = `/portfolio/${project.id}/`;
 const place = location.trim();
+// An under-construction project with progress updates says when it last changed.
+const lastUpdate = latestProgressDate(project.data);
 ---
 
 <article class="project-card">
@@ -59,6 +63,11 @@ const place = location.trim();
     <a href={href}>{title}</a>
   </Heading>
   {place && <p class="location">{place}</p>}
+  {lastUpdate && (
+    <p class="updated">
+      Updated <time datetime={isoDay(lastUpdate)}>{formatProgressDate(lastUpdate)}</time>
+    </p>
+  )}
 </article>
 
 <style>
@@ -134,6 +143,12 @@ const place = location.trim();
   .location {
     margin-top: var(--space-1);
     color: var(--color-text-muted);
+  }
+
+  .updated {
+    margin-top: var(--space-1);
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
   }
 
   @media (max-width: 520px) {
