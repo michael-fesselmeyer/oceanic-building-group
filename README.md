@@ -153,7 +153,7 @@ with code 1 if any gate fails, so it can also run in a script.
 | Contractor license number     | `licenseNumber` is set in `src/lib/site.ts` (the footer and contact page then show it)                           |
 | Office phone number           | `phone` is set in `src/lib/site.ts`, as ten digits                                                               |
 | Domain                        | `site` in `astro.config.mjs` names the same host as a custom domain in `routes` in `wrangler.jsonc`              |
-| Team brokerage details        | Every published team member described as a real-estate licensee has a `Brokerage: <firm>` line in the text       |
+| Team brokerage details        | Every published real-estate licensee sets `realEstateLicensee: true` and `brokerage` in their team file          |
 | No draft or sample content    | No published content file uses a placeholder image, placeholder alt text, lorem ipsum or `example.test`          |
 | Lighthouse on every page type | `lighthouserc.json` audits an address of every page type, and the Lighthouse job passed on the latest `main` run |
 

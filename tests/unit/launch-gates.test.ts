@@ -221,7 +221,27 @@ describe('team', () => {
     expect(checkTeam([]).ok).toBe(true);
   });
 
-  it('fails for a licensee without a brokerage line', () => {
+  it('passes for a licensee with the flag and a brokerage', () => {
+    const result = checkTeam([
+      content(
+        'src/content/team/a.md',
+        "---\nname: A\nrole: 'Real estate agent'\nrealEstateLicensee: true\nbrokerage: Harbor Test Realty LLC\n---\n",
+      ),
+    ]);
+    expect(result.ok).toBe(true);
+  });
+
+  it('fails for a licensee flagged without a brokerage', () => {
+    const result = checkTeam([
+      content(
+        'src/content/team/a.md',
+        '---\nname: A\nrole: Agent\nrealEstateLicensee: true\n---\n',
+      ),
+    ]);
+    expect(result.ok).toBe(false);
+  });
+
+  it('fails for a licensee without a brokerage', () => {
     const result = checkTeam([
       content('src/content/team/a.md', "---\nname: A\nrole: 'Sales associate'\n---\nSells land.\n"),
     ]);
