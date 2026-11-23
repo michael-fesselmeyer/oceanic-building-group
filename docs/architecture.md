@@ -565,14 +565,18 @@ A text message to the office phone when an enquiry arrives, through Twilio
   4. Send a test enquiry and check the log for `[intake] sms failed` lines.
 - **Cost** (Twilio's US pricing page, November 2026): $0.0083 per message segment plus a carrier
   fee of $0.0035 to $0.005 per message, and $1.15 a month for a local number ($2.15 for
-  toll-free). A2P 10DLC also charges a one-time brand registration fee and a campaign vetting fee,
-  plus a monthly campaign fee; Twilio shows the amounts during registration rather than on its
-  public pages, so confirm them then (earlier published figures were roughly $20 one-time and a
-  few dollars a month; treat that as an estimate). At a handful of enquiries a day, the running
-  cost is a few dollars a month.
+  toll-free). A local number also needs A2P 10DLC registration, which
+  [Twilio's 10DLC page](https://www.twilio.com/en-us/a2p-10dlc) (read 2026-11-23; the page shows
+  no date) prices as: low-volume standard, for a business with a tax ID sending under 6,000
+  segments a day (the fit here), $4 one-time brand registration, $15 one-time campaign vetting
+  and $1.50 to $10 a month per campaign; standard $44 one-time plus the same vetting and monthly
+  fees; sole proprietor (no tax ID) $4 plus $15 vetting and $2 a month. So about $19 to start and
+  a few dollars a month, plus the messages; at a handful of enquiries a day that is a few dollars
+  a month in all.
 - **How long it takes.** Twilio's documentation gives up to 72 hours to approve the business
   profile, seven business days or more for a brand that goes to manual review, and up to five
-  business days for the campaign. Allow one to three weeks before the first text.
+  business days for the campaign (Twilio's 10DLC page estimates under a week for campaign
+  approval). Allow one to three weeks before the first text.
 
 ### Settings and logs
 
