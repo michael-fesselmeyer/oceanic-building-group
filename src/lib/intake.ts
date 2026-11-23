@@ -29,10 +29,7 @@ export const projectTypes = [
 
 export type ProjectType = (typeof projectTypes)[number]['value'];
 
-const projectTypeValues = projectTypes.map((type) => type.value) as [
-  ProjectType,
-  ...ProjectType[],
-];
+const projectTypeValues = projectTypes.map((type) => type.value) as [ProjectType, ...ProjectType[]];
 
 /** Length limits, in characters. The page sets the same limits on its inputs. */
 export const limits = {
