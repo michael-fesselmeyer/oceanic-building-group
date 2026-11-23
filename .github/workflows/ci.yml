@@ -84,7 +84,6 @@ jobs:
       #   lighthouserc.json          pages meant to be indexed
       #   lighthouserc.noindex.json  pages that are noindex on purpose (404, form thanks); these
       #                              skip only the "is-crawlable" audit, which checks for noindex
-      # Add when merged: /areas/ and one /areas/<town>/ (Areas We Serve).
       - run: npm run build
         env:
           PUBLIC_SITE_LAUNCHED: 'true'
