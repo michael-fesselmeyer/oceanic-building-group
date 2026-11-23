@@ -199,7 +199,15 @@ export async function handleIntake(request: Request, deps: IntakeDeps): Promise<
     spamCheck = 'not-run';
   } else {
     const remoteIp = request.headers.get('CF-Connecting-IP') ?? undefined;
-    const result = await verify({ secret: turnstile.secret, token, remoteIp, fetch: deps.fetch });
+    // Only a token solved on this site's own pages counts.
+    const hostname = new URL(request.url).hostname;
+    const result = await verify({
+      secret: turnstile.secret,
+      token,
+      remoteIp,
+      hostname,
+      fetch: deps.fetch,
+    });
     if (!result.success) {
       const codes = result.errorCodes.join(', ');
       if (isServiceFailure(result.errorCodes)) {

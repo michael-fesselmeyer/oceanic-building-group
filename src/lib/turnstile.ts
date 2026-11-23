@@ -47,6 +47,11 @@ export interface VerifyOptions {
   token: string;
   /** The visitor's address, which helps Cloudflare judge the token. */
   remoteIp?: string;
+  /**
+   * The host the form was posted to. When given, a token solved on any other
+   * host is refused, even one the site key allows (a preview host, localhost).
+   */
+  hostname?: string;
   fetch?: typeof fetch;
   /** Gives up after this long, in milliseconds. */
   timeoutMs?: number;
@@ -61,6 +66,7 @@ export async function verifyTurnstile({
   secret,
   token,
   remoteIp,
+  hostname,
   fetch: fetcher = fetch,
   timeoutMs = 5000,
 }: VerifyOptions): Promise<TurnstileResult> {
@@ -81,8 +87,17 @@ export async function verifyTurnstile({
       body,
       signal: AbortSignal.timeout(timeoutMs),
     });
-    const outcome = (await response.json()) as { success?: unknown; 'error-codes'?: unknown };
-    if (outcome.success === true) return { success: true };
+    const outcome = (await response.json()) as {
+      success?: unknown;
+      hostname?: unknown;
+      'error-codes'?: unknown;
+    };
+    if (outcome.success === true) {
+      if (hostname && outcome.hostname !== hostname) {
+        return { success: false, errorCodes: ['hostname-mismatch'] };
+      }
+      return { success: true };
+    }
     const codes = Array.isArray(outcome['error-codes'])
       ? outcome['error-codes'].filter((code): code is string => typeof code === 'string')
       : [];
