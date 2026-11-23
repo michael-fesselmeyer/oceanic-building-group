@@ -19,6 +19,7 @@ import {
   relatedProjects,
   servicePath,
 } from '../../lib/services';
+import { shareImageFor } from '../../lib/share-image';
 import { contactLink } from '../../lib/site';
 import { serviceCrumbs } from '../../lib/structured-data';
 
@@ -44,6 +45,8 @@ const related = relatedProjects(service.id, await getProjects());
 const shown = related.slice(0, RELATED_LIMIT);
 const portfolioLink = relatedPortfolioLink(service.id);
 const photo = cover && coverAlt ? { src: cover, alt: coverAlt } : undefined;
+// A service with a photograph shares it; one without uses the brand card.
+const shareImage = photo ? await shareImageFor(photo.src, photo.alt) : undefined;
 
 // Two related projects sit side by side at different widths; one stands alone.
 const slotSizes = [
@@ -55,6 +58,9 @@ const slotSizes = [
 <BaseLayout
   title={title}
   description={seoDescription}
+  image={shareImage?.src}
+  imageAlt={shareImage?.alt}
+  imageSize={shareImage}
   breadcrumbs={serviceCrumbs(title, servicePath(service.id))}
 >
   <article>
