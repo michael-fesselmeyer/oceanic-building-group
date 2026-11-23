@@ -83,18 +83,43 @@ at `http://localhost:4321/style-guide/`. The project page template with made-up 
 projects at `/style-guide/home/`, `/style-guide/home/one/` and `/style-guide/home/none/`. None of
 these pages is built for the launched site.
 
-| Command            | What it does                                                   |
-| ------------------ | -------------------------------------------------------------- |
-| `npm run dev`      | Development server with live reload                            |
-| `npm run build`    | Production build into `dist/`                                  |
-| `npm run check`    | Type-checks code and validates every content file              |
-| `npm run lint`     | ESLint                                                         |
-| `npm run format`   | Formats every file with Prettier                               |
-| `npm test`         | Unit tests                                                     |
-| `npm run test:e2e` | Browser and accessibility tests against the production build   |
-| `npm run hygiene`  | Checks that nothing private or off-policy is in the repository |
-| `npm run brand`    | Regenerates the wordmark, favicons, manifest and share image   |
-| `npm run verify`   | Everything CI runs except the browser tests and Lighthouse     |
+| Command                | What it does                                                   |
+| ---------------------- | -------------------------------------------------------------- |
+| `npm run dev`          | Development server with live reload                            |
+| `npm run build`        | Production build into `dist/`                                  |
+| `npm run check`        | Type-checks code and validates every content file              |
+| `npm run lint`         | ESLint                                                         |
+| `npm run format`       | Formats every file with Prettier                               |
+| `npm test`             | Unit tests                                                     |
+| `npm run test:e2e`     | Browser and accessibility tests against the production build   |
+| `npm run hygiene`      | Checks that nothing private or off-policy is in the repository |
+| `npm run brand`        | Regenerates the wordmark, favicons, manifest and share image   |
+| `npm run launch-check` | Says whether the site is ready to go live (see below)          |
+| `npm run verify`       | Everything CI runs except the browser tests and Lighthouse     |
+
+## Launch check
+
+`npm run launch-check` checks each launch gate in [docs/roadmap.md](docs/roadmap.md#launch-gates)
+and prints one `PASS` or `FAIL` line per gate, with what to do next for each failure. It exits
+with code 1 if any gate fails, so it can also run in a script.
+
+| Gate                          | Passes when                                                                                                      |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Contractor license number     | `licenseNumber` is set in `src/lib/site.ts` (the footer and contact page then show it)                           |
+| Office phone number           | `phone` is set in `src/lib/site.ts`, as ten digits                                                               |
+| Domain                        | `site` in `astro.config.mjs` names the same host as a custom domain in `routes` in `wrangler.jsonc`              |
+| Team brokerage details        | Every published team member described as a real-estate licensee has a `Brokerage: <firm>` line in the text       |
+| No draft or sample content    | No published content file uses a placeholder image, placeholder alt text, lorem ipsum or `example.test`          |
+| Lighthouse on every page type | `lighthouserc.json` audits an address of every page type, and the Lighthouse job passed on the latest `main` run |
+
+Drafts do not fail the content gate, because the launched build hides them; the report counts them.
+The Lighthouse gate reads the latest CI run on `main` with the GitHub CLI, so `gh` must be
+installed and signed in; without it the gate fails and says how to check by hand. Pages built from
+one template (the portfolio filters, the two legal pages) count as one page type; the groups are
+listed in `PAGE_TYPE_GROUPS` in [`scripts/launch-gates.mjs`](scripts/launch-gates.mjs).
+
+The script does not run Astro: it reads business facts from the source of `src/lib/site.ts` and
+content files with a small frontmatter reader that looks only at top-level `key: value` lines.
 
 ## Configuration
 
