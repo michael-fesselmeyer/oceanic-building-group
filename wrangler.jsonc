@@ -1,0 +1,7 @@
+{
+  // The Astro Cloudflare adapter fills in the entrypoint and the static
+  // assets binding. Secrets are never written here: local values live in
+  // the git-ignored .dev.vars file, production values in the Cloudflare
+  // dashboard. See .env.example for the names.
+  "name": "oceanic-building-group",
+}

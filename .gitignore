@@ -1,0 +1,27 @@
+# build output
+dist/
+.astro/
+.wrangler/
+
+# dependencies
+node_modules/
+
+# logs
+npm-debug.log*
+
+# secrets: real values live only in these files and in the host's encrypted settings
+.env
+.env.*
+!.env.example
+.dev.vars
+.dev.vars.*
+
+# test and audit output
+playwright-report/
+test-results/
+lighthouse-reports/
+.lighthouseci/
+
+# OS and editors
+.DS_Store
+.idea/
