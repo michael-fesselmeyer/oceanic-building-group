@@ -5,22 +5,22 @@ one or a few issues.
 
 ## Site map
 
-| Address                        | Page              | Purpose                                                                      |
-| ------------------------------ | ----------------- | ---------------------------------------------------------------------------- |
-| `/`                            | Home              | Hero, featured projects, the four services, process, design partner, contact |
-| `/portfolio/`                  | Portfolio         | Filterable grid: custom homes, renovations, commercial, under construction   |
-| `/portfolio/<project>/`        | Project           | Gallery, stats, story, interior design credit, next and previous             |
-| `/services/`                   | Services          | Overview of the four service lines                                           |
-| `/services/custom-homes/`      | Custom Homes      | Ground-up residential builds                                                 |
-| `/services/renovations/`       | Renovations       | Remodels and additions                                                       |
-| `/services/commercial/`        | Commercial        | Commercial construction and build-outs                                       |
-| `/services/investors/`         | Investor Partners | Speculative homes, land and joint ventures                                   |
-| `/interior-design/`            | Interior Design   | The design partner: biography, shared projects, testimonials, link           |
-| `/process/`                    | Our Process       | The stages of a build with typical timelines                                 |
-| `/about/`                      | About             | The company story and team                                                   |
-| `/areas/` and `/areas/<town>/` | Areas We Serve    | One page per town with its local projects                                    |
-| `/contact/`                    | Contact           | Intake form, office details, map                                             |
-| `/privacy/`, `/terms/`         | Legal             | Plain-language privacy policy and terms of use, linked from the footer       |
+| Address                        | Page              | Purpose                                                                                  |
+| ------------------------------ | ----------------- | ---------------------------------------------------------------------------------------- |
+| `/`                            | Home              | Hero, featured projects, the four services, process, design partner, contact             |
+| `/portfolio/`                  | Portfolio         | Editorial layout with filters: custom homes, renovations, commercial, under construction |
+| `/portfolio/<project>/`        | Project           | Gallery, stats, story, interior design credit, next and previous                         |
+| `/services/`                   | Services          | Overview of the four service lines                                                       |
+| `/services/custom-homes/`      | Custom Homes      | Ground-up residential builds                                                             |
+| `/services/renovations/`       | Renovations       | Remodels and additions                                                                   |
+| `/services/commercial/`        | Commercial        | Commercial construction and build-outs                                                   |
+| `/services/investors/`         | Investor Partners | Speculative homes, land and joint ventures                                               |
+| `/interior-design/`            | Interior Design   | The design partner: biography, shared projects, testimonials, link                       |
+| `/process/`                    | Our Process       | The stages of a build with typical timelines                                             |
+| `/about/`                      | About             | The company story and team                                                               |
+| `/areas/` and `/areas/<town>/` | Areas We Serve    | One page per town with its local projects                                                |
+| `/contact/`                    | Contact           | Intake form, office details, map                                                         |
+| `/privacy/`, `/terms/`         | Legal             | Plain-language privacy policy and terms of use, linked from the footer                   |
 
 ## Phases
 

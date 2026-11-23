@@ -9,7 +9,8 @@ into enquiries through a short intake form that notifies the office straight awa
 ## What it does
 
 - **Portfolio first.** Projects are content files with photographs, stats and a story, shown as
-  full-bleed, fast-loading pages.
+  full-bleed, fast-loading pages. The portfolio index lays them out editorially and filters by
+  category and status through plain links, so filtering works without JavaScript.
 - **Built for search.** Static HTML, a unique title and description on every page, structured
   data, and a performance budget enforced in CI.
 - **Desktop and phone as equals.** The wide layout is designed for large screens; media queries
