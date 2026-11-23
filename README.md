@@ -11,6 +11,9 @@ into enquiries through a short intake form that notifies the office straight awa
 - **Portfolio first.** Projects are content files with photographs, stats and a story, shown as
   full-bleed, fast-loading pages. The portfolio index lays them out editorially and filters by
   category and status through plain links, so filtering works without JavaScript.
+- **A process page that reads like a sequence.** The stages of a build are one Markdown file
+  each, shown in order with large numerals on a vertical rule (a plain ordered list on phones). A
+  typical duration appears only on a stage whose file supplies one.
 - **Built for search.** Static HTML, a unique title and description on every page, structured
   data, and a performance budget enforced in CI.
 - **Desktop and phone as equals.** The wide layout is designed for large screens; media queries
