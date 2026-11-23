@@ -277,6 +277,34 @@ label, its own title and description, and a rule for which projects it shows.
 To add a filter, add it to `PORTFOLIO_FILTERS`, add a page next to the others that passes it to
 `PortfolioLayout`, and add it to the filter list in `tests/e2e/portfolio.spec.ts`.
 
+## Areas pages
+
+`/areas/` lists the towns and `/areas/<town>/` has one page per town, from one Markdown file each in
+`src/content/towns/`. The schema is unchanged: `name`, `county`, `summary`, `seoDescription`,
+`order`, `draft` and a Markdown body.
+
+- **Local copy.** Each town's file is written for that town: its setting, the building rules that
+  apply there, and how permits work. Every claim about a code, a permit or a municipality is
+  checked against an official page (the Florida Department of Environmental Protection, Palm Beach
+  County's floodplain page, the town's own site) and kept general where it could not be confirmed.
+  Do not copy a paragraph between towns; a fact that holds for one place is not a template. The
+  High-Velocity Hurricane Zone is deliberately not mentioned, because it was not checked against an
+  official source.
+- **Projects.** A project's `town` field (the file name of a town) puts it on that town's page and
+  turns the Location fact on the project page into a link. A town with no projects shows one plain
+  sentence pointing to the portfolio and contact instead of an empty section. `projectsInTown` in
+  [`src/lib/towns.ts`](../src/lib/towns.ts) does the matching. A project whose location is not a
+  town (a river, a community) leaves `town` unset.
+- **Page parts.** Opening band with a link back to `/areas/`, the Markdown body beside a list of all
+  towns, the town's projects, the services, and a call to action. The footer links to `/areas/`
+  (`areasLink` in `src/lib/site.ts`); the main navigation does not.
+- **Search.** Titles read "Building in <town>". Each town page carries breadcrumbs (Home, Areas We
+  Serve, the town) through `townCrumbs`, and the sitemap lists every page automatically.
+- **Tests.** `tests/unit/towns.test.ts` covers the helpers; `tests/e2e/areas.spec.ts` walks the
+  files in `src/content/towns/` and checks each page (one heading, local copy, services and contact
+  links, title and description, axe, no sideways scroll), the index, the footer link, a town with
+  projects, a town without, the project-to-town link and the breadcrumbs.
+
 ## Services pages
 
 `/services/` introduces the four service lines as an editorial index, and
