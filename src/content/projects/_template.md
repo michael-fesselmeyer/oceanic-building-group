@@ -9,10 +9,10 @@ category: custom-home # custom-home, renovation or commercial
 status: completed # completed or under-construction
 # style: Coastal British West Indies   # optional
 summary: One or two sentences, 40 to 220 characters, shown on cards and in search results.
-cover: ./photos/project-name/cover.jpg # about 2400px wide
+cover: ../../assets/projects/project-name/cover.jpg # 2400px on the long edge at most
 coverAlt: What the photograph shows, in plain words
 gallery:
-  - src: ./photos/project-name/kitchen.jpg
+  - src: ../../assets/projects/project-name/kitchen.jpg
     alt: What this photograph shows
 stats: # every line here is optional
   totalSqFt: 5000
