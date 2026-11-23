@@ -1,0 +1,9 @@
+# Verified false positives for the secret scan (gitleaks). Each line names one finding by
+# commit, file, rule and line, so it never hides a new finding. Add a line only after checking
+# by hand that the value is not a secret, and say why here.
+#
+# A made-up idempotency key in a unit test (`lead-` followed by sixteen hex characters). It lives
+# only on the closed branch `21-intake-endpoint`; the merged version of that work uses
+# `lead-test-1`. The scan checks every branch, so this commit would otherwise fail every run
+# until the branch is deleted.
+5ac782b3dd5154b6c0737d677d90a03efbecfa69:tests/unit/notify.test.ts:generic-api-key:23
