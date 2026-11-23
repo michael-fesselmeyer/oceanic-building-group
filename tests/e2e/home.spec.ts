@@ -2,8 +2,9 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, type Page, test } from '@playwright/test';
 
 // The home page in CI is built without PUBLIC_SITE_LAUNCHED, so the draft projects are present
-// and four of them are featured. The cases the real content does not have (nothing featured,
-// a single featured project) are checked on the style guide's copies of the same sections.
+// and four of them are featured. The cases the real content does not have (nothing featured, a
+// single featured project, testimonials, empty collections) are checked on the style guide's
+// copies of the same sections.
 
 const projectLink = /^\/portfolio\/[^/]+\/$/;
 
@@ -97,6 +98,63 @@ test.describe('home page', () => {
     await expect.poll(() => headerAlpha(page)).toBe(0);
   });
 
+  test('lists every service line, each linking to its page', async ({ page }) => {
+    const section = page.locator('.home-services');
+    const links = section.getByRole('listitem').getByRole('link');
+    expect(await links.count()).toBeGreaterThan(0);
+    for (const link of await links.all()) {
+      const href = await link.getAttribute('href');
+      expect(href).toMatch(/^\/services\/[^/]+\/$/);
+      expect((await page.request.get(href!)).status()).toBe(200);
+    }
+    await expect(section.getByRole('link', { name: 'All services' })).toHaveAttribute(
+      'href',
+      '/services/',
+    );
+  });
+
+  test('shows the stages of a build in order and links to Our Process', async ({ page }) => {
+    const section = page.locator('.home-process');
+    expect(await section.locator('ol > li').count()).toBeGreaterThan(1);
+    await expect(section.locator('ol > li').first()).toContainText('01');
+    await expect(section.getByRole('link', { name: 'See each stage in detail' })).toHaveAttribute(
+      'href',
+      '/process/',
+    );
+  });
+
+  test('introduces the design partner and links to her page', async ({ page }) => {
+    const section = page.locator('.home-partner');
+    await expect(section.getByRole('heading', { level: 2 })).toBeVisible();
+    await expect(section.getByRole('link', { name: /^Meet / })).toHaveAttribute(
+      'href',
+      '/interior-design/',
+    );
+  });
+
+  test('ends with the contact band, right above the footer', async ({ page }) => {
+    const band = page.locator('main > :last-child');
+    await expect(band).toHaveClass(/contact-band/);
+    await expect(band.getByRole('link', { name: 'Start a Project' })).toHaveAttribute(
+      'href',
+      '/contact/',
+    );
+    const gap = await page.evaluate(
+      () =>
+        document.querySelector('.site-footer')!.getBoundingClientRect().top -
+        document.querySelector('.contact-band')!.getBoundingClientRect().bottom,
+    );
+    expect(Math.abs(gap)).toBeLessThan(1);
+  });
+
+  test('keeps its headings in order', async ({ page }) => {
+    const levels = await page
+      .locator('main :is(h1, h2, h3, h4)')
+      .evaluateAll((headings) => headings.map((h) => Number(h.tagName[1])));
+    expect(levels[0]).toBe(1);
+    levels.slice(1).forEach((level, i) => expect(level).toBeLessThanOrEqual(levels[i] + 1));
+  });
+
   test('has no accessibility violations', async ({ page }) => {
     const results = await new AxeBuilder({ page }).analyze();
     expect(results.violations).toEqual([]);
@@ -127,14 +185,24 @@ test.describe('home page', () => {
 });
 
 test.describe('home page sections with other content', () => {
-  test('with nothing featured: a navy hero and no featured section', async ({ page }) => {
+  test('with nothing to show: the navy hero and the contact band only', async ({ page }) => {
     await page.goto('/style-guide/home/none/');
     const hero = page.locator('main > :first-child');
     await expect(hero).toHaveClass(/no-photo/);
     await expect(hero.getByRole('heading', { level: 1 })).toBeVisible();
     await expect(hero.getByRole('link', { name: 'Start a Project' })).toBeVisible();
     await expect(hero.locator('img, .credit')).toHaveCount(0);
-    await expect(page.locator('.featured')).toHaveCount(0);
+    for (const section of [
+      '.featured',
+      '.home-services',
+      '.home-process',
+      '.home-partner',
+      '.home-testimonials',
+    ]) {
+      await expect(page.locator(section)).toHaveCount(0);
+    }
+    await expect(page.locator('main > *')).toHaveCount(2);
+    await expect(page.locator('main > :last-child')).toHaveClass(/contact-band/);
     expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
   });
 
@@ -148,6 +216,25 @@ test.describe('home page sections with other content', () => {
       projectLink,
     );
     await expect(page.locator('.featured')).toHaveCount(0);
+  });
+
+  test('with one testimonial: a single large quote', async ({ page }) => {
+    await page.goto('/style-guide/home/one/');
+    const section = page.locator('.home-testimonials');
+    await expect(section.locator('blockquote')).toHaveCount(1);
+    await expect(section.locator('.more')).toHaveCount(0);
+  });
+
+  test('with three testimonials: one large and two smaller, naming the project', async ({
+    page,
+  }) => {
+    await page.goto('/style-guide/home/');
+    const section = page.locator('.home-testimonials');
+    await expect(section.getByRole('heading', { level: 2 })).toBeVisible();
+    await expect(section.locator('blockquote')).toHaveCount(3);
+    await expect(section.locator('figcaption').first()).toContainText(
+      'Example Riverfront Residence',
+    );
   });
 
   test('with a long title and no location: the cards still fit', async ({ page }) => {
