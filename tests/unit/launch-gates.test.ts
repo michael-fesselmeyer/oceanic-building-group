@@ -16,6 +16,7 @@ import {
   pageTypes,
   parseFrontmatter,
   parseJsonc,
+  readLighthouseUrls,
   readPageFiles,
   readSiteFact,
   resolveRoute,
@@ -77,11 +78,34 @@ describe('the made-up ready checkout', () => {
     ]);
     expect(pageFiles).toEqual(readPageFiles(ready));
     expect(pageFiles).toEqual([
+      '404.astro',
       'contact.astro',
       'index.astro',
       'portfolio/[project].astro',
       'portfolio/index.astro',
     ]);
+  });
+});
+
+describe('audited addresses', () => {
+  it('come from both Lighthouse configs, indexed pages first', () => {
+    expect(readLighthouseUrls(ready)).toEqual([
+      'http://localhost/',
+      'http://localhost/portfolio/',
+      'http://localhost/portfolio/river-house/',
+      'http://localhost/contact/',
+      'http://localhost/404.html',
+    ]);
+  });
+
+  it('cover every page type of this repository', () => {
+    const root = fileURLToPath(new URL('../..', import.meta.url));
+    const result = checkLighthouse({
+      pageFiles: readPageFiles(root),
+      lighthouseUrls: readLighthouseUrls(root),
+      ci: passingCi,
+    });
+    expect(result.ok, result.detail).toBe(true);
   });
 });
 
