@@ -1,6 +1,8 @@
 ---
 name: Jupiter Inlet Colony
 county: Palm Beach County
+latitude: 26.948
+longitude: -80.0752
 summary: A small town in northern Palm Beach County near Jupiter Inlet, with its own Town Hall and its own Building Department.
 seoDescription: Building in the Town of Jupiter Inlet Colony, Florida. The Town's own building department, contractor registration, flood rules and wind-rated construction.
 order: 2

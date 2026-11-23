@@ -11,6 +11,7 @@
 import { defineCollection, reference } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
+import { TOWN_BOUNDS } from './lib/areas-map';
 
 const markdown = (folder: string) =>
   glob({ pattern: '**/[^_]*.md', base: `./src/content/${folder}` });
@@ -142,11 +143,26 @@ const services = defineCollection({
     }),
 });
 
+const OUTSIDE_MAP =
+  `The Areas map covers latitude ${TOWN_BOUNDS.south} to ${TOWN_BOUNDS.north} and longitude ` +
+  `${TOWN_BOUNDS.west} to ${TOWN_BOUNDS.east}, from Hobe Sound to Wellington. Check the ` +
+  'coordinates (longitude is negative), or extend the map first (docs/architecture.md, Areas pages).';
+
 const towns = defineCollection({
   loader: markdown('towns'),
   schema: z.strictObject({
     name: z.string().max(40),
     county: z.string().max(40).optional(),
+    /** The town's center in decimal degrees, for its mark on the Areas map. North is positive. */
+    latitude: z
+      .number({ error: 'Write latitude as a number of degrees, for example 26.9342.' })
+      .min(TOWN_BOUNDS.south, { error: OUTSIDE_MAP })
+      .max(TOWN_BOUNDS.north, { error: OUTSIDE_MAP }),
+    /** West is negative: towns here are around -80.1. */
+    longitude: z
+      .number({ error: 'Write longitude as a negative number of degrees, for example -80.0942.' })
+      .min(TOWN_BOUNDS.west, { error: OUTSIDE_MAP })
+      .max(TOWN_BOUNDS.east, { error: OUTSIDE_MAP }),
     summary: z.string().min(40).max(220),
     seoDescription,
     order: z.number().int().default(100),
