@@ -8,7 +8,8 @@
 //   id     Put on the heading, so the section can use aria-labelledby.
 //   align  "start" (default) or "center".
 //
-// The heading text goes in the default slot.
+// The heading text goes in the default slot. It rises into view as it is
+// scrolled to (see src/styles/motion.css), marking the start of a section.
 interface Props {
   level?: 2 | 3 | 4;
   label?: string | null;
@@ -22,14 +23,14 @@ const hasLabel = Boolean(label?.trim());
 ---
 
 {hasLabel ? (
-  <hgroup class:list={['section-heading', align]}>
+  <hgroup class:list={['section-heading', align]} data-reveal="text">
     <p class="label">{label}</p>
     <Heading id={id}>
       <slot />
     </Heading>
   </hgroup>
 ) : (
-  <Heading class:list={['section-heading', align]} id={id}>
+  <Heading class:list={['section-heading', align]} id={id} data-reveal="text">
     <slot />
   </Heading>
 )}
