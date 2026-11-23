@@ -18,6 +18,8 @@ import ContactPage from '../../components/contact/ContactPage.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { INTAKE_ENV_NAMES } from '../../lib/intake-config';
 import { createIntakeSetup, handleIntake } from '../../lib/intake-handler';
+import { allowTurnstile } from '../../lib/security-headers';
+import { formSiteKey } from '../../lib/turnstile';
 
 export const prerender = false;
 
@@ -48,6 +50,8 @@ if (outcome.kind === 'bad-request') {
 
 Astro.response.status =
   outcome.kind === 'invalid' ? 422 : outcome.kind === 'spam-check-failed' ? 400 : 503;
+// The form shown again carries the spam check, so this page allows it too.
+if (formSiteKey) allowTurnstile(Astro.csp);
 const errors = outcome.kind === 'invalid' ? outcome.errors : undefined;
 const notice = outcome.kind === 'invalid' ? undefined : outcome.notice;
 ---

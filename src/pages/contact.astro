@@ -3,7 +3,12 @@
 // same form again, filled in, when an enquiry needs another try.
 import ContactPage from '../components/contact/ContactPage.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { allowTurnstile } from '../lib/security-headers';
 import { site } from '../lib/site';
+import { formSiteKey } from '../lib/turnstile';
+
+// The form's spam check loads from Cloudflare; allow it on this page only.
+if (formSiteKey) allowTurnstile(Astro.csp);
 ---
 
 <BaseLayout
