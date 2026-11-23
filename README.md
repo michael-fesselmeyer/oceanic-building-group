@@ -75,6 +75,10 @@ into enquiries through a short intake form that notifies the office straight awa
 - **Safe to maintain.** Content lives in Markdown with a strict schema, so a mistake fails the
   build instead of breaking the live site.
 
+To change the site's words and photographs (projects, progress updates, testimonials, services,
+process stages, towns, the team, the phone and license number), follow the step-by-step recipes in
+[docs/content-guide.md](docs/content-guide.md), written for the business owner.
+
 Planned work is tracked in [docs/roadmap.md](docs/roadmap.md).
 
 ## Tech stack
