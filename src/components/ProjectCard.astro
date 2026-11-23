@@ -1,0 +1,140 @@
+---
+// One project in a grid or list: cover photograph, category, title and
+// location, linking to the project page at /portfolio/<id>/. The whole card
+// is clickable, but there is a single link (on the title), so screen readers
+// hear it once.
+//
+//   project       A projects collection entry, from src/lib/content.ts.
+//   headingLevel  Level of the title, 3 by default. Use the level below the
+//                 heading of the section the card sits in.
+//   sizes         How wide the card is shown. The default suits a two-column
+//                 grid that becomes one column at 800px.
+//   eager         Load the cover straight away; only for a card at the top
+//                 of a page.
+//
+// Wrap cards in <ul role="list"> with one <li> per card.
+import Photo from './Photo.astro';
+import { PROJECT_CATEGORY_LABELS, type Project } from '../lib/content';
+
+interface Props {
+  project: Project;
+  headingLevel?: 2 | 3 | 4;
+  sizes?: string;
+  eager?: boolean;
+}
+
+const {
+  project,
+  headingLevel = 3,
+  sizes = '(max-width: 800px) 100vw, 50vw',
+  eager = false,
+} = Astro.props;
+
+const { title, location, category, status, cover, coverAlt } = project.data;
+const Heading = `h${headingLevel}` as const;
+const href = `/portfolio/${project.id}/`;
+const place = location.trim();
+---
+
+<article class="project-card">
+  <div class="cover">
+    <Photo
+      src={cover}
+      alt={coverAlt}
+      widths={[480, 800, 1200, 1600]}
+      sizes={sizes}
+      ratio="3 / 2"
+      eager={eager}
+    />
+  </div>
+  <p class="label meta">
+    {PROJECT_CATEGORY_LABELS[category]}
+    {status === 'under-construction' && <span class="status">Under construction</span>}
+  </p>
+  <Heading class="title">
+    <a href={href}>{title}</a>
+  </Heading>
+  {place && <p class="location">{place}</p>}
+</article>
+
+<style>
+  .project-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* The photograph comes first visually; the text order stays logical. */
+  .cover {
+    order: -1;
+    overflow: hidden;
+    background: var(--color-surface);
+  }
+
+  .cover :global(img) {
+    transition: transform var(--duration-slow) var(--ease-out);
+  }
+
+  .project-card:hover .cover :global(img) {
+    transform: scale(1.03);
+  }
+
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-4);
+    margin-top: var(--space-5);
+    color: var(--color-link);
+  }
+
+  .status {
+    color: var(--color-text-muted);
+  }
+
+  .title {
+    margin-top: var(--space-2);
+    font-size: var(--text-xl);
+    line-height: var(--leading-snug);
+  }
+
+  .title a {
+    color: inherit;
+    text-decoration-line: underline;
+    text-decoration-color: transparent;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+    transition: text-decoration-color var(--duration-fast) var(--ease-out);
+  }
+
+  /* Stretches the title link over the whole card. */
+  .title a::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+
+  .title a:focus-visible {
+    outline: none;
+  }
+
+  .title a:focus-visible::after {
+    outline: 2px solid var(--color-focus);
+    outline-offset: var(--space-1);
+  }
+
+  .project-card:hover .title a,
+  .title a:focus-visible {
+    text-decoration-color: currentColor;
+  }
+
+  .location {
+    margin-top: var(--space-1);
+    color: var(--color-text-muted);
+  }
+
+  @media (max-width: 520px) {
+    .meta {
+      margin-top: var(--space-4);
+    }
+  }
+</style>
