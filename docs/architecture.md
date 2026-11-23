@@ -88,6 +88,36 @@ tokens; edit the script, never the output.
   card. Unit tests check that the manifest and the theme color match the tokens and that each file
   has the size its tag states; a browser test checks every built page's icon links and share image.
 
+## Structured data
+
+Every page carries one `<script type="application/ld+json">` holding a single `@graph`. It is
+built by pure functions in [`src/lib/structured-data.ts`](../src/lib/structured-data.ts) and
+rendered once, in `Seo.astro`, so no page writes JSON-LD by hand.
+
+| Node                | Where                        | Built from                                                      |
+| ------------------- | ---------------------------- | --------------------------------------------------------------- |
+| `GeneralContractor` | Every page                   | `src/lib/site.ts`: name, legal name, address, area served, logo |
+| `WebSite`           | Home page                    | The site name, with the business as publisher                   |
+| `BreadcrumbList`    | Project, service, town pages | `projectCrumbs`, `serviceCrumbs`, `townCrumbs`                  |
+| `WebPage`           | Project pages                | Name, description, town, main photograph, year, design partner  |
+
+- **Only what the page shows.** The phone number and license number are added when `site.ts`
+  has them (the footer shows both) and left out while they are `null`; no builder writes a
+  placeholder. The design partner is credited as a contributor only on a project marked
+  `interiorDesignPartner` while `site.designPartner` is set, the same rule as the visible credit.
+  There are no ratings, reviews, offers or prices.
+- **Breadcrumbs** go from Home through the section index to the page, with absolute addresses.
+  A page passes `breadcrumbs` to `BaseLayout`; top-level pages pass nothing. `townCrumbs` is ready
+  for the town pages (`/areas/` then `/areas/<town>/`).
+- **Project photograph.** The project page asks Astro for the cover at 1600px wide, in its own
+  proportions, and the page graph names it as an absolute address with its size and alt text.
+- **Extra nodes** for a new page type go through the `structuredData` prop of `BaseLayout`, built
+  by a new pure function with its own unit tests.
+- The JSON is serialized with `<` escaped, so text in a title can never end the script early.
+- Tests: `tests/unit/structured-data.test.ts` checks each builder's shape and that null facts
+  disappear; `tests/e2e/structured-data.spec.ts` walks the build and checks every page has one
+  block with one business, breadcrumbs exactly on nested pages, and a reachable project photograph.
+
 ## Components
 
 Shared building blocks live in [`src/components/`](../src/components/). Each file starts with a
@@ -104,7 +134,7 @@ their own versions.
 | `StatList`                 | Label and value facts; missing values are skipped, an empty list renders nothing        |
 | `ProjectCard`              | A project's cover, category, title and location, linking to `/portfolio/<id>/`          |
 | `Wordmark`                 | The brand wordmark in the current text color (used by the header)                       |
-| `Seo`                      | Title, description, canonical and share tags (used by the layout)                       |
+| `Seo`                      | Title, description, canonical, share tags and JSON-LD (used by the layout)              |
 | `SiteHeader`, `SiteFooter` | The page frame (used by the layout); see [Header](#header)                              |
 
 Components used by a single page type live in a subfolder named after it. `project/` holds the
