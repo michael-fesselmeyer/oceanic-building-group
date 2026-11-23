@@ -839,6 +839,34 @@ and is unit tested in `tests/unit/link-check.test.ts`; no browser and no network
 | Repository hygiene           | `scripts/check-hygiene` | `verify`, CI |
 | Internal links               | `scripts/check-links`   | `verify`, CI |
 
+### Lighthouse budget
+
+The Lighthouse job builds the site as it will launch (`PUBLIC_SITE_LAUNCHED=true`, drafts hidden)
+and audits one page of every type, with a minimum score of 95 in performance, accessibility, best
+practices and SEO. A page that misses the budget is fixed, never excused.
+
+- **Two lists.** [`lighthouserc.json`](../lighthouserc.json) holds the pages meant to be indexed:
+  home, portfolio, a project, the services index, a service, process, interior design, contact,
+  privacy and terms. [`lighthouserc.noindex.json`](../lighthouserc.noindex.json) holds the pages
+  that are `noindex` on purpose (the 404 page and the form's thank-you page). Lighthouse scores
+  `noindex` as an SEO failure, so that list skips only the `is-crawlable` audit; every other audit
+  and every threshold is the same. Before the audit,
+  [`scripts/check-audit-pages.mjs`](../scripts/check-audit-pages.mjs) checks the launched build:
+  every listed page exists, the first list is indexable and the second carries `noindex`.
+- **The project page.** Every real project is a draft for now, so the launched build has no
+  project page. The Lighthouse build also sets `PUBLIC_AUDIT_FIXTURES=true`, which adds one
+  made-up, non-draft project at `/portfolio/audit-example/` (`auditProject` in
+  [`src/lib/examples.ts`](../src/lib/examples.ts): a cover, stats, features, a three-photograph
+  gallery and the design partner credit). No deployment sets the variable, and no real project
+  is published for the audit.
+- **One run per page.** Twelve pages at one run each keep the job to a few minutes. Scores sit at
+  99 to 100, well clear of the budget; if a page starts to hover near 95, raise `numberOfRuns`
+  rather than accept a flaky result.
+- **Adding a page type.** Add one of its addresses to the matching list. A unit test
+  (`tests/unit/launch-gates.test.ts`) fails while any page file under `src/pages` has no audited
+  address, and `npm run launch-check` reads both lists. Pages from one template count once; see
+  `PAGE_TYPE_GROUPS` in [`scripts/launch-gates.mjs`](../scripts/launch-gates.mjs).
+
 The secret scan reads every commit on every branch. A finding that has been checked by hand and is
 not a secret is listed by its fingerprint in [`.gitleaksignore`](../.gitleaksignore), with the
 reason; that silences only that one finding. Keep test values low-entropy (`lead-test-1`,
