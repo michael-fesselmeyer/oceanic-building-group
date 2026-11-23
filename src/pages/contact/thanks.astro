@@ -1,0 +1,75 @@
+---
+// Where the intake endpoint sends a visitor after their enquiry reaches the
+// office. Kept out of search results: it only makes sense after sending.
+import Button from '../../components/Button.astro';
+import TextLink from '../../components/TextLink.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { site } from '../../lib/site';
+---
+
+<BaseLayout
+  title="Thank you"
+  description={`Your enquiry is on its way to the ${site.name} office.`}
+  noindex
+>
+  <section class="container thanks">
+    <p class="label kicker">Enquiry sent</p>
+    <h1>Thank you</h1>
+    <p class="lede">
+      Your enquiry is on its way to our office. We will reply to the email address you gave us.
+    </p>
+    <p>
+      In the meantime, you are welcome to look through our recent work or read how a project with us
+      runs from first meeting to handover.
+    </p>
+    <div class="actions">
+      <Button href="/portfolio/">See our work</Button>
+      <TextLink href="/process/">Our process</TextLink>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .thanks {
+    display: grid;
+    gap: var(--space-5);
+    max-width: var(--width-prose);
+    padding-block: var(--space-9);
+  }
+
+  .kicker {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    color: var(--color-link);
+  }
+
+  .kicker::before {
+    content: '';
+    width: var(--space-6);
+    border-top: 1px solid currentColor;
+  }
+
+  h1 {
+    font-size: var(--text-3xl);
+  }
+
+  .lede {
+    font-size: var(--text-lg);
+    line-height: var(--leading-snug);
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-4) var(--space-6);
+    margin-top: var(--space-3);
+  }
+
+  @media (max-width: 520px) {
+    .thanks {
+      padding-block: var(--space-7);
+    }
+  }
+</style>
