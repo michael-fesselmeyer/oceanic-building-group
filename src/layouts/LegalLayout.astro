@@ -1,0 +1,188 @@
+---
+// Long-form reading layout for the privacy and terms pages: a heading
+// block, a "last updated" date, a contents list beside the text on wide
+// screens, and comfortable prose styling for whatever the page slots in.
+// Slotted headings need an `id` that matches an entry in `contents`.
+import BaseLayout from './BaseLayout.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  /** One or two sentences under the heading. */
+  intro: string;
+  /** Date the text was last revised, as YYYY-MM-DD. */
+  updated: string;
+  /** The page's sections, in order, for the contents list. */
+  contents: { id: string; label: string }[];
+}
+
+const { title, description, intro, updated, contents } = Astro.props;
+
+const updatedLabel = new Intl.DateTimeFormat('en-US', {
+  dateStyle: 'long',
+  timeZone: 'UTC',
+}).format(new Date(`${updated}T00:00:00Z`));
+---
+
+<BaseLayout title={title} description={description}>
+  <article class="container legal">
+    <header class="head">
+      <p class="label kicker">Legal</p>
+      <h1>{title}</h1>
+      <p class="intro">{intro}</p>
+      <p class="updated">
+        Last updated <time datetime={updated}>{updatedLabel}</time>
+      </p>
+    </header>
+
+    <div class="body">
+      <nav class="contents" aria-label={`${title} sections`}>
+        <p class="label">On this page</p>
+        <ol role="list">
+          {contents.map((item) => (
+            <li>
+              <a href={`#${item.id}`}>{item.label}</a>
+            </li>
+          ))}
+        </ol>
+      </nav>
+
+      <div class="prose">
+        <slot />
+      </div>
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .legal {
+    padding-block: var(--space-8) 0;
+  }
+
+  .head {
+    max-width: var(--width-prose);
+    padding-bottom: var(--space-7);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .kicker {
+    color: var(--color-link);
+  }
+
+  h1 {
+    margin-top: var(--space-4);
+    font-size: var(--text-3xl);
+  }
+
+  .intro {
+    margin-top: var(--space-5);
+    font-size: var(--text-lg);
+    line-height: var(--leading-snug);
+    color: var(--color-text-muted);
+  }
+
+  .updated {
+    margin-top: var(--space-5);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+
+  .body {
+    display: grid;
+    grid-template-columns: 14rem minmax(0, var(--width-prose));
+    gap: var(--space-9);
+    padding-top: var(--space-7);
+  }
+
+  .contents {
+    position: sticky;
+    top: calc(var(--header-height) + var(--space-6));
+    align-self: start;
+    font-size: var(--text-sm);
+  }
+
+  .contents .label {
+    margin-bottom: var(--space-3);
+    color: var(--color-text-muted);
+  }
+
+  .contents li + li {
+    margin-top: var(--space-2);
+  }
+
+  .contents a {
+    color: var(--color-text);
+    text-decoration: none;
+  }
+
+  .contents a:hover {
+    color: var(--color-link);
+    text-decoration: underline;
+  }
+
+  .prose :global(h2) {
+    margin-top: var(--space-7);
+    font-size: var(--text-xl);
+    line-height: var(--leading-snug);
+    scroll-margin-top: calc(var(--header-height) + var(--space-5));
+  }
+
+  .prose :global(h2:first-child) {
+    margin-top: 0;
+  }
+
+  .prose :global(p),
+  .prose :global(ul) {
+    margin-top: var(--space-4);
+  }
+
+  .prose :global(ul) {
+    padding-left: var(--space-5);
+  }
+
+  .prose :global(li + li) {
+    margin-top: var(--space-2);
+  }
+
+  .prose :global(address) {
+    margin-top: var(--space-4);
+    padding-left: var(--space-4);
+    border-left: 2px solid var(--color-border);
+    font-style: normal;
+  }
+
+  .prose :global(address p) {
+    margin-top: 0;
+  }
+
+  @media (max-width: 1100px) {
+    .body {
+      grid-template-columns: 11rem minmax(0, var(--width-prose));
+      gap: var(--space-7);
+    }
+  }
+
+  @media (max-width: 800px) {
+    .legal {
+      padding-block-start: var(--space-7);
+    }
+
+    .body {
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--space-6);
+    }
+
+    .contents {
+      position: static;
+      padding: var(--space-4) var(--space-5);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+    }
+  }
+
+  @media (max-width: 520px) {
+    .head {
+      padding-bottom: var(--space-6);
+    }
+  }
+</style>

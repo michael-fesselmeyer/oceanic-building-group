@@ -46,6 +46,16 @@ const { address } = site;
     <p>
       &copy; {year} {site.legalName}. All rights reserved.
     </p>
+    <nav aria-label="Legal">
+      <ul role="list">
+        <li>
+          <a href="/privacy/">Privacy Policy</a>
+        </li>
+        <li>
+          <a href="/terms/">Terms of Use</a>
+        </li>
+      </ul>
+    </nav>
   </div>
 </footer>
 
@@ -98,11 +108,25 @@ const { address } = site;
   }
 
   .legal {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--space-3) var(--space-6);
     margin-top: var(--space-8);
     padding-top: var(--space-5);
     border-top: 1px solid color-mix(in srgb, var(--color-white) 20%, transparent);
     font-size: var(--text-xs);
     color: color-mix(in srgb, var(--color-white) 75%, transparent);
+  }
+
+  .legal ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-5);
+  }
+
+  .legal li + li {
+    margin-top: 0;
   }
 
   @media (max-width: 800px) {
