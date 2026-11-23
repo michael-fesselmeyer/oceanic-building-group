@@ -82,4 +82,6 @@ or force-push without the repository owner's say-so.
 - **Performance budgets are bugs when missed.** Fix the page in the same pull request. Never
   raise a budget or turn an assertion into a warning.
 - **Free services only** unless a paid one has been approved. Record each free-tier limit in
-  the docs and degrade gracefully near it.
+  the docs and degrade gracefully near it. CI jobs run only on standard `ubuntu-*` GitHub-hosted
+  runners, which are free on this public repository; larger runners are billed even here, and
+  `npm run hygiene` fails on any other `runs-on`.
