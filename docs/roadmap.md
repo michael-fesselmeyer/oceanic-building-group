@@ -105,6 +105,9 @@ The site must not go live until each of these is true. `npm run launch-check` ch
 - No draft or sample content remains published.
 - Every page type passes the Lighthouse budget.
 
+Once they pass, [launch.md](launch.md) is the step-by-step runbook for going live on Cloudflare,
+checking the site and rolling back.
+
 ## Content still needed from the business
 
 - High-resolution photographs for each project, and drone footage where it exists.

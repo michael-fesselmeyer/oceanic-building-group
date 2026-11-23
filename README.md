@@ -177,6 +177,10 @@ listed in `PAGE_TYPE_GROUPS` in [`scripts/launch-gates.mjs`](scripts/launch-gate
 The script does not run Astro: it reads business facts from the source of `src/lib/site.ts` and
 content files with a small frontmatter reader that looks only at top-level `key: value` lines.
 
+To put the site live, follow the step-by-step runbook in [docs/launch.md](docs/launch.md): the
+Cloudflare Worker and build settings, every setting and secret, Turnstile, Resend, the domain,
+the switch to launched, checks, rollback and the free-tier limits.
+
 ## Configuration
 
 Secrets are never committed. [.env.example](.env.example) lists the variable names; real values
@@ -210,7 +214,7 @@ scripts/         Repository checks and the brand asset generator
 tests/
   unit/          Vitest
   e2e/           Playwright
-docs/            Architecture, decisions and roadmap
+docs/            Architecture, decisions, roadmap and the launch runbook
 ```
 
 ## License
