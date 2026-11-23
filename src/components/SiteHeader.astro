@@ -1,0 +1,186 @@
+---
+// Wordmark, main navigation and the contact button.
+//
+// The navigation is one <nav> that behaves two ways with no JavaScript:
+// on wide screens it is a row of links; at 800px and below it becomes a
+// popover opened by the Menu button (closes on Escape and outside tap).
+import { contactLink, navigation } from '../lib/site';
+
+const current = Astro.url.pathname;
+const isCurrent = (href: string) => current === href || current.startsWith(href);
+---
+
+<header class="site-header">
+  <div class="container bar">
+    <a class="wordmark" href="/">
+      <span class="wordmark-name">Oceanic</span>
+      <span class="wordmark-sub label">Building Group</span>
+    </a>
+
+    <button class="menu-button label" type="button" popovertarget="site-menu">
+      Menu
+    </button>
+
+    <nav id="site-menu" class="site-nav" aria-label="Main" popover>
+      <ul role="list">
+        {navigation.map((item) => (
+          <li>
+            <a href={item.href} aria-current={isCurrent(item.href) ? 'page' : undefined}>
+              {item.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+      <a class="contact-button label" href={contactLink.href}>
+        {contactLink.label}
+      </a>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: color-mix(in srgb, var(--color-page) 92%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-6);
+    height: var(--header-height);
+  }
+
+  .wordmark {
+    display: grid;
+    gap: 0.15em;
+    color: var(--color-heading);
+    text-decoration: none;
+    line-height: 1;
+  }
+
+  .wordmark-name {
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .wordmark-sub {
+    font-size: 0.625rem;
+    letter-spacing: 0.34em;
+  }
+
+  .menu-button {
+    display: none;
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--color-heading);
+    border-radius: var(--radius-pill);
+    background: none;
+    color: var(--color-heading);
+    cursor: pointer;
+  }
+
+  /* Wide screens: the popover is always shown, laid out as a row. */
+  .site-nav {
+    position: static;
+    inset: auto;
+    display: flex;
+    align-items: center;
+    gap: var(--space-6);
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    overflow: visible;
+  }
+
+  .site-nav ul {
+    display: flex;
+    gap: var(--space-6);
+  }
+
+  .site-nav li a {
+    color: var(--color-text);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    text-decoration: none;
+    padding-block: var(--space-2);
+    border-bottom: 1px solid transparent;
+    transition: border-color var(--duration-fast) var(--ease-out);
+  }
+
+  .site-nav li a:hover,
+  .site-nav li a[aria-current='page'] {
+    border-bottom-color: var(--color-heading);
+  }
+
+  .contact-button {
+    padding: var(--space-3) var(--space-5);
+    border-radius: var(--radius-pill);
+    background: var(--color-surface-strong);
+    color: var(--color-text-on-strong);
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background var(--duration-fast) var(--ease-out);
+  }
+
+  .contact-button:hover {
+    background: var(--color-ocean-600);
+  }
+
+  @media (max-width: 1100px) {
+    .site-nav,
+    .site-nav ul {
+      gap: var(--space-5);
+    }
+  }
+
+  /* Tablet and phone: the navigation becomes a full-width sheet. */
+  @media (max-width: 800px) {
+    .menu-button {
+      display: block;
+    }
+
+    .site-nav:not(:popover-open) {
+      display: none;
+    }
+
+    .site-nav:popover-open {
+      position: fixed;
+      inset: var(--header-height) 0 auto 0;
+      width: 100%;
+      max-width: none;
+      flex-direction: column;
+      align-items: stretch;
+      gap: var(--space-5);
+      padding: var(--space-6) var(--page-gutter) var(--space-7);
+      background: var(--color-page);
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .site-nav ul {
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .site-nav li a {
+      display: block;
+      padding-block: var(--space-4);
+      font-family: var(--font-display);
+      font-size: var(--text-xl);
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .contact-button {
+      text-align: center;
+      padding-block: var(--space-4);
+    }
+  }
+</style>

@@ -1,0 +1,124 @@
+---
+// Business details, navigation and legal line. Facts that are not known
+// yet (phone, license number) are `null` in src/lib/site.ts and are left
+// out here, never shown as a placeholder.
+import { formatPhone } from '../lib/seo';
+import { contactLink, navigation, site } from '../lib/site';
+
+const year = new Date().getFullYear();
+const { address } = site;
+---
+
+<footer class="site-footer">
+  <div class="container columns">
+    <div class="brand">
+      <p class="name">{site.name}</p>
+      <p class="label tagline">{site.tagline}</p>
+    </div>
+
+    <address>
+      <p class="label heading">Office</p>
+      <p>{address.street}</p>
+      <p>
+        {address.city}, {address.region} {address.postalCode}
+      </p>
+      {site.phone && (
+        <p>
+          <a href={`tel:+1${site.phone}`}>{formatPhone(site.phone)}</a>
+        </p>
+      )}
+      {site.licenseNumber && <p>License {site.licenseNumber}</p>}
+    </address>
+
+    <nav aria-label="Footer">
+      <p class="label heading">Explore</p>
+      <ul role="list">
+        {[...navigation, contactLink].map((item) => (
+          <li>
+            <a href={item.href}>{item.label}</a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  </div>
+
+  <div class="container legal">
+    <p>
+      &copy; {year} {site.legalName}. All rights reserved.
+    </p>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    margin-top: var(--section-gap);
+    padding-block: var(--space-8) var(--space-6);
+    background: var(--color-surface-strong);
+    color: var(--color-text-on-strong);
+    font-size: var(--text-sm);
+  }
+
+  .columns {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: var(--space-7);
+  }
+
+  .name {
+    font-family: var(--font-display);
+    font-size: var(--text-2xl);
+    line-height: var(--leading-tight);
+  }
+
+  .tagline {
+    margin-top: var(--space-3);
+    color: var(--color-ocean-300);
+  }
+
+  .heading {
+    margin-bottom: var(--space-3);
+    color: var(--color-ocean-300);
+  }
+
+  address {
+    font-style: normal;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+
+  li + li {
+    margin-top: var(--space-1);
+  }
+
+  .legal {
+    margin-top: var(--space-8);
+    padding-top: var(--space-5);
+    border-top: 1px solid color-mix(in srgb, var(--color-white) 20%, transparent);
+    font-size: var(--text-xs);
+    color: color-mix(in srgb, var(--color-white) 75%, transparent);
+  }
+
+  @media (max-width: 800px) {
+    .columns {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .brand {
+      grid-column: 1 / -1;
+    }
+  }
+
+  @media (max-width: 520px) {
+    .columns {
+      grid-template-columns: 1fr;
+      gap: var(--space-6);
+    }
+  }
+</style>

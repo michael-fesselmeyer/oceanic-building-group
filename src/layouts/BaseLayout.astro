@@ -1,0 +1,62 @@
+---
+// The outer shell of every page: <head>, fonts, global styles, skip link,
+// header and footer.
+import { Font } from 'astro:assets';
+import Seo from '../components/Seo.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import '../styles/tokens.css';
+import '../styles/base.css';
+
+interface Props {
+  /** Page name for the browser tab. Leave out on the home page. */
+  title?: string;
+  /** One or two sentences for search results, 50 to 160 characters. */
+  description: string;
+  /** Share image address. */
+  image?: string;
+  /** Keeps the page out of search engines even after launch. */
+  noindex?: boolean;
+}
+
+const { title, description, image, noindex } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <Seo title={title} description={description} image={image} noindex={noindex} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="theme-color" content="#012753" />
+    <Font cssVariable="--font-newsreader" preload={[{ style: 'normal' }]} />
+    <Font cssVariable="--font-hanken" preload />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">
+      Skip to content
+    </a>
+    <SiteHeader />
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+    <SiteFooter />
+  </body>
+</html>
+
+<style>
+  /* Keeps the footer at the bottom on short pages. */
+  body {
+    display: flex;
+    flex-direction: column;
+  }
+
+  main {
+    flex-grow: 1;
+  }
+
+  main:focus {
+    outline: none;
+  }
+</style>

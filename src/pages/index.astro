@@ -1,0 +1,171 @@
+---
+// Home page shell: hero and featured projects. The remaining sections
+// (services, process, design partner, testimonials) are added as they are built.
+import { Image } from 'astro:assets';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getFeaturedProjects, PROJECT_CATEGORY_LABELS } from '../lib/content';
+import { contactLink, site } from '../lib/site';
+
+const featured = await getFeaturedProjects();
+const hero = featured[0];
+---
+
+<BaseLayout description="Custom homes, renovations and commercial construction in Jupiter and the Palm Beaches, built by a team with more than 30 years of experience.">
+  <section class="hero">
+    {hero && (
+      <Image
+        class="hero-photo"
+        src={hero.data.cover}
+        alt={hero.data.coverAlt}
+        widths={[640, 960, 1440, 1920, 2400]}
+        sizes="100vw"
+        loading="eager"
+        fetchpriority="high"
+      />
+    )}
+    <div class="container hero-text">
+      <p class="label">{site.serviceArea}</p>
+      <h1>Built for the coast, made to last.</h1>
+      <p class="lede">
+        Custom homes, renovations and commercial construction, guided from the first sketch to the
+        final walkthrough.
+      </p>
+      <a class="button label" href={contactLink.href}>
+        {contactLink.label}
+      </a>
+    </div>
+  </section>
+
+  {featured.length > 0 && (
+    <section class="container featured" aria-labelledby="featured-heading">
+      <h2 id="featured-heading">Selected work</h2>
+      <ul role="list" class="project-list">
+        {featured.map((project) => (
+          <li class="project">
+            <Image
+              src={project.data.cover}
+              alt={project.data.coverAlt}
+              widths={[480, 800, 1200]}
+              sizes="(max-width: 800px) 100vw, 50vw"
+            />
+            <p class="label category">{PROJECT_CATEGORY_LABELS[project.data.category]}</p>
+            <h3>{project.data.title}</h3>
+            <p class="location">{project.data.location}</p>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )}
+</BaseLayout>
+
+<style>
+  .hero {
+    position: relative;
+    display: grid;
+    align-items: end;
+    min-height: calc(100vh - var(--header-height));
+    min-height: calc(100svh - var(--header-height));
+    background: var(--color-surface-strong);
+    color: var(--color-text-on-strong);
+    overflow: hidden;
+  }
+
+  .hero-photo {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Darkens the lower part of the photo so the text stays readable on any image. */
+  .hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to top,
+      color-mix(in srgb, var(--color-navy-950) 82%, transparent),
+      transparent 65%
+    );
+  }
+
+  .hero-text {
+    position: relative;
+    z-index: 1;
+    padding-block: var(--space-9) var(--space-8);
+  }
+
+  .hero h1 {
+    max-width: 14ch;
+    margin-block: var(--space-4) var(--space-5);
+    color: inherit;
+  }
+
+  .lede {
+    max-width: 44ch;
+    font-size: var(--text-lg);
+  }
+
+  .button {
+    display: inline-block;
+    margin-top: var(--space-6);
+    padding: var(--space-4) var(--space-6);
+    border-radius: var(--radius-pill);
+    background: var(--color-white);
+    color: var(--color-heading);
+    text-decoration: none;
+    transition:
+      background var(--duration-fast) var(--ease-out),
+      color var(--duration-fast) var(--ease-out);
+  }
+
+  .button:hover {
+    background: var(--color-ocean-300);
+  }
+
+  .featured {
+    margin-top: var(--section-gap);
+  }
+
+  .project-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-7) var(--space-6);
+    margin-top: var(--space-7);
+  }
+
+  .project img {
+    width: 100%;
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+  }
+
+  .category {
+    margin-top: var(--space-4);
+    color: var(--color-link);
+  }
+
+  .project h3 {
+    margin-top: var(--space-2);
+    font-size: var(--text-xl);
+  }
+
+  .location {
+    color: var(--color-text-muted);
+  }
+
+  @media (max-width: 800px) {
+    .hero {
+      min-height: 32rem;
+    }
+
+    .hero-text {
+      padding-block: var(--space-8) var(--space-7);
+    }
+
+    .project-list {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
