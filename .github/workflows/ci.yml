@@ -34,6 +34,8 @@ jobs:
       - run: npm run check
       - run: npm test
       - run: npm run build
+      - name: Internal links (normal build)
+        run: npm run check:links
       - name: Hygiene (files)
         run: npm run hygiene
       - name: Hygiene (commit messages in this pull request)
@@ -77,6 +79,9 @@ jobs:
       - run: npm run build
         env:
           PUBLIC_SITE_LAUNCHED: 'true'
+      # Drafts are not built here, so no page may link to one.
+      - name: Internal links (launched build)
+        run: npm run check:links
       # The sitemap exists only on the launched build; check its contents here.
       - name: Sitemap and robots.txt
         run: npx playwright test tests/e2e/sitemap.spec.ts --project=desktop

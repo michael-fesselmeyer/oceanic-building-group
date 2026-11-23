@@ -512,6 +512,30 @@ Turnstile checks the form. A change that makes any of these untrue,
 such as storing leads, setting a cookie or adding a third-party script, updates the privacy page
 and its date in the same pull request. The business reviews both texts before launch.
 
+## Link check
+
+`npm run check:links` reads every built page in `dist/client` and fails when an internal link does
+not resolve. It runs after `npm run build` in `verify`, in the CI build job (normal build) and in
+the Lighthouse job (launched build). The logic is in [`scripts/link-check.mjs`](../scripts/link-check.mjs)
+and is unit tested in `tests/unit/link-check.test.ts`; no browser and no network are used.
+
+- **What is checked.** The `href` of `a`, `area` and `link`, the `src` and `srcset` of images,
+  scripts and frames, and `og:image` and `twitter:image`. An address on the site's own host counts
+  as internal. Each must be a built page or file; page addresses must end in `/`; each `#fragment`
+  must be the `id` (or anchor name) of an element on the target page. `#` and `#top` always pass.
+- **External links** (another host, `mailto:`, `tel:`) are listed at the end of the output with the
+  pages that use them, and never fetched.
+- **Two builds, because drafts disappear.** A normal build includes draft content and a launched
+  build (`PUBLIC_SITE_LAUNCHED=true`) does not, so a page that links to a draft project, service
+  or town passes the first and fails the second. That is the bug the launched run exists to catch.
+  A page that must link to content that may be a draft checks for it first (see the town and
+  project pages).
+- **Skipped pages.** Links on `/style-guide/` pages are not checked: they are development-only and
+  link to made-up neighbors on purpose. A link from a real page into the style guide is still an
+  error.
+- To run it locally: `npm run build && npm run check:links`, then
+  `PUBLIC_SITE_LAUNCHED=true npm run build && npm run check:links`.
+
 ## Quality gates
 
 | Gate                         | Tool                    | Where        |
@@ -524,6 +548,7 @@ and its date in the same pull request. The business reviews both texts before la
 | Performance, SEO             | Lighthouse (minimum 95) | CI           |
 | Secrets                      | gitleaks                | CI           |
 | Repository hygiene           | `scripts/check-hygiene` | `verify`, CI |
+| Internal links               | `scripts/check-links`   | `verify`, CI |
 
 The secret scan reads every commit on every branch. A finding that has been checked by hand and is
 not a secret is listed by its fingerprint in [`.gitleaksignore`](../.gitleaksignore), with the
