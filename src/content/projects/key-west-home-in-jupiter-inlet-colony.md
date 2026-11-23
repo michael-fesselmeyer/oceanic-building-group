@@ -1,6 +1,7 @@
 ---
 title: Key West Coastal Home in Jupiter Inlet Colony
 location: Jupiter Inlet Colony
+town: jupiter-inlet-colony
 category: custom-home
 status: completed
 style: Key West
