@@ -19,4 +19,4 @@ The City of Palm Beach Gardens runs its own permitting and takes applications th
 
 ## Flood and wind still apply
 
-Not being on the beach does not remove flood rules. Lots near canals and lakes may sit in a mapped flood zone, where Palm Beach County's floodplain standards and the half-of-market-value rule for improvements apply. And the Florida Building Code's wind requirements apply across the county, so structure, roof connections and openings are designed to the wind speed for the address.
+Not being on the beach does not remove flood rules. Lots near canals and lakes may sit in a mapped flood zone, where the City's floodplain rules apply, including the National Flood Insurance Program's rule that an improvement costing half or more of a building's market value brings the whole building up to current standards. And the Florida Building Code's wind requirements apply across the county, so structure, roof connections and openings are designed to the wind speed for the address.
