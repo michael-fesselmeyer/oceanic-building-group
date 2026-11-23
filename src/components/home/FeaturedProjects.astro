@@ -1,0 +1,172 @@
+---
+// "Selected work" on the home page: featured projects in a staggered,
+// magazine-style layout, followed by a link to the whole portfolio.
+//
+//   projects  The featured projects to show, in order. With none, nothing is
+//             rendered (no heading, no empty list).
+//
+// The cards repeat a pattern of three on a 12-column grid: a large landscape
+// cover, a portrait one set lower on the right, and a medium landscape one
+// tucked under the first. A single card is shown large on its own. At 800px
+// the pattern becomes two columns and at 520px one, with the portrait card
+// inset so the column keeps some rhythm.
+import ProjectCard from '../ProjectCard.astro';
+import SectionHeading from '../SectionHeading.astro';
+import TextLink from '../TextLink.astro';
+import type { Project } from '../../lib/content';
+
+interface Props {
+  projects: Project[];
+}
+
+const { projects } = Astro.props;
+
+// Each slot's cover shape and the width it is shown at, for `sizes`. The widths follow the grid
+// below: the content column is at most 76rem, reached at a viewport of about 1340px.
+const slots = [
+  {
+    name: 'wide',
+    ratio: '3 / 2',
+    sizes: '(max-width: 800px) 100vw, (max-width: 1340px) 56vw, 700px',
+  },
+  {
+    name: 'tall',
+    ratio: '4 / 5',
+    sizes: '(max-width: 520px) 85vw, (max-width: 800px) 50vw, (max-width: 1340px) 31vw, 390px',
+  },
+  {
+    name: 'mid',
+    ratio: '3 / 2',
+    sizes: '(max-width: 520px) 100vw, (max-width: 800px) 50vw, (max-width: 1340px) 40vw, 490px',
+  },
+] as const;
+
+const solo = {
+  name: 'solo',
+  ratio: '3 / 2',
+  sizes: '(max-width: 800px) 100vw, (max-width: 1340px) 74vw, 910px',
+} as const;
+
+const items = projects.map((project, index) => ({
+  project,
+  slot: projects.length === 1 ? solo : slots[index % slots.length],
+}));
+---
+
+{items.length > 0 && (
+  <section class="container featured" aria-labelledby="featured-heading">
+    <div class="head">
+      <SectionHeading id="featured-heading" label="Portfolio">
+        Selected work
+      </SectionHeading>
+      <p class="all">
+        <TextLink href="/portfolio/">See the full portfolio</TextLink>
+      </p>
+    </div>
+    <ul role="list" class="grid">
+      {items.map(({ project, slot }) => (
+        <li class={slot.name} data-featured-project>
+          <ProjectCard project={project} ratio={slot.ratio} sizes={slot.sizes} />
+        </li>
+      ))}
+    </ul>
+  </section>
+)}
+
+<style>
+  .featured {
+    margin-top: var(--section-gap);
+  }
+
+  .head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    justify-content: space-between;
+    gap: var(--space-5) var(--space-7);
+  }
+
+  .all {
+    padding-bottom: var(--space-2);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: var(--space-8) var(--space-6);
+    margin-top: var(--space-8);
+  }
+
+  .wide {
+    grid-column: 1 / 8;
+  }
+
+  /* Spans two rows so the medium card can sit under the wide one beside it. */
+  .tall {
+    grid-column: 9 / 13;
+    grid-row: span 2;
+    margin-top: var(--space-9);
+  }
+
+  .mid {
+    grid-column: 3 / 8;
+  }
+
+  .solo {
+    grid-column: 1 / 10;
+  }
+
+  @media (max-width: 1100px) {
+    .grid {
+      column-gap: var(--space-5);
+    }
+
+    .tall {
+      margin-top: var(--space-8);
+    }
+
+    .mid {
+      grid-column: 2 / 8;
+    }
+  }
+
+  @media (max-width: 800px) {
+    .grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      row-gap: var(--space-7);
+      margin-top: var(--space-7);
+    }
+
+    .wide,
+    .solo {
+      grid-column: 1 / -1;
+    }
+
+    .tall,
+    .mid {
+      grid-column: auto;
+      grid-row: auto;
+      margin-top: 0;
+    }
+
+    /* The landscape card drops a little so the pair does not read as a row of equals. */
+    .mid {
+      margin-top: var(--space-8);
+    }
+  }
+
+  @media (max-width: 520px) {
+    .grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .tall {
+      justify-self: end;
+      width: 85%;
+    }
+
+    .mid {
+      margin-top: 0;
+    }
+  }
+</style>

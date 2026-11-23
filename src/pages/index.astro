@@ -1,137 +1,21 @@
 ---
-// Home page shell: hero and featured projects. The remaining sections
-// (services, process, design partner, testimonials) are added as they are built.
-import { Image } from 'astro:assets';
-import Button from '../components/Button.astro';
-import ProjectCard from '../components/ProjectCard.astro';
+// Home page. The first featured project's cover is the hero photograph and
+// the other featured projects follow under "Selected work". With nothing
+// featured the hero is a navy band and the featured section is left out.
+import FeaturedProjects from '../components/home/FeaturedProjects.astro';
+import HomeHero from '../components/home/HomeHero.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { getFeaturedProjects } from '../lib/content';
-import { contactLink, site } from '../lib/site';
+import { splitFeatured } from '../lib/home';
 
-const featured = await getFeaturedProjects();
-const hero = featured[0];
+const { lead, rest } = splitFeatured(await getFeaturedProjects());
 ---
 
 <BaseLayout
   overHero
   description="Custom homes, renovations and commercial construction in Jupiter and the Palm Beaches, built by a team with more than 30 years of experience."
 >
-  <section class="hero">
-    {hero && (
-      <Image
-        class="hero-photo"
-        src={hero.data.cover}
-        alt={hero.data.coverAlt}
-        widths={[640, 960, 1440, 1920, 2400]}
-        sizes="100vw"
-        loading="eager"
-        fetchpriority="high"
-      />
-    )}
-    <div class="container hero-text">
-      <p class="label">{site.serviceArea}</p>
-      <h1>Built for the coast, made to last.</h1>
-      <p class="lede">
-        Custom homes, renovations and commercial construction, guided from the first sketch to the
-        final walkthrough.
-      </p>
-      <p class="hero-action">
-        <Button href={contactLink.href} inverse>
-          {contactLink.label}
-        </Button>
-      </p>
-    </div>
-  </section>
-
-  {featured.length > 0 && (
-    <section class="container featured" aria-labelledby="featured-heading">
-      <h2 id="featured-heading">Selected work</h2>
-      <ul role="list" class="project-list">
-        {featured.map((project) => (
-          <li>
-            <ProjectCard project={project} />
-          </li>
-        ))}
-      </ul>
-    </section>
-  )}
+  <HomeHero project={lead} />
+  <FeaturedProjects projects={rest} />
+  {/* The services, process, design partner and contact sections are added below this line. */}
 </BaseLayout>
-
-<style>
-  .hero {
-    position: relative;
-    display: grid;
-    align-items: end;
-    min-height: calc(100vh - var(--header-height));
-    min-height: calc(100svh - var(--header-height));
-    background: var(--color-surface-strong);
-    color: var(--color-text-on-strong);
-    overflow: hidden;
-  }
-
-  .hero-photo {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  /* Darkens the lower part of the photo so the text stays readable on any image. */
-  .hero::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      to top,
-      color-mix(in srgb, var(--color-navy-950) 82%, transparent),
-      transparent 65%
-    );
-  }
-
-  .hero-text {
-    position: relative;
-    z-index: 1;
-    padding-block: var(--space-9) var(--space-8);
-  }
-
-  .hero h1 {
-    max-width: 14ch;
-    margin-block: var(--space-4) var(--space-5);
-    color: inherit;
-  }
-
-  .lede {
-    max-width: 44ch;
-    font-size: var(--text-lg);
-  }
-
-  .hero-action {
-    margin-top: var(--space-6);
-  }
-
-  .featured {
-    margin-top: var(--section-gap);
-  }
-
-  .project-list {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--space-7) var(--space-6);
-    margin-top: var(--space-7);
-  }
-
-  @media (max-width: 800px) {
-    .hero {
-      min-height: 32rem;
-    }
-
-    .hero-text {
-      padding-block: var(--space-8) var(--space-7);
-    }
-
-    .project-list {
-      grid-template-columns: 1fr;
-    }
-  }
-</style>
