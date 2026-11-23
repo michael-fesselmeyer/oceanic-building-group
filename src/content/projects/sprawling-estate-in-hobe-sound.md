@@ -1,6 +1,7 @@
 ---
 title: Sprawling Estate in Hobe Sound
 location: Hobe Sound
+town: hobe-sound
 category: custom-home
 status: completed
 summary: A private residence on 11.5 acres of native vegetation with a guest house, tennis court, boat house and ramp, and solid concrete construction throughout.

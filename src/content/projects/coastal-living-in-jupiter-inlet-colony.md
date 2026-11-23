@@ -1,6 +1,7 @@
 ---
 title: Coastal Living in Jupiter Inlet Colony
 location: Jupiter Inlet Colony
+town: jupiter-inlet-colony
 category: custom-home
 status: completed
 style: Coastal
