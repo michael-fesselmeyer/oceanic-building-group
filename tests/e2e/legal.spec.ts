@@ -61,6 +61,6 @@ for (const { path, heading, footerLink } of pages) {
 
 test('unknown business facts never show as placeholders', async ({ page }) => {
   await page.goto('/privacy/');
-  const text = await page.locator('address').innerText();
+  const text = await page.locator('article').innerText();
   expect(text).not.toMatch(/null|undefined/);
 });
