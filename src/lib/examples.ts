@@ -23,6 +23,7 @@ export function exampleProject(id: string, data: Partial<Project['data']>): Proj
       cover: placeholder,
       coverAlt: 'Placeholder image standing in for a project photograph',
       gallery: [],
+      beforeAfter: [],
       stats: {},
       features: [],
       progress: [],
@@ -60,6 +61,15 @@ export const exampleFullProject = exampleProject('example-full-project', {
     { src: placeholder, alt: 'Placeholder for a wide photograph of the river side of the house' },
     { src: placeholderTall, alt: 'Placeholder for a tall photograph of the entry staircase' },
     { src: placeholder, alt: 'Placeholder for a wide photograph of the kitchen and family room' },
+  ],
+  beforeAfter: [
+    {
+      before: placeholderTall,
+      beforeAlt: 'Placeholder for the kitchen before the renovation, with its old cabinets',
+      after: placeholder,
+      afterAlt: 'Placeholder for the same view of the kitchen after the renovation',
+      caption: 'The kitchen, opened up to the family room.',
+    },
   ],
   interiorDesignPartner: true,
 });

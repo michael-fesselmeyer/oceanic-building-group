@@ -14,6 +14,15 @@ coverAlt: What the photograph shows, in plain words
 gallery:
   - src: ../../assets/projects/project-name/kitchen.jpg
     alt: What this photograph shows
+# Before and after, compared with a slider on the page. Optional, up to 6.
+# Take both photographs from the same spot so they line up; both are cropped
+# to the same 3:2 shape.
+# beforeAfter:
+#   - before: ../../assets/projects/project-name/kitchen-before.jpg
+#     beforeAlt: The kitchen before, with its closed-off galley layout
+#     after: ../../assets/projects/project-name/kitchen-after.jpg
+#     afterAlt: The same view after, opened up to the family room
+#     caption: The kitchen, opened up to the family room   # optional
 stats: # every line here is optional
   totalSqFt: 5000
   livingSqFt: 4000
