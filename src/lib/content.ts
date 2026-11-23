@@ -1,6 +1,6 @@
 // Every page reads content through this file, never through astro:content
 // directly, so the draft rule and the sort order are applied in one place.
-import { getCollection, type CollectionEntry } from 'astro:content';
+import { getCollection, render, type CollectionEntry } from 'astro:content';
 import { launched } from './site';
 
 type Draftable = { data: { draft: boolean } };
@@ -28,8 +28,15 @@ export async function getFeaturedProjects(): Promise<Project[]> {
   return (await getProjects()).filter((project) => project.data.featured);
 }
 
-export async function getServices() {
+export type Service = CollectionEntry<'services'>;
+
+export async function getServices(): Promise<Service[]> {
   return (await getCollection('services', isVisible)).sort(byOrder);
+}
+
+/** A service's Markdown description, as a component to place on the page. */
+export async function renderServiceBody(service: Service) {
+  return (await render(service)).Content;
 }
 
 export async function getTowns() {
