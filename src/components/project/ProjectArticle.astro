@@ -1,7 +1,8 @@
 ---
 // Everything on a project page below the site header: title and facts, the
 // full-bleed cover photograph, stats, story and features, construction
-// progress (under-construction projects only), the gallery, the
+// progress (under-construction projects only), the gallery, the story of
+// how it was built (completed projects with enough progress photographs), the
 // interior design credit and the links to the neighboring projects. Used by
 // src/pages/portfolio/[project].astro, and by the style guide with made-up
 // projects to show the edge cases.
@@ -16,11 +17,12 @@
 // The project's story (its Markdown body) goes in the default slot. An
 // empty story is left out.
 //
-// Every optional part (stats, features, progress, gallery, credit, neighbors)
+// Every optional part (stats, features, progress, gallery, build story, credit, neighbors)
 // is left out entirely when the project has nothing for it.
 import Photo from '../Photo.astro';
 import StatList from '../StatList.astro';
 import TextLink from '../TextLink.astro';
+import ProjectBuildStory from './ProjectBuildStory.astro';
 import ProjectGallery from './ProjectGallery.astro';
 import ProjectPager from './ProjectPager.astro';
 import ProjectProgress from './ProjectProgress.astro';
@@ -28,6 +30,7 @@ import { getTowns, PROJECT_CATEGORY_LABELS, type Project } from '../../lib/conte
 import { COVER_SIZES, COVER_WIDTHS } from '../../lib/hero-photo';
 import { PROJECT_TRANSITION_CLASS, projectTransitionName } from '../../lib/motion';
 import {
+  buildStoryStages,
   formatProgressDate,
   isoDay,
   latestProgressDate,
@@ -71,6 +74,8 @@ const hasAside = featureList.length > 0 || partner !== null;
 const underConstruction = status === 'under-construction';
 // Progress is shown only while the project is being built.
 const lastUpdate = latestProgressDate(project.data);
+// Once it is finished, the photographed updates tell how it was built, oldest first.
+const buildStory = buildStoryStages(project.data);
 // Rendered here so a project with an empty body leaves no empty wrapper.
 const story = (await Astro.slots.render('default')).trim();
 /** Titles past this length drop a size, so the headline stays within about three lines. */
@@ -181,6 +186,15 @@ const LONG_TITLE = 48;
         </h2>
         <ProjectGallery photos={gallery} label={`Photographs of ${title}`} />
       </div>
+    </section>
+  )}
+
+  {buildStory.length > 0 && (
+    <section class="container build-band" aria-labelledby="build-heading">
+      <h2 class="label section-label" id="build-heading">
+        How it was built
+      </h2>
+      <ProjectBuildStory stages={buildStory} label={`How ${title} was built`} />
     </section>
   )}
 
@@ -362,6 +376,14 @@ const LONG_TITLE = 48;
 
   .gallery-band .section-label {
     margin-bottom: var(--space-5);
+  }
+
+  .build-band {
+    margin-top: var(--section-gap);
+  }
+
+  .build-band .section-label {
+    margin-bottom: var(--space-6);
   }
 
   .pager {

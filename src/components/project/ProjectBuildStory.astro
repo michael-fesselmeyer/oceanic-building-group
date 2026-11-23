@@ -1,0 +1,198 @@
+---
+// "How it was built" on a finished project's page: the photographed stages
+// of its construction, oldest first, one photograph and caption each.
+//
+//   stages  The stages to show, already chosen and ordered by
+//           `buildStoryStages()` in src/lib/project-page.ts. An empty list
+//           renders nothing at all.
+//   label   Accessible name for the list, for example
+//           "How River House was built".
+//
+// On wide screens, in browsers with scroll-driven animations and without
+// reduced motion, the photographs share one place that stays in view while
+// the captions scroll past beside it, and each caption brings its own
+// photograph forward as it reaches the middle of the screen. CSS only:
+// every stage is a grid item spanning the whole list (subgrid rows), so the
+// photographs stack in the first column, and each caption declares a view
+// timeline that only its own photograph reads (`timeline-scope` on the
+// figure). Everywhere else, and on phones, it is a plain sequence of
+// photograph and caption pairs.
+import type { ImageMetadata } from 'astro';
+import Photo from '../Photo.astro';
+import { formatProgressDate, isoDay } from '../../lib/project-page';
+
+interface Props {
+  stages: readonly { date: Date; caption: string; photo: ImageMetadata; alt?: string }[];
+  label: string;
+}
+
+const { stages, label } = Astro.props;
+---
+
+{stages.length > 0 && (
+  <ol role="list" class="stages" aria-label={label} style={`--stage-count: ${stages.length}`}>
+    {stages.map((stage, index) => (
+      <li class="stage" style={`--stage-row: ${index + 1}`}>
+        <figure>
+          <div class="stage-photo">
+            <Photo
+              src={stage.photo}
+              alt={stage.alt ?? ''}
+              widths={[480, 800, 1200, 1600]}
+              sizes="(max-width: 800px) 92vw, 44rem"
+              ratio="3 / 2"
+            />
+          </div>
+          <figcaption>
+            <span class="text">
+              <time class="date" datetime={isoDay(stage.date)}>
+                {formatProgressDate(stage.date)}
+              </time>
+              <span class="visually-hidden">. </span>
+              <span class="caption">{stage.caption}</span>
+            </span>
+          </figcaption>
+        </figure>
+      </li>
+    ))}
+  </ol>
+)}
+
+<style>
+  /* The plain sequence: each photograph with its date and caption beside it. */
+  .stages {
+    /* Photograph and caption columns, shared by the plain sequence and the story told in place. */
+    --stage-columns: minmax(0, 7fr) minmax(0, 5fr);
+
+    display: grid;
+    gap: var(--space-8);
+  }
+
+  figure {
+    display: grid;
+    grid-template-columns: var(--stage-columns);
+    align-items: center;
+    gap: var(--space-6);
+    margin: 0;
+  }
+
+  .text {
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  .date {
+    color: var(--color-heading);
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    line-height: var(--leading-snug);
+  }
+
+  .caption {
+    color: var(--color-text-muted);
+    text-wrap: pretty;
+  }
+
+  /* A short accent rule over each date marks the start of a stage. */
+  .date::before {
+    content: '';
+    display: block;
+    width: var(--space-6);
+    margin-bottom: var(--space-3);
+    border-top: 2px solid var(--color-link);
+  }
+
+  /* The story told in place. The photograph comes forward by opacity alone, so nothing moves the
+     layout and text never fades. */
+  @keyframes stage-forward {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) and (width > 800px) {
+    @supports (animation-timeline: view()) and (timeline-scope: --stage) {
+      .stages {
+        grid-template-columns: var(--stage-columns);
+        grid-template-rows: repeat(var(--stage-count), auto);
+        gap: 0 var(--space-6);
+      }
+
+      /* Every stage covers the whole list, so the photographs share the first column. The later
+         stages sit over the earlier ones, so only their own photograph and caption take the
+         pointer. */
+      .stage,
+      figure {
+        display: grid;
+        grid-column: 1 / -1;
+        grid-row: 1 / -1;
+        grid-template-columns: subgrid;
+        grid-template-rows: subgrid;
+      }
+
+      .stage {
+        pointer-events: none;
+      }
+
+      figure {
+        gap: 0 var(--space-6);
+        align-items: stretch;
+        timeline-scope: --stage;
+      }
+
+      .stage-photo {
+        grid-column: 1;
+        grid-row: 1 / -1;
+        position: sticky;
+        top: calc(var(--header-height) + var(--space-6));
+        align-self: start;
+        pointer-events: auto;
+      }
+
+      /* Never taller than the screen below the header, so the photograph is seen whole. */
+      .stage-photo :global(img) {
+        max-height: calc(100svh - var(--header-height) - var(--space-8));
+      }
+
+      /* Each caption has a screen's worth of scrolling to itself, its text centered in it. */
+      figcaption {
+        grid-column: 2;
+        grid-row: var(--stage-row);
+        display: grid;
+        align-items: center;
+        min-height: 70svh;
+        view-timeline-name: --stage;
+        view-timeline-axis: block;
+        pointer-events: auto;
+      }
+
+      /* The first photograph is in place from the start; each later one fades in over it while
+         its caption rises toward the middle of the screen. Longhands only, as in motion.css. */
+      .stage:not(:first-child) .stage-photo {
+        animation-name: stage-forward;
+        animation-duration: auto;
+        animation-timing-function: linear;
+        animation-fill-mode: both;
+        animation-timeline: --stage;
+        animation-range: cover 35% cover 55%;
+      }
+    }
+  }
+
+  @media (max-width: 1100px) {
+    .stages {
+      --stage-columns: minmax(0, 3fr) minmax(0, 2fr);
+    }
+  }
+
+  @media (max-width: 800px) {
+    .stages {
+      gap: var(--space-7);
+    }
+
+    figure {
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--space-4);
+    }
+  }
+</style>
