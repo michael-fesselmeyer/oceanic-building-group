@@ -1,6 +1,7 @@
 // Made-up content for the style guide pages, so every component can be seen
 // with data the real content does not have yet (a gallery, a design partner,
-// a very long title). Never used by a page of the launched site.
+// a very long title). Never used by a page of the launched site, except
+// `auditProject` in the Lighthouse build (see `auditFixtures` in site.ts).
 import placeholderTall from '../assets/placeholders/placeholder-tall.jpg';
 import placeholder from '../assets/placeholders/placeholder-wide.jpg';
 import type { Project } from './content';
@@ -100,6 +101,16 @@ export const exampleProgressProject = exampleProject('example-progress-project',
     },
   ],
 });
+
+/**
+ * The project the Lighthouse build audits: every part filled in, like a real
+ * finished project, and not a draft. Built only when `auditFixtures` is true.
+ */
+export const auditProject: Project = {
+  ...exampleFullProject,
+  id: 'audit-example',
+  data: { ...exampleFullProject.data, draft: false },
+};
 
 /** A project with nothing optional: no stats, features, gallery, location or neighbors. */
 export const exampleSparseProject = exampleProject('example-sparse-project', {
