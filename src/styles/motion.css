@@ -1,0 +1,74 @@
+/*
+ * Motion: scroll-driven reveals and cross-document page transitions, in CSS alone.
+ *
+ * Both live inside `prefers-reduced-motion: no-preference`, so with reduced motion nothing here
+ * applies at all. (The blanket rule in base.css shortens time-based animations, but a
+ * scroll-driven one would still play, so it is not relied on.)
+ *
+ * Reveals: an element marked `data-reveal` rises into place over the stretch of scrolling in which
+ * it enters the screen. A photograph (`data-reveal`) also fades in. Text (`data-reveal="text"`)
+ * never fades: it is uncovered from the top down with clip-path, so its color, and its contrast,
+ * stay exact at every point, even for a heading caught half-revealed at the fold. The starting
+ * state exists only as the first keyframe of an animation declared inside
+ * `@supports (animation-timeline: view())`, so a browser without scroll-driven animations never
+ * hides anything. Only opacity, transform and clip-path change, so nothing shifts the layout.
+ * Photo marks every lazy photograph (the image, never its caption) and SectionHeading every
+ * section heading; the photograph a page opens with is eager and never revealed.
+ *
+ * Page transitions: same-origin navigations cross-fade. A project photograph that carries
+ * `view-transition-name: project-<id>` on both pages (the card's cover, the home page's hero and
+ * the project page's cover) moves from one place to the other.
+ */
+
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(var(--reveal-distance));
+  }
+}
+
+@keyframes reveal-text {
+  from {
+    clip-path: inset(0 0 100% 0);
+    transform: translateY(var(--reveal-distance));
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    [data-reveal] {
+      /* Longhands only: a shorthand after animation-timeline would reset it to the document
+         timeline, and a minifier may merge or reorder a shorthand. */
+      animation-name: reveal;
+      animation-duration: auto;
+      animation-timing-function: var(--ease-out);
+      animation-fill-mode: both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 100%;
+    }
+
+    [data-reveal='text'] {
+      animation-name: reveal-text;
+    }
+  }
+
+  @view-transition {
+    navigation: auto;
+  }
+
+  ::view-transition-group(*) {
+    animation-duration: var(--duration-page);
+    animation-timing-function: var(--ease-out);
+  }
+
+  /* The photograph changes shape between card and page: crop it instead of stretching it. */
+  ::view-transition-group(.project-photo) {
+    overflow: clip;
+  }
+
+  ::view-transition-old(.project-photo),
+  ::view-transition-new(.project-photo) {
+    height: 100%;
+    object-fit: cover;
+  }
+}

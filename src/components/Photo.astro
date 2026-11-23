@@ -15,7 +15,12 @@
 //   ratio     Crops to a shape, for example "3 / 2" or "4 / 5". Left out,
 //             the photograph keeps its own shape.
 //   eager     Load straight away. Use only for the first large image on a
-//             page; everything else loads lazily.
+//             page; everything else loads lazily and rises into view as it
+//             is scrolled to (see src/styles/motion.css).
+//   transitionName   A `view-transition-name`, so the photograph moves to
+//             the same name on the next page. Unique on the page. For a
+//             project, use projectTransitionName() from src/lib/motion.ts.
+//   transitionClass  A `view-transition-class` that styles the move.
 import type { ImageMetadata } from 'astro';
 import { Picture } from 'astro:assets';
 
@@ -27,11 +32,33 @@ interface Props {
   caption?: string | null;
   ratio?: string;
   eager?: boolean;
+  transitionName?: string;
+  transitionClass?: string;
 }
 
-const { src, alt, widths, sizes, caption, ratio, eager = false } = Astro.props;
+const {
+  src,
+  alt,
+  widths,
+  sizes,
+  caption,
+  ratio,
+  eager = false,
+  transitionName,
+  transitionClass,
+} = Astro.props;
 const hasCaption = Boolean(caption?.trim());
-const style = ratio ? `--photo-ratio: ${ratio}` : undefined;
+const style =
+  [
+    ratio && `--photo-ratio: ${ratio}`,
+    transitionName && `view-transition-name: ${transitionName}`,
+    transitionName && transitionClass && `view-transition-class: ${transitionClass}`,
+  ]
+    .filter(Boolean)
+    .join('; ') || undefined;
+// The photograph a page opens with is on screen at once, so only lazy ones are revealed. The
+// mark goes on <picture>, so a caption never fades.
+const reveal = eager ? undefined : '';
 ---
 
 {hasCaption ? (
@@ -44,6 +71,7 @@ const style = ratio ? `--photo-ratio: ${ratio}` : undefined;
       formats={['avif', 'webp']}
       loading={eager ? 'eager' : 'lazy'}
       fetchpriority={eager ? 'high' : undefined}
+      pictureAttributes={{ 'data-reveal': reveal }}
       class:list={['photo-img', { cropped: ratio }]}
     />
     <figcaption>{caption}</figcaption>
@@ -57,7 +85,7 @@ const style = ratio ? `--photo-ratio: ${ratio}` : undefined;
     formats={['avif', 'webp']}
     loading={eager ? 'eager' : 'lazy'}
     fetchpriority={eager ? 'high' : undefined}
-    pictureAttributes={{ class: 'photo', style }}
+    pictureAttributes={{ class: 'photo', style, 'data-reveal': reveal }}
     class:list={['photo-img', { cropped: ratio }]}
   />
 )}

@@ -99,6 +99,10 @@
 
   --duration-fast: 150ms;
   --duration-slow: 600ms;
+  /* Cross-fade between pages, and the project photograph's move from card to page. */
+  --duration-page: 350ms;
+  /* How far a section heading or photograph rises as it scrolls into view. */
+  --reveal-distance: var(--space-5);
   --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
 
   --header-height: 5.5rem;
