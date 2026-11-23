@@ -68,6 +68,9 @@ into enquiries through a short intake form that notifies the office straight awa
 - **Visitor statistics without cookies.** Once launched, and once its token is set, every page
   carries Cloudflare Web Analytics: no cookies, no consent banner, and a privacy page that
   describes it only while it is on.
+- **Locked down by default.** A content security policy lets only the site's own code run (Turnstile
+  only on the form pages), and every response carries HSTS, `nosniff`, a strict referrer policy,
+  a permissions policy and frame protection ([details](docs/architecture.md#security-headers)).
 - **Safe to maintain.** Content lives in Markdown with a strict schema, so a mistake fails the
   build instead of breaking the live site.
 
