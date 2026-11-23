@@ -108,6 +108,8 @@
      Worst case is a white photograph: tests/unit/header.test.ts checks white text on it stays
      at 4.5:1 or better. */
   --header-scrim-strength: 70%;
+  /* The same for the navy behind the home page hero's headline, text and credit. */
+  --hero-scrim-strength: 70%;
 }
 
 @media (max-width: 800px) {

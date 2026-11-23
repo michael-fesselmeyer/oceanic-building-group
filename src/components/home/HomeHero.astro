@@ -1,0 +1,264 @@
+---
+// The top of the home page: a full-bleed photograph with the headline, one
+// call to action and a credit naming the project in the photograph.
+//
+//   project  The project whose cover is the photograph (the first featured
+//            one). Without it the hero is a navy band with the same text,
+//            so the page still opens well when nothing is featured.
+//
+// The photograph is art directed: on a screen taller than it is wide a 3:4
+// crop from the middle of the cover is served, so a phone downloads a file
+// it shows nearly whole instead of a wide one it shows a third of. It is
+// the page's largest image, so it loads straight away with high priority.
+//
+// Use only as the first element inside <main>, with <BaseLayout overHero>:
+// the header floats over it and turns solid as it scrolls away.
+import { getImage } from 'astro:assets';
+import Button from '../Button.astro';
+import type { Project } from '../../lib/content';
+import { contactLink, site } from '../../lib/site';
+
+interface Props {
+  project: Project | null;
+}
+
+const { project } = Astro.props;
+
+/** Wide screens: the cover as it is. Tall screens: a 3:4 crop from its middle. */
+const crops = [
+  { media: '(orientation: landscape)', widths: [960, 1440, 1920, 2400] },
+  { media: '(orientation: portrait)', widths: [480, 768, 1080, 1200], aspect: 3 / 4 },
+];
+const formats = ['avif', 'webp'] as const;
+
+const photo = project && {
+  alt: project.data.coverAlt,
+  sources: await Promise.all(
+    crops.flatMap(({ media, widths, aspect }) =>
+      formats.map(async (format) => {
+        const crop = aspect
+          ? {
+              width: Math.round(project.data.cover.height * aspect),
+              height: project.data.cover.height,
+              fit: 'cover' as const,
+              position: 'center',
+            }
+          : {};
+        const image = await getImage({ src: project.data.cover, widths, format, ...crop });
+        return { media, type: `image/${format}`, srcset: image.srcSet.attribute };
+      }),
+    ),
+  ),
+  fallback: await getImage({ src: project.data.cover, widths: crops[0].widths, format: 'jpg' }),
+};
+---
+
+<section class:list={['hero', { 'no-photo': !photo }]} aria-labelledby="hero-heading">
+  {photo && (
+    <picture class="hero-photo">
+      {photo.sources.map((source) => (
+        <source media={source.media} type={source.type} srcset={source.srcset} sizes="100vw" />
+      ))}
+      <img
+        src={photo.fallback.src}
+        srcset={photo.fallback.srcSet.attribute}
+        sizes="100vw"
+        width={photo.fallback.attributes.width}
+        height={photo.fallback.attributes.height}
+        alt={photo.alt}
+        loading="eager"
+        fetchpriority="high"
+        decoding="async"
+      />
+    </picture>
+  )}
+  <div class="hero-body">
+    <div class="container hero-inner">
+      <div class="hero-heading">
+        <p class="label">{site.tagline}</p>
+        <h1 id="hero-heading">Custom homes and renovations in {site.serviceArea}</h1>
+      </div>
+      <div class="hero-intro">
+        <p class="lede">
+          Led by principals with more than 30 years of experience, from the first meeting to the
+          handover.
+        </p>
+        <p class="action">
+          <Button href={contactLink.href} inverse>
+            {contactLink.label}
+          </Button>
+        </p>
+      </div>
+      {project && (
+        <p class="credit">
+          <span class="label">Pictured</span>
+          <a href={`/portfolio/${project.id}/`}>{project.data.title}</a>
+          {project.data.location.trim() && `, ${project.data.location.trim()}`}
+        </p>
+      )}
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    display: grid;
+    grid-template-rows: 1fr auto;
+    /* Leaves a sliver of the next section in view, so the page reads as one that scrolls. */
+    min-height: calc(100vh - var(--space-7));
+    min-height: calc(100svh - var(--space-7));
+    background: var(--color-surface-strong);
+    color: var(--color-text-on-strong);
+    overflow: hidden;
+  }
+
+  .hero-photo,
+  .hero-photo img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .hero-photo img {
+    object-fit: cover;
+  }
+
+  .hero-body {
+    position: relative;
+    grid-row: 2;
+    padding-block: var(--space-7) var(--space-6);
+  }
+
+  /*
+   * Scrim: navy at --hero-scrim-strength behind the whole text block, fading out above it. The
+   * photograph is not under our control, so the strength is set for the worst case, a white
+   * photograph, and tests/unit/header.test.ts keeps white text on it at 4.5:1.
+   */
+  .hero-body::before {
+    content: '';
+    position: absolute;
+    inset: calc(-1 * var(--space-9)) 0 0;
+    background: linear-gradient(
+      to top,
+      color-mix(in srgb, var(--color-navy-950) var(--hero-scrim-strength), transparent)
+        calc(100% - var(--space-9)),
+      transparent
+    );
+  }
+
+  .no-photo {
+    min-height: 0;
+  }
+
+  .no-photo .hero-body {
+    padding-block: calc(var(--header-height) + var(--space-9)) var(--space-9);
+  }
+
+  .no-photo .hero-body::before {
+    content: none;
+  }
+
+  /* Headline on the left, the introduction and the button beside it, and the credit as a
+     ruled caption line across the bottom, as under a magazine photograph. */
+  .hero-inner {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
+    align-items: end;
+    gap: var(--space-6) var(--space-8);
+  }
+
+  .hero-heading .label {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+  }
+
+  /* The same short lead-in rule as SectionHeading, so the page speaks with one voice. */
+  .hero-heading .label::before {
+    content: '';
+    width: var(--space-6);
+    border-top: 1px solid currentColor;
+  }
+
+  .hero h1 {
+    max-width: 19ch;
+    margin-top: var(--space-5);
+    color: inherit;
+    font-size: var(--text-3xl);
+  }
+
+  .hero-intro {
+    display: grid;
+    justify-items: start;
+    gap: var(--space-5);
+    padding-bottom: var(--space-2);
+  }
+
+  .lede {
+    max-width: 34ch;
+    font-size: var(--text-lg);
+    line-height: var(--leading-snug);
+  }
+
+  .credit {
+    grid-column: 1 / -1;
+    padding-top: var(--space-4);
+    border-top: 1px solid color-mix(in srgb, var(--color-white) 35%, transparent);
+    font-size: var(--text-sm);
+    line-height: var(--leading-snug);
+  }
+
+  .credit .label {
+    margin-right: var(--space-4);
+  }
+
+  .credit a {
+    color: inherit;
+    text-decoration-line: underline;
+    text-decoration-color: var(--color-ocean-300);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+    transition: text-decoration-color var(--duration-fast) var(--ease-out);
+  }
+
+  .credit a:hover {
+    text-decoration-color: currentColor;
+  }
+
+  .credit a:focus-visible {
+    outline-color: currentColor;
+  }
+
+  @media (max-width: 800px) {
+    .hero-body {
+      padding-block: var(--space-7) var(--space-6);
+    }
+
+    .no-photo .hero-body {
+      padding-block: calc(var(--header-height) + var(--space-8)) var(--space-8);
+    }
+
+    .hero-inner {
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--space-5);
+    }
+  }
+
+  /* Phones: the tagline wraps, so it loses the lead-in rule. */
+  @media (max-width: 520px) {
+    .hero-heading .label::before {
+      content: none;
+    }
+
+    .hero h1 {
+      margin-top: var(--space-4);
+    }
+
+    .hero-intro {
+      gap: var(--space-4);
+    }
+  }
+</style>
