@@ -29,6 +29,7 @@ const facts: SiteFacts = {
   },
   phone: null,
   licenseNumber: null,
+  principalsExperienceYears: null,
   designPartner: null,
 };
 
