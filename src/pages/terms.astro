@@ -1,0 +1,92 @@
+---
+import LegalLayout from '../layouts/LegalLayout.astro';
+import { formatPhone } from '../lib/seo';
+import { site } from '../lib/site';
+
+const { address } = site;
+
+const contents = [
+  { id: 'about-this-website', label: 'About this website' },
+  { id: 'no-offer-or-contract', label: 'No offer or contract' },
+  { id: 'our-work-and-photographs', label: 'Our work and photographs' },
+  { id: 'using-the-site', label: 'Using the website' },
+  { id: 'other-websites', label: 'Other websites' },
+  { id: 'governing-law', label: 'Governing law' },
+  { id: 'changes', label: 'Changes to these terms' },
+  { id: 'contact', label: 'Contact' },
+];
+---
+
+<LegalLayout
+  title="Terms of Use"
+  description={`The terms for using the ${site.name} website: what it is for, what it is not, and the law that applies.`}
+  intro="A short, plain-language set of terms for using this website."
+  updated="2026-11-22"
+  contents={contents}
+>
+  <h2 id="about-this-website">About this website</h2>
+  <p>
+    This website is run by {site.legalName}, a construction company serving {site.serviceArea}. It
+    tells you about our services, our process and our past projects, and gives you a way to contact
+    us. By using it you agree to these terms. If you do not agree, please do not use the website.
+  </p>
+
+  <h2 id="no-offer-or-contract">No offer or contract</h2>
+  <p>
+    The information here is general and is provided to help you get to know us. It is not a quote,
+    an estimate, a bid or an offer. Descriptions of services, project details, timelines and prices
+    on past projects are examples and may not apply to your project.
+  </p>
+  <p>
+    Sending us a message does not create a contract or an obligation for either side. Any work we do
+    for you will be set out in a separate written agreement.
+  </p>
+
+  <h2 id="our-work-and-photographs">Our work and photographs</h2>
+  <p>
+    The text, photographs, drawings and logo on this website belong to {site.legalName} or are used
+    with permission. You are welcome to view and share links to the pages. Please ask us before you
+    copy, republish or reuse the content in another way.
+  </p>
+
+  <h2 id="using-the-site">Using the website</h2>
+  <p>Please use the inquiry form honestly and for its purpose. Please do not:</p>
+  <ul>
+    <li>send spam or messages that are not a genuine inquiry</li>
+    <li>try to break, overload or gain unauthorized access to the website</li>
+    <li>use automated tools to copy large parts of it</li>
+  </ul>
+  <p>
+    We try to keep the information accurate and up to date, but we cannot promise that it is
+    complete or free of mistakes. The website is provided as it is.
+  </p>
+
+  <h2 id="other-websites">Other websites</h2>
+  <p>
+    If we link to a website we do not run, we are not responsible for its content or how it handles
+    your information.
+  </p>
+
+  <h2 id="governing-law">Governing law</h2>
+  <p>These terms are governed by the laws of the State of Florida.</p>
+
+  <h2 id="changes">Changes to these terms</h2>
+  <p>
+    We may update these terms from time to time. The date at the top shows when they were last
+    changed, and using the website after a change means you accept the new version.
+  </p>
+
+  <h2 id="contact">Contact</h2>
+  <p>
+    Questions about these terms are welcome through our <a href="/contact/">contact page</a> or by
+    post:
+  </p>
+  <address>
+    <p>{site.legalName}</p>
+    <p>{address.street}</p>
+    <p>
+      {address.city}, {address.region} {address.postalCode}
+    </p>
+    {site.phone && <p>{formatPhone(site.phone)}</p>}
+  </address>
+</LegalLayout>
