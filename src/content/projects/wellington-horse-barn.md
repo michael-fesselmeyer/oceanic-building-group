@@ -1,6 +1,7 @@
 ---
 title: Wellington Horse Barn
 location: Wellington
+town: wellington
 category: commercial
 status: completed
 summary: A 20,000 square foot, thirty-two stall custom barn with two stallion stalls, eight wash stalls, four-bedroom grooms' quarters and a private owner's lounge.

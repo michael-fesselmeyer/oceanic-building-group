@@ -1,6 +1,7 @@
 ---
 title: Coastal Cape Dutch in Jupiter Inlet Colony
 location: Jupiter Inlet Colony
+town: jupiter-inlet-colony
 category: renovation
 status: completed
 style: Coastal British West Indies

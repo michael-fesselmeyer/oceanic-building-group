@@ -1,6 +1,7 @@
 ---
 title: Chic Modern in Juno Beach
 location: Juno Beach
+town: juno-beach
 category: custom-home
 status: completed
 style: Modern
