@@ -1,0 +1,43 @@
+---
+// One page per published project at /portfolio/<file name>/. The layout is
+// in src/components/project/ProjectArticle.astro; this file finds the
+// projects, their neighbors in portfolio order and the share image.
+import { getImage } from 'astro:assets';
+import ProjectArticle from '../../components/project/ProjectArticle.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getProjects, renderProjectStory, type Project } from '../../lib/content';
+import { neighbors } from '../../lib/project-page';
+
+export async function getStaticPaths() {
+  const projects = await getProjects();
+  return projects.map((project) => ({
+    params: { project: project.id },
+    props: { project, ...neighbors(projects, project.id) },
+  }));
+}
+
+interface Props {
+  project: Project;
+  previous?: Project;
+  next?: Project;
+}
+
+const { project, previous, next } = Astro.props;
+const { title, summary, seoDescription, cover } = project.data;
+const Story = await renderProjectStory(project);
+
+// Link previews show the cover, cropped to the 1200 x 630 card size.
+const shareImage = await getImage({
+  src: cover,
+  width: 1200,
+  height: 630,
+  fit: 'cover',
+  format: 'jpg',
+});
+---
+
+<BaseLayout title={title} description={seoDescription ?? summary} image={shareImage.src}>
+  <ProjectArticle project={project} previous={previous} next={next}>
+    <Story />
+  </ProjectArticle>
+</BaseLayout>
