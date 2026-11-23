@@ -25,6 +25,7 @@ import ProjectGallery from './ProjectGallery.astro';
 import ProjectPager from './ProjectPager.astro';
 import ProjectProgress from './ProjectProgress.astro';
 import { getTowns, PROJECT_CATEGORY_LABELS, type Project } from '../../lib/content';
+import { COVER_SIZES, COVER_WIDTHS } from '../../lib/hero-photo';
 import { PROJECT_TRANSITION_CLASS, projectTransitionName } from '../../lib/motion';
 import {
   formatProgressDate,
@@ -105,8 +106,8 @@ const LONG_TITLE = 48;
       <Photo
         src={cover}
         alt={coverAlt}
-        widths={[640, 960, 1280, 1920, 2400]}
-        sizes="100vw"
+        widths={COVER_WIDTHS}
+        sizes={COVER_SIZES}
         eager
         transitionName={projectTransitionName(project.id)}
         transitionClass={PROJECT_TRANSITION_CLASS}

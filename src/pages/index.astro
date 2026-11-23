@@ -21,11 +21,14 @@ import {
   getTestimonials,
   testimonialQuote,
 } from '../lib/content';
+import { homeHeroSources, preloadsFor } from '../lib/hero-photo';
 import { splitFeatured, type HomeQuote } from '../lib/home';
 import { servicePath } from '../lib/services';
 import { site } from '../lib/site';
 
 const { lead, rest } = splitFeatured(await getFeaturedProjects());
+// The hero photograph opens the page, so its AVIF sources are preloaded ahead of the fonts.
+const preloadImages = lead ? preloadsFor(await homeHeroSources(lead.data.cover)) : [];
 
 const services = (await getServices()).map((service) => ({
   title: service.data.title,
@@ -51,6 +54,7 @@ const quotes: HomeQuote[] = (await getTestimonials()).map((item) => ({
 
 <BaseLayout
   overHero
+  preloadImages={preloadImages}
   description="Custom homes, renovations and commercial construction in Jupiter and the Palm Beaches, built by a team with more than 30 years of experience."
 >
   <HomeHero project={lead} />

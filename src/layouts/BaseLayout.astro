@@ -6,6 +6,7 @@ import Analytics from '../components/Analytics.astro';
 import Seo from '../components/Seo.astro';
 import SiteFooter from '../components/SiteFooter.astro';
 import SiteHeader from '../components/SiteHeader.astro';
+import type { ImagePreload } from '../lib/hero-photo';
 import type { Crumb, JsonLd } from '../lib/structured-data';
 import '../styles/tokens.css';
 import '../styles/base.css';
@@ -36,6 +37,12 @@ interface Props {
    * section. Leave out on pages without one: they keep the solid header.
    */
   overHero?: boolean;
+  /**
+   * The photograph the page opens with, as AVIF sources to preload ahead of the fonts, so it is
+   * not kept waiting behind them. Compute them with src/lib/hero-photo.ts, from the same call
+   * that renders the photograph. Leave out on pages that open with text.
+   */
+  preloadImages?: ImagePreload[];
 }
 
 const {
@@ -49,6 +56,7 @@ const {
   breadcrumbs,
   structuredData,
   overHero = false,
+  preloadImages = [],
 } = Astro.props;
 ---
 
@@ -75,6 +83,17 @@ const {
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
     <meta name="theme-color" content="#012753" />
+    {preloadImages.map((image) => (
+      <link
+        rel="preload"
+        as="image"
+        type="image/avif"
+        imagesrcset={image.srcset}
+        imagesizes={image.sizes}
+        media={image.media}
+        fetchpriority="high"
+      />
+    ))}
     <Font cssVariable="--font-newsreader" preload={[{ style: 'normal' }]} />
     <Font cssVariable="--font-hanken" preload />
   </head>
