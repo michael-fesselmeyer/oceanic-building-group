@@ -3,6 +3,7 @@ import cloudflare from '@astrojs/cloudflare';
 import sitemap from '@astrojs/sitemap';
 import { defineConfig, fontProviders } from 'astro/config';
 import { loadEnv } from 'vite';
+import { analyticsEnabled, cspConfig } from './src/lib/security-headers';
 import { isSitemapPage } from './src/lib/sitemap';
 
 // The same switch src/lib/site.ts reads: the sitemap is written only for the
@@ -28,6 +29,19 @@ export default defineConfig({
   // Lists every page except the 404 and the style guide, written at build time
   // as /sitemap-index.xml and referenced from robots.txt (see src/lib/sitemap.ts).
   integrations: launched ? [sitemap({ filter: isSitemapPage })] : [],
+
+  // No code blocks in the content, and Shiki's inline styles would break the
+  // content security policy.
+  markdown: { syntaxHighlight: false },
+
+  // Content security policy: Astro hashes every script and style it renders
+  // and writes the policy into each page. Turnstile is allowed only on the
+  // form's pages (allowTurnstile), the analytics beacon only when it is on.
+  // The other security headers are in public/_headers and src/middleware.ts.
+  // See src/lib/security-headers.ts and docs/architecture.md#security-headers.
+  security: {
+    csp: cspConfig({ analytics: analyticsEnabled(env) }),
+  },
 
   // Font files come from npm packages, so builds need no network. Astro
   // writes the @font-face rules and exposes each family as a CSS variable
