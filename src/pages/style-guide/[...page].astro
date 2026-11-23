@@ -13,9 +13,10 @@ import PullQuote from '../../components/PullQuote.astro';
 import SectionHeading from '../../components/SectionHeading.astro';
 import StatList from '../../components/StatList.astro';
 import TextLink from '../../components/TextLink.astro';
+import TeamList from '../../components/about/TeamList.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getProjects, type Project } from '../../lib/content';
-import { exampleProject } from '../../lib/examples';
+import { exampleProject, exampleTeam } from '../../lib/examples';
 import { launched } from '../../lib/site';
 import { projectStats } from '../../lib/stats';
 
@@ -221,6 +222,19 @@ const tokens = {
       </ul>
     </section>
 
+    <section class="block" aria-labelledby="team">
+      <SectionHeading id="team" label="TeamList">
+        Team
+      </SectionHeading>
+      <p class="prose">
+        A portrait with a biography, a real estate licensee with the brokerage, and a long name with
+        no portrait or biography. Entries without a portrait are set in type alone.
+      </p>
+      <div class="team-example">
+        <TeamList members={exampleTeam} />
+      </div>
+    </section>
+
     <section class="block" aria-labelledby="project-page">
       <SectionHeading id="project-page" label="ProjectArticle">
         Project page
@@ -248,6 +262,10 @@ const tokens = {
 </BaseLayout>
 
 <style>
+  .team-example {
+    margin-top: var(--space-6);
+  }
+
   .guide {
     padding-block: var(--space-8) var(--section-gap);
   }
