@@ -94,22 +94,23 @@ Shared building blocks live in [`src/components/`](../src/components/). Each fil
 comment that says when to use it and what each prop does. Pages compose these instead of styling
 their own versions.
 
-| Component                  | Use it for                                                                              |
-| -------------------------- | --------------------------------------------------------------------------------------- |
-| `Button`                   | The main action of a section. `primary` or `quiet`; `<a>` with `href`, else `<button>`  |
-| `TextLink`                 | An underlined link inside or after a sentence                                           |
-| `SectionHeading`           | A section's heading with an optional small label; `level` keeps headings in order       |
-| `Photo`                    | Every photograph: AVIF and WebP, required `alt`, `widths` and `sizes`, optional caption |
-| `PullQuote`                | A testimonial or a line from a project story, with optional attribution                 |
-| `StatList`                 | Label and value facts; missing values are skipped, an empty list renders nothing        |
-| `ProjectCard`              | A project's cover, category, title and location, linking to `/portfolio/<id>/`          |
-| `Wordmark`                 | The brand wordmark in the current text color (used by the header)                       |
-| `Seo`                      | Title, description, canonical and share tags (used by the layout)                       |
-| `SiteHeader`, `SiteFooter` | The page frame (used by the layout); see [Header](#header)                              |
+| Component                  | Use it for                                                                                               |
+| -------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `Button`                   | The main action of a section. `primary` or `quiet`; `<a>` with `href`, else `<button>`                   |
+| `TextLink`                 | An underlined link inside or after a sentence                                                            |
+| `SectionHeading`           | A section's heading with an optional small label; `level` keeps headings in order                        |
+| `Photo`                    | Every photograph: AVIF and WebP, required `alt`, `widths` and `sizes`, optional caption                  |
+| `PullQuote`                | A testimonial or a line from a project story, with optional attribution                                  |
+| `StatList`                 | Label and value facts; missing values are skipped, an empty list renders nothing                         |
+| `ProjectCard`              | A project's cover (3:2, or another `ratio`), category, title and location, linking to `/portfolio/<id>/` |
+| `Wordmark`                 | The brand wordmark in the current text color (used by the header)                                        |
+| `Seo`                      | Title, description, canonical and share tags (used by the layout)                                        |
+| `SiteHeader`, `SiteFooter` | The page frame (used by the layout); see [Header](#header)                                               |
 
 Components used by a single page type live in a subfolder named after it. `project/` holds the
 project page's parts: `ProjectArticle` (the whole page body), `ProjectGallery` and
-`ProjectPager`; see [Project pages](#project-pages).
+`ProjectPager`; see [Project pages](#project-pages). `home/` holds `HomeHero` and
+`FeaturedProjects`; see [Home page](#home-page).
 
 Rules they share: optional data that is missing renders nothing (no empty wrappers, no
 placeholders), styles come only from tokens, and a parent spaces a component with its own layout
@@ -149,8 +150,41 @@ and empty stats, long titles, a project with no location). Check it after changi
 `/style-guide/project/` shows the project page with every part filled in (gallery, design partner
 credit, both neighbors) and `/style-guide/project/sparse/` shows one with only the required
 fields. Their made-up data is in [`src/lib/examples.ts`](../src/lib/examples.ts). These pages exist
+in development and preview builds only. `/style-guide/home/`, `/style-guide/home/one/` and
+`/style-guide/home/none/` show the top of the home page with four, one and no featured projects
+(one with a long title, one with no location). All of these pages exist
 in development and preview builds only: their `getStaticPaths` return no pages when
 `PUBLIC_SITE_LAUNCHED` is `true`, and they are always marked `noindex`.
+
+## Home page
+
+[`src/pages/index.astro`](../src/pages/index.astro) composes the sections in order. The
+sections still to come (services, process, design partner, contact) go below the featured projects.
+
+- **Hero photograph.** The first featured project (lowest `order`) supplies the photograph, and a
+  caption line under the text names it and links to its page. `splitFeatured()` in
+  [`src/lib/home.ts`](../src/lib/home.ts) makes the split, so that project is not shown again in
+  the list below.
+- **Art direction.** [`HomeHero`](../src/components/home/HomeHero.astro) builds its own
+  `<picture>` with `getImage()`: a landscape screen gets the cover as it is (960 to 2400px wide)
+  and a portrait screen gets a 3:4 crop from its middle (480 to 1200px), each in AVIF and WebP
+  with a JPEG fallback. A phone therefore downloads a file it shows nearly whole. The crop is
+  centered; a cover whose subject is far off-center will need a focal point field in the schema.
+- **Loading.** The hero image is `loading="eager"` with `fetchpriority="high"`, as the page's
+  largest paint. Every other image on the page is lazy.
+- **Text over the photograph.** White text sits on a navy scrim at `--hero-scrim-strength` behind
+  the whole text block, fading out above it. A unit test keeps white text at 4.5:1 over the worst
+  case, a white photograph.
+- **Nothing featured.** The hero becomes a navy band with the same text and button, and the
+  featured section is not rendered. This is also what the Lighthouse job measures, because it
+  builds the launched site, where today's draft projects are hidden.
+- **Featured layout.** [`FeaturedProjects`](../src/components/home/FeaturedProjects.astro) repeats
+  a pattern of three `ProjectCard`s on a 12-column grid: a large landscape cover (7 columns), a
+  portrait one set lower on the right (4 columns, spanning two rows) and a medium landscape one
+  under the first (5 columns). A single card is shown large on its own. At 800px the pattern
+  becomes two columns, and at 520px one, with the portrait card inset.
+- **Copy.** The headline, tagline and service area come from [`src/lib/site.ts`](../src/lib/site.ts).
+  Experience is the principals' 30+ years, never the company's age.
 
 ## Project pages
 
