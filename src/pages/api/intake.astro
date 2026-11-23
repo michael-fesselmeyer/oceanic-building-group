@@ -1,0 +1,61 @@
+---
+// The intake form endpoint, POST /api/intake/. The only route that runs on
+// the server; everything else is prerendered. The work is done by
+// src/lib/intake-handler.ts; this file turns its outcome into a response:
+//
+//   sent, or spam trap filled   303 to /contact/thanks/
+//   answers to fix              422, the contact form again with messages
+//   spam check failed           400, the form again with a notice
+//   cannot send right now       503, the form again with a notice
+//   not a browser form          400, 413 or 415, a one-line text answer
+//
+// It is an .astro page rather than a .ts endpoint so it can render the form
+// with what the visitor typed, which works without JavaScript and without
+// putting their answers in an address or a cookie. Astro checks the Origin
+// header of form posts to on-demand pages, so other sites cannot post here.
+import { getSecret } from 'astro:env/server';
+import ContactPage from '../../components/contact/ContactPage.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { INTAKE_ENV_NAMES } from '../../lib/intake-config';
+import { createIntakeSetup, handleIntake } from '../../lib/intake-handler';
+
+export const prerender = false;
+
+const { request } = Astro;
+Astro.response.headers.set('Cache-Control', 'no-store');
+
+if (request.method === 'GET' || request.method === 'HEAD') {
+  return Astro.redirect('/contact/', 303);
+}
+if (request.method !== 'POST') {
+  return new Response(null, { status: 405, headers: { Allow: 'GET, HEAD, POST' } });
+}
+
+const env = Object.fromEntries(INTAKE_ENV_NAMES.map((name) => [name, getSecret(name)]));
+const logger = console;
+const setup = createIntakeSetup(env, { dev: import.meta.env.DEV, logger });
+const outcome = await handleIntake(request, { setup, logger });
+
+if (outcome.kind === 'sent' || outcome.kind === 'dropped') {
+  return Astro.redirect('/contact/thanks/', 303);
+}
+if (outcome.kind === 'bad-request') {
+  return new Response(outcome.message, {
+    status: outcome.status,
+    headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' },
+  });
+}
+
+Astro.response.status =
+  outcome.kind === 'invalid' ? 422 : outcome.kind === 'spam-check-failed' ? 400 : 503;
+const errors = outcome.kind === 'invalid' ? outcome.errors : undefined;
+const notice = outcome.kind === 'invalid' ? undefined : outcome.notice;
+---
+
+<BaseLayout
+  title="Check your enquiry"
+  description="Your enquiry has not been sent yet. Check the form and send it again."
+  noindex
+>
+  <ContactPage values={outcome.values} errors={errors} notice={notice} />
+</BaseLayout>
