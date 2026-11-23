@@ -1,0 +1,98 @@
+---
+// The call to action. Use it for the one or two things a visitor should do
+// next ("Start a Project", "View the portfolio"); use TextLink for links
+// inside sentences.
+//
+// Renders an <a> when `href` is given and a <button> otherwise.
+//
+//   variant  "primary" (default) is a solid block; "quiet" is a label with
+//            a rule under it, for a second action next to a primary one.
+//   inverse  Set on dark backgrounds (navy surfaces, over photographs).
+//   type     Button type when no `href` is given. Defaults to "button".
+//
+// The label goes in the default slot. Space it from its neighbors with the
+// parent's layout (a wrapper or gap), not margins on the button.
+interface Props {
+  href?: string;
+  variant?: 'primary' | 'quiet';
+  inverse?: boolean;
+  type?: 'button' | 'submit' | 'reset';
+}
+
+const { href, variant = 'primary', inverse = false, type = 'button' } = Astro.props;
+
+const classes = ['button', 'label', variant, { inverse }];
+---
+
+{href ? (
+  <a class:list={classes} href={href}>
+    <slot />
+  </a>
+) : (
+  <button class:list={classes} type={type}>
+    <slot />
+  </button>
+)}
+
+<style>
+  .button {
+    --button-ink: var(--color-heading);
+    --button-paper: var(--color-white);
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-3);
+    min-height: var(--space-7);
+    margin: 0;
+    border: 1px solid var(--button-ink);
+    border-radius: var(--radius-sm);
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+      background-color var(--duration-fast) var(--ease-out),
+      border-color var(--duration-fast) var(--ease-out),
+      color var(--duration-fast) var(--ease-out);
+  }
+
+  .inverse {
+    --button-ink: var(--color-white);
+    --button-paper: var(--color-heading);
+  }
+
+  .primary {
+    padding: var(--space-3) var(--space-6);
+    background: var(--button-ink);
+    color: var(--button-paper);
+  }
+
+  .primary:hover {
+    background: var(--button-paper);
+    color: var(--button-ink);
+  }
+
+  /* Quiet: no box, just the label over a rule that runs the full width. */
+  .quiet {
+    padding: var(--space-2) 0;
+    border-width: 0 0 1px;
+    background: none;
+    color: var(--button-ink);
+  }
+
+  .quiet:hover {
+    border-color: var(--color-link);
+    color: var(--color-link);
+  }
+
+  .quiet.inverse:hover {
+    border-color: var(--color-ocean-300);
+    color: var(--color-ocean-300);
+  }
+
+  @media (max-width: 520px) {
+    .primary {
+      padding-inline: var(--space-5);
+    }
+  }
+</style>
