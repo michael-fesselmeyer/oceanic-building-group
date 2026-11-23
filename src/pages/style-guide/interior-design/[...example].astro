@@ -1,0 +1,80 @@
+---
+// Style guide: the interior design page filled with a made-up partner.
+//
+//   /style-guide/interior-design/             every section filled in:
+//                                             facts, a long biography,
+//                                             credited projects and quotes
+//   /style-guide/interior-design/no-partner/  `site.designPartner` is null
+//
+// Development and preview builds only, like the main style guide page.
+import DesignPartnerArticle from '../../../components/design-partner/DesignPartnerArticle.astro';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import {
+  exampleDesignPartner,
+  exampleDesignPartnerIntro,
+  exampleDesignPartnerProjects,
+  exampleDesignPartnerQuotes,
+} from '../../../lib/examples';
+import { launched } from '../../../lib/site';
+
+export function getStaticPaths() {
+  if (launched) return [];
+  return [
+    {
+      params: { example: undefined },
+      props: {
+        partner: exampleDesignPartner,
+        intro: exampleDesignPartnerIntro,
+        projects: exampleDesignPartnerProjects,
+        testimonials: exampleDesignPartnerQuotes,
+      },
+    },
+    {
+      params: { example: 'no-partner' },
+      props: { partner: null, intro: null, projects: [], testimonials: [] },
+    },
+  ];
+}
+
+const { partner, intro, projects, testimonials } = Astro.props;
+---
+
+<BaseLayout
+  title={`Style guide: ${partner?.name ?? 'no design partner'}`}
+  description="The interior design page filled with a made-up partner, for checking changes during development."
+  noindex
+>
+  <DesignPartnerArticle
+    partner={partner}
+    intro={intro}
+    projects={projects}
+    testimonials={testimonials}
+  >
+    <p>
+      This is a made-up studio. It exists so the interior design page can be checked with credited
+      projects, testimonials and a biography longer than the real one before that content arrives.
+    </p>
+    <p>
+      The biography comes from the Markdown body of the file in src/content/design-partner/. Its
+      first paragraph is set larger, and the rest reads at body size at a comfortable width beside
+      the small label in the margin.
+    </p>
+    <p>
+      A long biography keeps to the same column. Paragraphs are spaced evenly and the text never
+      runs wider than the reading measure, however much there is of it, so a studio with a long
+      history and a studio with a short one sit on the same page without either looking out of
+      place.
+    </p>
+    <h2>A heading inside the biography</h2>
+    <p>
+      Headings written in the Markdown are set smaller than the page sections, so they read as part
+      of the biography rather than as a new section of the page.
+    </p>
+    <p>
+      The studio has worked on homes up and down the coast, from small cottages to large estates,
+      and on a handful of offices and shops. Its rooms lean on natural materials, local craftspeople
+      and furniture that has been lived with, and it keeps a library of fabric and finish samples
+      that clients are welcome to borrow while they decide.
+    </p>
+  </DesignPartnerArticle>
+</BaseLayout>
