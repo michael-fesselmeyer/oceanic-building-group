@@ -96,7 +96,7 @@ The site must not go live until each of these is true:
 - High-resolution photographs for each project, and drone footage where it exists.
 - Commercial projects: at least three, with photographs and a short description.
 - Team biographies and portraits.
-- Interior design partner: biography, photographs of shared projects, client quotes.
+- Interior design partner: which projects to credit, photographs of shared projects, client quotes.
 - Client testimonials: three to five to start.
 - Typical timelines for the stages of the process page. Only construction has one so far (11 to
   12 months for a typical new home); add a `duration` to any other stage once the business confirms it.
