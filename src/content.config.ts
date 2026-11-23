@@ -63,6 +63,32 @@ const projects = defineCollection({
       gallery: z
         .array(z.strictObject({ src: image(), alt: z.string().min(10).max(160) }))
         .default([]),
+      /**
+       * Before-and-after pairs, compared on the project page with a slider.
+       * Best when both photographs were taken from the same spot. See _template.md.
+       */
+      beforeAfter: z
+        .array(
+          z.strictObject({
+            before: image(),
+            beforeAlt: z
+              .string()
+              .min(10, { error: 'Describe the before photograph in at least 10 characters.' })
+              .max(160, { error: 'The description is too long: keep it to 160 characters.' }),
+            after: image(),
+            afterAlt: z
+              .string()
+              .min(10, { error: 'Describe the after photograph in at least 10 characters.' })
+              .max(160, { error: 'The description is too long: keep it to 160 characters.' }),
+            caption: z
+              .string()
+              .trim()
+              .max(160, { error: 'The caption is too long: keep it to 160 characters.' })
+              .optional(),
+          }),
+        )
+        .max(6, { error: 'Show at most six before-and-after pairs on one project.' })
+        .default([]),
       stats: z
         .strictObject({
           totalSqFt: z.number().int().positive().optional(),
