@@ -1,7 +1,7 @@
 // Every built page must name its icons and an absolute share image, and every
 // file those tags point to must exist. Pages are found in the build output,
 // so new pages are covered without editing this file.
-import { readdirSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 import { expect, test } from '@playwright/test';
 
@@ -21,6 +21,17 @@ const pages = builtPages(clientDir);
 
 test('the build has pages to check', () => {
   expect(pages).toContain('/');
+});
+
+// The browser tests run on a preview build, which must never count visits.
+// The Lighthouse job checks the launched build with the beacon on.
+test('no page carries the analytics beacon before launch', () => {
+  const htmlFiles = pages.map((path) =>
+    join(clientDir, path.endsWith('/') ? `${path}index.html` : path),
+  );
+  for (const file of htmlFiles) {
+    expect(readFileSync(file, 'utf8'), file).not.toContain('cloudflareinsights');
+  }
 });
 
 for (const path of pages) {
