@@ -1,5 +1,6 @@
-// Over a photograph the header text is white on a navy scrim. The photograph is not under our
-// control, so the check uses the worst case: pure white behind the scrim.
+// Over a photograph the header text, and the home page hero's text, is white on a navy scrim.
+// The photograph is not under our control, so the check uses the worst case: pure white behind
+// the scrim.
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
@@ -30,14 +31,17 @@ const contrast = (a: number[], b: number[]) => {
   return (light + 0.05) / (dark + 0.05);
 };
 
-describe('header scrim', () => {
-  it('keeps white text at 4.5:1 or better even over a white photograph', () => {
-    const scrim = hex('color-navy-950');
-    const strength = percent('header-scrim-strength');
-    const white = [255, 255, 255];
-    const behindText = scrim.map((channel, i) => channel * strength + white[i] * (1 - strength));
-    expect(contrast(white, behindText)).toBeGreaterThanOrEqual(4.5);
-  });
+describe('scrims over photographs', () => {
+  it.each(['header-scrim-strength', 'hero-scrim-strength'])(
+    'keep white text at 4.5:1 or better even over a white photograph (%s)',
+    (token) => {
+      const scrim = hex('color-navy-950');
+      const strength = percent(token);
+      const white = [255, 255, 255];
+      const behindText = scrim.map((channel, i) => channel * strength + white[i] * (1 - strength));
+      expect(contrast(white, behindText)).toBeGreaterThanOrEqual(4.5);
+    },
+  );
 
   it('keeps the solid header text readable', () => {
     expect(contrast(hex('color-navy-900'), hex('color-white'))).toBeGreaterThanOrEqual(4.5);
