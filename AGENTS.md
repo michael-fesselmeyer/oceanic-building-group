@@ -62,6 +62,8 @@ or force-push without the repository owner's say-so.
 
 - **Content goes through `src/lib/content.ts`.** Pages never call `astro:content` directly, so
   the draft rule and sort order stay in one place.
+- **Build settings in `src/lib` are read as `import.meta.env?.NAME`.** Browser tests import these
+  modules outside Vite, where `import.meta.env` does not exist; a lint rule enforces this.
 - **Business facts come from `src/lib/site.ts`.** A fact that is not known yet is `null` and is
   left out of the page; never render a placeholder for it.
 - **Tokens only.** Colors, type sizes and spacing come from `src/styles/tokens.css`. No raw
