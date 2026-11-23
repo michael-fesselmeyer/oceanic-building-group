@@ -148,6 +148,29 @@ label, its own title and description, and a rule for which projects it shows.
 To add a filter, add it to `PORTFOLIO_FILTERS`, add a page next to the others that passes it to
 `PortfolioLayout`, and add it to the filter list in `tests/e2e/portfolio.spec.ts`.
 
+## Services pages
+
+`/services/` introduces the four service lines as an editorial index, and
+[`/services/[service].astro`](../src/pages/services/[service].astro) builds one page per file in
+`src/content/services/` (`custom-homes`, `renovations`, `commercial`, `investors`). The file name is
+the address. The Markdown body is the description; its first paragraph is set large and each `##`
+heading starts a ruled section.
+
+- **Related projects come from the portfolio by category.** [`src/lib/services.ts`](../src/lib/services.ts)
+  maps a service's file name to a project category (`custom-homes` to `custom-home`, and so on),
+  because the services schema has no field for it. A page shows up to two related projects as
+  `ProjectCard`s and a link to the matching portfolio page. When no project matches, the section
+  and its heading are not rendered, so a launched site with no commercial projects shows a short
+  page with no gap. A unit test covers the mapping and an e2e test checks the page both ways.
+- **Investor partnerships show no projects.** Speculative homes are not a project category, so the
+  mapping is `null` and the page is text only. Change that by mapping it to a category.
+- **No photograph needed.** The opening band is navy with the title, the summary and the service's
+  number. When a service file sets `cover` and `coverAlt`, the photograph replaces the number.
+- **Siblings, not a card row.** Beside the text, a list of all services (with the current one
+  marked) replaces a grid of cards. On narrow screens it moves below the text.
+- **Adding a service** means adding a Markdown file with a related category in
+  `src/lib/services.ts` (or `null`), and adding it to the list in `tests/e2e/services.spec.ts`.
+
 ## Intake form
 
 Planned design (see the roadmap for status):
