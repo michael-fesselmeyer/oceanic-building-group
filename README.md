@@ -16,6 +16,9 @@ into enquiries through a short intake form that notifies the office straight awa
 - **Four service pages.** An overview and one page each for custom homes, renovations, commercial
   construction and investor partnerships, written in Markdown. Each shows related projects from
   the portfolio by category and leaves that section out when there are none.
+- **A process page that reads like a sequence.** The stages of a build are one Markdown file
+  each, shown in order with large numerals on a vertical rule (a plain ordered list on phones). A
+  typical duration appears only on a stage whose file supplies one.
 - **Built for search.** Static HTML, a unique title and description on every page, structured
   data, and a performance budget enforced in CI.
 - **Desktop and phone as equals.** The wide layout is designed for large screens; media queries
