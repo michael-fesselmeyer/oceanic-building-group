@@ -660,6 +660,11 @@ practices and SEO. A page that misses the budget is fixed, never excused.
 - **One run per page.** Twelve pages at one run each keep the job to a few minutes. Scores sit at
   99 to 100, well clear of the budget; if a page starts to hover near 95, raise `numberOfRuns`
   rather than accept a flaky result.
+- **Warm runner.** The first audit in a job ran on a cold runner and measured 7 to 15 times the
+  style and layout work of the same page audited right after it (issue #72), so whichever page
+  came first could miss the budget. Before the audits, the job opens headless Chrome once on
+  `/services/renovations/`, which neither list contains. That is not a Lighthouse run and nothing
+  carries over, because every audit starts a fresh Chrome profile.
 - **Adding a page type.** Add one of its addresses to the matching list. A unit test
   (`tests/unit/launch-gates.test.ts`) fails while any page file under `src/pages` has no audited
   address, and `npm run launch-check` reads both lists. Pages from one template count once; see

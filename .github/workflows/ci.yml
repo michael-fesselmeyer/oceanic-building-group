@@ -97,6 +97,21 @@ jobs:
           PUBLIC_SITE_LAUNCHED: 'true'
       - name: Check the audited pages against the build
         run: node scripts/check-audit-pages.mjs
+      # Warm-up (see issue #72): the first audit in a job runs on a cold runner (Chrome's files,
+      # font caches and the disk cache) and measured 7 to 15 times the style and layout work of
+      # the same page audited right after it. Open Chrome once, with Lighthouse's flags, on
+      # /services/renovations/, a page neither list audits. This is not a Lighthouse run, and
+      # nothing carries over: every audit starts a fresh Chrome profile. The analytics report
+      # host is mapped to nowhere, as the audits block it.
+      - name: Warm up Chrome
+        run: |
+          python3 -m http.server 4310 --bind 127.0.0.1 --directory dist/client >/dev/null 2>&1 &
+          server=$!
+          sleep 1
+          google-chrome --headless=new --no-sandbox \
+            --host-resolver-rules="MAP cloudflareinsights.com ~NOTFOUND" \
+            --dump-dom http://127.0.0.1:4310/services/renovations/ >/dev/null
+          kill "$server"
       - name: Audit indexed pages
         run: npx --yes @lhci/cli@0.16.1 autorun
       - name: Audit noindex pages
