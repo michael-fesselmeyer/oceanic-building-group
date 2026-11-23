@@ -66,7 +66,7 @@ Project setup, design tokens, page shell, content schemas, tests, CI and reposit
 1. Structured data: the business, breadcrumbs, and each project.
 2. Sitemap, and share images for every page type.
 3. Town pages with genuinely local content and their projects.
-4. Per-page Lighthouse coverage in CI for every page type.
+4. Per-page Lighthouse coverage in CI for every page type (done; see the architecture notes).
 
 ### 6. Launch readiness
 
