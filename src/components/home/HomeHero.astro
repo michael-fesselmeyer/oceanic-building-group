@@ -13,9 +13,11 @@
 //
 // Use only as the first element inside <main>, with <BaseLayout overHero>:
 // the header floats over it and turns solid as it scrolls away.
-import { getImage } from 'astro:assets';
+// The page also preloads the AVIF sources (homeHeroSources in src/lib/hero-photo.ts), so the
+// photograph does not wait behind the fonts.
 import Button from '../Button.astro';
 import type { Project } from '../../lib/content';
+import { HOME_HERO_SIZES, homeHeroFallback, homeHeroSources } from '../../lib/hero-photo';
 import { PROJECT_TRANSITION_CLASS, projectTransitionName } from '../../lib/motion';
 import { contactLink, site } from '../../lib/site';
 
@@ -25,34 +27,12 @@ interface Props {
 
 const { project } = Astro.props;
 
-/** Wide screens: the cover as it is. Tall screens: a 3:4 crop from its middle. */
-const crops = [
-  { media: '(orientation: landscape)', widths: [960, 1440, 1920, 2400] },
-  { media: '(orientation: portrait)', widths: [480, 768, 1080, 1200], aspect: 3 / 4 },
-];
-const formats = ['avif', 'webp'] as const;
-
 const photo = project && {
   alt: project.data.coverAlt,
   // Shared with the project page's cover, so the photograph moves there on navigation.
   transition: `view-transition-name: ${projectTransitionName(project.id)}; view-transition-class: ${PROJECT_TRANSITION_CLASS}`,
-  sources: await Promise.all(
-    crops.flatMap(({ media, widths, aspect }) =>
-      formats.map(async (format) => {
-        const crop = aspect
-          ? {
-              width: Math.round(project.data.cover.height * aspect),
-              height: project.data.cover.height,
-              fit: 'cover' as const,
-              position: 'center',
-            }
-          : {};
-        const image = await getImage({ src: project.data.cover, widths, format, ...crop });
-        return { media, type: `image/${format}`, srcset: image.srcSet.attribute };
-      }),
-    ),
-  ),
-  fallback: await getImage({ src: project.data.cover, widths: crops[0].widths, format: 'jpg' }),
+  sources: await homeHeroSources(project.data.cover),
+  fallback: await homeHeroFallback(project.data.cover),
 };
 ---
 
@@ -60,12 +40,17 @@ const photo = project && {
   {photo && (
     <picture class="hero-photo" style={photo.transition}>
       {photo.sources.map((source) => (
-        <source media={source.media} type={source.type} srcset={source.srcset} sizes="100vw" />
+        <source
+          media={source.media}
+          type={source.type}
+          srcset={source.srcset}
+          sizes={source.sizes}
+        />
       ))}
       <img
         src={photo.fallback.src}
         srcset={photo.fallback.srcSet.attribute}
-        sizes="100vw"
+        sizes={HOME_HERO_SIZES}
         width={photo.fallback.attributes.width}
         height={photo.fallback.attributes.height}
         alt={photo.alt}

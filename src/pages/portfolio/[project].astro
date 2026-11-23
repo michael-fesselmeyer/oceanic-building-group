@@ -6,6 +6,7 @@ import { getImage } from 'astro:assets';
 import ProjectArticle from '../../components/project/ProjectArticle.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getProjects, renderProjectStory, type Project } from '../../lib/content';
+import { coverPreload } from '../../lib/hero-photo';
 import { auditProject } from '../../lib/examples';
 import { neighbors } from '../../lib/project-page';
 import { shareImageFor } from '../../lib/share-image';
@@ -38,6 +39,9 @@ const Story = await renderProjectStory(project);
 
 // Link previews show the cover, cropped to the 1200 x 630 card size.
 const shareImage = await shareImageFor(cover, coverAlt);
+
+// The cover opens the page, so it is preloaded ahead of the fonts.
+const preloadImages = [await coverPreload(cover)];
 
 // The main photograph, at its own proportions, for the structured data.
 const mainPhoto = await getImage({ src: cover, width: 1600, format: 'jpg' });
@@ -72,6 +76,7 @@ const structuredData = [
   imageSize={shareImage}
   breadcrumbs={projectCrumbs(title, path)}
   structuredData={structuredData}
+  preloadImages={preloadImages}
 >
   <ProjectArticle project={project} previous={previous} next={next}>
     <Story />
