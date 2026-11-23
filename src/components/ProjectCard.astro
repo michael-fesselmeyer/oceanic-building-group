@@ -14,9 +14,13 @@
 //   ratio         Shape of the cover, "3 / 2" by default. Editorial layouts
 //                 mix in a portrait "4 / 5" to vary the rhythm.
 //
+// The cover carries the project's view-transition name, so it moves into the
+// project page's cover on navigation. Show a project at most once per page.
+//
 // Wrap cards in <ul role="list"> with one <li> per card.
 import Photo from './Photo.astro';
 import { PROJECT_CATEGORY_LABELS, type Project } from '../lib/content';
+import { PROJECT_TRANSITION_CLASS, projectTransitionName } from '../lib/motion';
 
 interface Props {
   project: Project;
@@ -49,6 +53,8 @@ const place = location.trim();
       sizes={sizes}
       ratio={ratio}
       eager={eager}
+      transitionName={projectTransitionName(project.id)}
+      transitionClass={PROJECT_TRANSITION_CLASS}
     />
   </div>
   <p class="label meta">
@@ -69,9 +75,11 @@ const place = location.trim();
   }
 
   /* The photograph comes first visually; the text order stays logical. */
+  /* clip, not hidden: hidden would make this a scroll container, and the cover's scroll-driven
+     reveal (src/styles/motion.css) would then track this box instead of the page. */
   .cover {
     order: -1;
-    overflow: hidden;
+    overflow: clip;
     background: var(--color-surface);
   }
 

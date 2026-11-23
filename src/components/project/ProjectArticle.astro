@@ -23,6 +23,7 @@ import TextLink from '../TextLink.astro';
 import ProjectGallery from './ProjectGallery.astro';
 import ProjectPager from './ProjectPager.astro';
 import { getTowns, PROJECT_CATEGORY_LABELS, type Project } from '../../lib/content';
+import { PROJECT_TRANSITION_CLASS, projectTransitionName } from '../../lib/motion';
 import { projectFacts } from '../../lib/project-page';
 import { site, type DesignPartner } from '../../lib/site';
 import { projectStats, visibleStats } from '../../lib/stats';
@@ -91,7 +92,15 @@ const LONG_TITLE = 48;
       )}
     </div>
     <div class="cover">
-      <Photo src={cover} alt={coverAlt} widths={[640, 960, 1280, 1920, 2400]} sizes="100vw" eager />
+      <Photo
+        src={cover}
+        alt={coverAlt}
+        widths={[640, 960, 1280, 1920, 2400]}
+        sizes="100vw"
+        eager
+        transitionName={projectTransitionName(project.id)}
+        transitionClass={PROJECT_TRANSITION_CLASS}
+      />
     </div>
   </header>
 
