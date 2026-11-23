@@ -59,3 +59,10 @@ export async function getTestimonials() {
 export async function getProcessSteps() {
   return (await getCollection('processSteps', isVisible)).sort(byOrder);
 }
+
+export type ProcessStep = CollectionEntry<'processSteps'>;
+
+/** The stage's description, rendered from the Markdown body. */
+export async function renderProcessStep(step: ProcessStep) {
+  return (await render(step)).Content;
+}
