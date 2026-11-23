@@ -36,6 +36,12 @@ into enquiries through a short intake form that notifies the office straight awa
   with no JavaScript; with it, plain-language messages appear under each field, in a summary, and
   focus moves to the first answer to fix. One schema in `src/lib/intake.ts` holds the rules and
   wording for the page and the server alike, and a hidden honeypot field catches spam programs.
+- **Enquiries reach the office by email, and nothing is stored.** The form posts to a small
+  server endpoint (`/api/intake/`) that checks the answers with the same schema, verifies a
+  Cloudflare Turnstile spam check and emails the office through Resend. Without JavaScript the form
+  still posts and the visitor lands on a thank-you page; if an answer needs fixing or the email
+  cannot be sent, the form comes back with everything they typed. Logs never hold a full address,
+  phone number or message.
 - **A header that gets out of the way.** On pages that open with a full-bleed photograph it floats
   transparent over the image and turns solid once the page scrolls past it, in CSS alone. The
   current page and its section are marked in the navigation.
@@ -94,6 +100,14 @@ these pages is built for the launched site.
 
 Secrets are never committed. [.env.example](.env.example) lists the variable names; real values
 go in a git-ignored `.dev.vars` file locally and in Cloudflare's encrypted settings in production.
+
+The intake form needs no setup to try locally. On the development server, email goes to a log
+transport (one redacted line per enquiry, nothing sent) and the spam check uses Cloudflare's
+published always-pass test keys. To try the other outcomes, put Cloudflare's always-fail test
+secret in `.dev.vars` as `TURNSTILE_SECRET_KEY`. A built site gets no defaults: it needs
+`RESEND_API_KEY`, `LEAD_FROM_EMAIL`, `LEAD_NOTIFICATION_EMAIL`, `TURNSTILE_SECRET_KEY` and, at
+build time, `PUBLIC_TURNSTILE_SITE_KEY`. The email provider and its free-tier limits are recorded
+in [ADR 2](docs/adr/0002-lead-email-transport.md).
 
 ## Project layout
 
