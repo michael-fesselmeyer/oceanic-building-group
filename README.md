@@ -29,7 +29,8 @@ into enquiries through a short intake form that notifies the office straight awa
   pages credit the partner and link there.
 - **Built for search.** Static HTML, a unique title and description on every page, structured
   data (the business on every page, breadcrumbs on nested pages, each project with its main
-  photograph) built by tested functions, and a performance budget enforced in CI.
+  photograph) built by tested functions, a sitemap generated for the launched site, a share image
+  on every page (a project shares its own cover), and a performance budget enforced in CI.
 - **Desktop and phone as equals.** The wide layout is designed for large screens; media queries
   simplify it for tablets and phones.
 - **An intake form that works everywhere.** The contact page's form validates in the browser
