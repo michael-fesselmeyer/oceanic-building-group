@@ -19,7 +19,8 @@ opts out of prerendering with `export const prerender = false`.
 
 ## Content model
 
-Content lives in `src/content/<collection>/`, one Markdown file per item. Schemas are in
+Content lives in `src/content/<collection>/`, one Markdown file per item. The owner's step-by-step
+recipes for editing it are in [content-guide.md](content-guide.md). Schemas are in
 [`src/content.config.ts`](../src/content.config.ts) and are strict: an unknown or misspelled
 field fails the build.
 
