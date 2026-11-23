@@ -74,6 +74,23 @@ Lighthouse job in CI builds with it set to `true` so the audit measures the laun
   build lists exactly the built pages. CI runs the sitemap spec in both the browser job
   (pre-launch build) and the Lighthouse job (launched build).
 
+## Analytics
+
+Visitor statistics come from Cloudflare Web Analytics, which sets no cookies and stores nothing in
+the browser; the choice, its limits and what it collects are in
+[ADR 3](adr/0003-cookieless-analytics.md).
+
+- **One switch.** [`src/lib/analytics.ts`](../src/lib/analytics.ts) returns the beacon only when
+  the site is launched and `PUBLIC_CF_ANALYTICS_TOKEN` is set (both read at build time). Previews
+  and local builds never count visits. A token in the wrong shape stops the build.
+- **Where.** [`Analytics.astro`](../src/components/Analytics.astro) adds one deferred module script
+  at the end of `<body>` through `BaseLayout`, so every page has it and none waits for it.
+- **Privacy page.** Its analytics paragraph is rendered from the same switch, so the page says the
+  site collects statistics exactly when it does.
+- **Tests.** A unit test covers the switch; a browser test checks that the preview build has no
+  beacon on any page; the Lighthouse job builds the launched site with a made-up token and blocks
+  only the beacon's report, so the script's cost counts against the budget.
+
 ## Styling
 
 - [`src/styles/tokens.css`](../src/styles/tokens.css) defines every color, type size, space and
@@ -507,8 +524,8 @@ the address; there is no embedded map.
 
 The privacy text states facts about how the site behaves: the intake form is the only personal
 data collected, it is emailed through Resend (which keeps sent messages for 30 days) and not
-stored by the site, no cookies are set, analytics (if added) are cookieless, and Cloudflare
-Turnstile checks the form. A change that makes any of these untrue,
+stored by the site, no cookies are set, analytics are cookieless (the paragraph about them follows
+the analytics switch), and Cloudflare Turnstile checks the form. A change that makes any of these untrue,
 such as storing leads, setting a cookie or adding a third-party script, updates the privacy page
 and its date in the same pull request. The business reviews both texts before launch.
 
