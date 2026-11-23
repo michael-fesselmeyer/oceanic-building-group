@@ -2,13 +2,16 @@
 // Style guide: the project page template filled with made-up projects.
 //
 //   /style-guide/project/         every part filled in, with a gallery,
-//                                 a design partner credit and both neighbors
+//                                 the story of how it was built, a design
+//                                 partner credit and both neighbors
 //   /style-guide/project/sparse/  only the required fields: under
 //                                 construction, a long title, no stats,
 //                                 features, gallery, progress, location
 //                                 or neighbors
 //   /style-guide/project/progress/  under construction with dated
 //                                 progress updates, one without a photo
+//   /style-guide/project/short-story/  completed with only two progress
+//                                 photographs: no build story
 //
 // Development and preview builds only, like the main style guide page.
 import ProjectArticle from '../../../components/project/ProjectArticle.astro';
@@ -18,6 +21,7 @@ import {
   exampleFullProject,
   exampleProgressProject,
   exampleProject,
+  exampleShortStoryProject,
   exampleSparseProject,
 } from '../../../lib/examples';
 import { launched } from '../../../lib/site';
@@ -36,6 +40,7 @@ export function getStaticPaths() {
     },
     { params: { example: 'sparse' }, props: { project: exampleSparseProject } },
     { params: { example: 'progress' }, props: { project: exampleProgressProject } },
+    { params: { example: 'short-story' }, props: { project: exampleShortStoryProject } },
   ];
 }
 

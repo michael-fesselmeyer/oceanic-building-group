@@ -2,6 +2,8 @@
 // with data the real content does not have yet (a gallery, a design partner,
 // a very long title). Never used by a page of the launched site, except
 // `auditProject` in the Lighthouse build (see `auditFixtures` in site.ts).
+import placeholderDusk from '../assets/placeholders/placeholder-dusk.jpg';
+import placeholderSand from '../assets/placeholders/placeholder-sand.jpg';
 import placeholderTall from '../assets/placeholders/placeholder-tall.jpg';
 import placeholder from '../assets/placeholders/placeholder-wide.jpg';
 import type { Project } from './content';
@@ -40,7 +42,13 @@ export const exampleDesignPartner: DesignPartner = {
   url: 'https://interiors.example.test/',
 };
 
-/** A project with every optional part filled in, including a gallery with a portrait photograph. */
+/**
+ * A project with every optional part filled in, including a gallery with a
+ * portrait photograph and the progress updates kept from its construction,
+ * which tell how it was built. The updates are written out of order on
+ * purpose, with two from the same day and one without a photograph, which
+ * the story leaves out.
+ */
 export const exampleFullProject = exampleProject('example-full-project', {
   title: 'Example Riverfront Residence',
   location: 'Jupiter',
@@ -61,7 +69,70 @@ export const exampleFullProject = exampleProject('example-full-project', {
     { src: placeholderTall, alt: 'Placeholder for a tall photograph of the entry staircase' },
     { src: placeholder, alt: 'Placeholder for a wide photograph of the kitchen and family room' },
   ],
+  progress: [
+    {
+      date: new Date('2023-06-08'),
+      caption: 'Block walls up on the first floor and the tie beam poured.',
+      photo: placeholder,
+      alt: 'Placeholder for a photograph of the first-floor block walls',
+    },
+    {
+      date: new Date('2023-03-14'),
+      caption: 'Site cleared, pilings driven and the slab poured.',
+      photo: placeholderSand,
+      alt: 'Placeholder for a photograph of the poured slab on the cleared lot',
+    },
+    {
+      date: new Date('2023-09-21'),
+      caption: 'Roof dried in and the impact windows set.',
+      photo: placeholderDusk,
+      alt: 'Placeholder for a photograph of the roof and the new windows',
+    },
+    {
+      date: new Date('2023-11-02'),
+      caption: 'Drywall hung on both floors.',
+    },
+    {
+      date: new Date('2023-09-21'),
+      caption: 'Dock pilings set along the seawall.',
+      photo: placeholderSand,
+      alt: 'Placeholder for a photograph of the new dock pilings',
+    },
+    {
+      date: new Date('2024-02-16'),
+      caption: 'Landscaping finished and the keys handed over.',
+      photo: placeholder,
+      alt: 'Placeholder for a photograph of the finished river side of the house',
+    },
+  ],
   interiorDesignPartner: true,
+});
+
+/**
+ * A completed project with only two photographed progress updates, too few
+ * to tell how it was built, so its page has no build story.
+ */
+export const exampleShortStoryProject = exampleProject('example-short-story-project', {
+  title: 'Example Harbor Cottage',
+  location: 'Tequesta',
+  completedYear: 2025,
+  summary:
+    'A made-up finished cottage with two progress photographs, used on the style guide to show a project page without a build story.',
+  progress: [
+    {
+      date: new Date('2025-02-03'),
+      caption: 'Slab poured.',
+      photo: placeholder,
+      alt: 'Placeholder for a photograph of the poured slab',
+    },
+    {
+      date: new Date('2025-05-19'),
+      caption: 'Roof dried in.',
+      photo: placeholder,
+      alt: 'Placeholder for a photograph of the finished roof',
+    },
+    { date: new Date('2025-07-30'), caption: 'Cabinets installed.' },
+  ],
 });
 
 /**
