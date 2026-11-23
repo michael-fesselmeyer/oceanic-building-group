@@ -76,13 +76,13 @@ describe('formatLeadEmail', () => {
 describe('resendTransport', () => {
   it('posts the email with the key, the idempotency key and a reply-to address', async () => {
     const fetcher = vi.fn(async () => json(200, { id: 'email-id' }));
-    const result = await resendTransport({ apiKey: 're_test_key', fetch: fetcher }).send(message);
+    const result = await resendTransport({ apiKey: 'fake-api-key', fetch: fetcher }).send(message);
 
     expect(result).toEqual({ ok: true });
     const [url, init] = fetcher.mock.calls[0] as unknown as [string, RequestInit];
     expect(url).toBe(RESEND_ENDPOINT);
     expect(init.headers).toMatchObject({
-      Authorization: 'Bearer re_test_key',
+      Authorization: 'Bearer fake-api-key',
       'Idempotency-Key': lead.key,
     });
     expect(JSON.parse(init.body as string)).toEqual({
@@ -216,7 +216,7 @@ describe('createNotifier', () => {
 
 describe('readIntakeConfig', () => {
   const production = {
-    RESEND_API_KEY: 're_test_key',
+    RESEND_API_KEY: 'fake-api-key',
     LEAD_FROM_EMAIL: 'Website <website@example.test>',
     LEAD_NOTIFICATION_EMAIL: 'office@example.test, sales@example.test',
     TURNSTILE_SECRET_KEY: 'secret',
@@ -229,7 +229,7 @@ describe('readIntakeConfig', () => {
         turnstile: { secret: 'secret', required: false },
         email: {
           transport: 'resend',
-          apiKey: 're_test_key',
+          apiKey: 'fake-api-key',
           from: production.LEAD_FROM_EMAIL,
           to: ['office@example.test', 'sales@example.test'],
         },
