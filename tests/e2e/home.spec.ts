@@ -50,7 +50,7 @@ test.describe('home page', () => {
       await img.decode();
       return img.naturalWidth / img.naturalHeight;
     });
-    if (testInfo.project.name === 'phone') expect(shape).toBeLessThan(1);
+    if (testInfo.project.use.isMobile) expect(shape).toBeLessThan(1);
     else expect(shape).toBeGreaterThan(1);
   });
 
@@ -173,7 +173,7 @@ test.describe('home page', () => {
       name: 'Portfolio',
     });
 
-    if (testInfo.project.name === 'phone') {
+    if (testInfo.project.use.isMobile) {
       await expect(portfolioLink).toBeHidden();
       await menuButton.click();
       await expect(portfolioLink).toBeVisible();

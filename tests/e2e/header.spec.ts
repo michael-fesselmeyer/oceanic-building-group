@@ -50,10 +50,17 @@ test.describe('header over the home page hero', () => {
   });
 
   test('draws a scrim behind the header text', async ({ page }) => {
-    const opacity = await page
-      .locator('.site-header')
-      .evaluate((el) => getComputedStyle(el, '::before').opacity);
-    expect(Number(opacity)).toBe(1);
+    // Like the colors above, the scrim follows the scroll-driven animation, which WebKit applies
+    // from its first animation frame rather than at load: poll instead of reading once.
+    await expect
+      .poll(async () =>
+        Number(
+          await page
+            .locator('.site-header')
+            .evaluate((el) => getComputedStyle(el, '::before').opacity),
+        ),
+      )
+      .toBe(1);
   });
 
   test('turns solid navy on white once the hero has scrolled away', async ({ page }) => {
@@ -158,7 +165,7 @@ test.describe('current page marker', () => {
 
 test.describe('phone menu', () => {
   test.beforeEach(async ({ page }, testInfo) => {
-    test.skip(testInfo.project.name !== 'phone', 'the menu button only shows on small screens');
+    test.skip(!testInfo.project.use.isMobile, 'the menu button only shows on small screens');
     await page.goto('/');
   });
 
@@ -193,7 +200,7 @@ test.describe('phone menu without JavaScript', () => {
   test.use({ javaScriptEnabled: false });
 
   test('still opens and closes', async ({ page }, testInfo) => {
-    test.skip(testInfo.project.name !== 'phone', 'the menu button only shows on small screens');
+    test.skip(!testInfo.project.use.isMobile, 'the menu button only shows on small screens');
     await page.goto('/');
     const menu = page.getByRole('navigation', { name: 'Main' });
     await expect(menu).toBeHidden();
