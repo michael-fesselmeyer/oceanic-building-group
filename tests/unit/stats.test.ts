@@ -74,8 +74,8 @@ describe('projectStats', () => {
       }),
     );
     expect(stats).toEqual([
-      { label: 'Living area, sq ft', value: '4,200' },
-      { label: 'Total area, sq ft', value: '6,150' },
+      { label: 'Living area, sq\u00a0ft', value: '4,200' },
+      { label: 'Total area, sq\u00a0ft', value: '6,150' },
       { label: 'Bedrooms', value: '5' },
       { label: 'Bathrooms', value: '5 full, 2 half' },
       { label: 'Build time', value: '14 months' },

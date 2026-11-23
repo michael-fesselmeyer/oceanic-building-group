@@ -44,11 +44,14 @@ export function formatBathrooms(value: string | undefined): string | undefined {
 
 const plural = (count: number, word: string) => `${count} ${word}${count === 1 ? '' : 's'}`;
 
+/** The unit, joined by a non-breaking space so a narrow column never splits it. */
+const squareFeet = 'sq\u00a0ft';
+
 /** The stats shown for a project, in display order. */
 export function projectStats(stats: Project['data']['stats']): Stat[] {
   return [
-    { label: 'Living area, sq ft', value: stats.livingSqFt },
-    { label: 'Total area, sq ft', value: stats.totalSqFt },
+    { label: `Living area, ${squareFeet}`, value: stats.livingSqFt },
+    { label: `Total area, ${squareFeet}`, value: stats.totalSqFt },
     { label: 'Bedrooms', value: stats.bedrooms },
     { label: 'Bathrooms', value: formatBathrooms(stats.bathrooms) },
     {
