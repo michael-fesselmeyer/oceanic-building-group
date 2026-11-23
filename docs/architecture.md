@@ -342,3 +342,8 @@ and its date in the same pull request. The business reviews both texts before la
 | Performance, SEO             | Lighthouse (minimum 95) | CI           |
 | Secrets                      | gitleaks                | CI           |
 | Repository hygiene           | `scripts/check-hygiene` | `verify`, CI |
+
+The secret scan reads every commit on every branch. A finding that has been checked by hand and is
+not a secret is listed by its fingerprint in [`.gitleaksignore`](../.gitleaksignore), with the
+reason; that silences only that one finding. Keep test values low-entropy (`lead-test-1`,
+`test-key`) so they are never mistaken for keys in the first place.
