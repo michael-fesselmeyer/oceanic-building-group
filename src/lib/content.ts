@@ -1,6 +1,6 @@
 // Every page reads content through this file, never through astro:content
 // directly, so the draft rule and the sort order are applied in one place.
-import { getCollection, type CollectionEntry } from 'astro:content';
+import { getCollection, render, type CollectionEntry } from 'astro:content';
 import { launched } from './site';
 
 type Draftable = { data: { draft: boolean } };
@@ -22,6 +22,11 @@ export const PROJECT_CATEGORY_LABELS: Record<ProjectCategory, string> = {
 
 export async function getProjects(): Promise<Project[]> {
   return (await getCollection('projects', isVisible)).sort(byOrder);
+}
+
+/** A project's Markdown story, as a component to place on the page. */
+export async function renderProjectStory(project: Project) {
+  return (await render(project)).Content;
 }
 
 export async function getFeaturedProjects(): Promise<Project[]> {

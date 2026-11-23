@@ -10,6 +10,13 @@ export interface PostalAddress {
   postalCode: string;
 }
 
+/** The interior design firm the company works with on selected projects. */
+export interface DesignPartner {
+  name: string;
+  /** The partner's own website. */
+  url: string;
+}
+
 export interface SiteFacts {
   name: string;
   legalName: string;
@@ -20,6 +27,11 @@ export interface SiteFacts {
   phone: string | null;
   /** State contractor license number, shown wherever services are offered. */
   licenseNumber: string | null;
+  /**
+   * Credited on project pages marked `interiorDesignPartner: true`. While
+   * `null`, no credit is shown anywhere.
+   */
+  designPartner: DesignPartner | null;
 }
 
 export const site: SiteFacts = {
@@ -35,6 +47,7 @@ export const site: SiteFacts = {
   },
   phone: null,
   licenseNumber: null,
+  designPartner: null,
 };
 
 /**
