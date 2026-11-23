@@ -1,0 +1,12 @@
+{
+  "ci": {
+    "collect": {
+      "url": [
+        "http://localhost/",
+        "http://localhost/portfolio/",
+        "http://localhost/portfolio/river-house/",
+        "http://localhost/contact/"
+      ]
+    }
+  }
+}

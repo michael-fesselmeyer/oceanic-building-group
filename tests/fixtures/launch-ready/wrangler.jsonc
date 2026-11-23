@@ -1,0 +1,5 @@
+{
+  // Fixture: the Worker is served on the same domain as `site`.
+  "name": "harbor-test-builders",
+  "routes": [{ "pattern": "www.example.test", "custom_domain": true }],
+}
