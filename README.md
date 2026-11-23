@@ -31,6 +31,10 @@ into enquiries through a short intake form that notifies the office straight awa
   data (the business on every page, breadcrumbs on nested pages, each project with its main
   photograph) built by tested functions, a sitemap generated for the launched site, a share image
   on every page (a project shares its own cover), and a performance budget enforced in CI.
+- **Quiet motion, in CSS alone.** Section headings and photographs rise into view as the page
+  scrolls, pages cross-fade, and a project's photograph moves from its card to its page. Browsers
+  without these features, and visitors who prefer reduced motion, get a still page with nothing
+  hidden.
 - **Desktop and phone as equals.** The wide layout is designed for large screens; media queries
   simplify it for tablets and phones.
 - **An intake form that works everywhere.** The contact page's form validates in the browser

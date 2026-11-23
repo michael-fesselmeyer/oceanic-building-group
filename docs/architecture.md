@@ -87,6 +87,37 @@ Lighthouse job in CI builds with it set to `true` so the audit measures the laun
 - Typefaces: Newsreader for headings, Hanken Grotesk for text. Both are self-hosted through
   Astro's fonts API, so no request leaves the site.
 
+## Motion
+
+All motion is CSS, in [`src/styles/motion.css`](../src/styles/motion.css), and all of it sits
+inside `@media (prefers-reduced-motion: no-preference)`: with reduced motion nothing below
+applies. Timings and distances are the `--duration-page` and `--reveal-distance` tokens.
+
+- **Reveals.** `SectionHeading` marks its heading `data-reveal="text"` and `Photo` marks every lazy
+  `<picture>` `data-reveal`. Each rises into place across the scrolling in which it enters the
+  screen (`animation-timeline: view()`, range `entry`). Photographs also fade in. Text never
+  fades: it is uncovered with `clip-path`, so a heading caught half-revealed at the fold keeps its
+  full contrast. Eager photographs (the one a page opens with) and captions are never revealed.
+- **Never hidden without support.** The starting state exists only as the first keyframe of an
+  animation declared inside `@supports (animation-timeline: view())`. A browser without
+  scroll-driven animations shows everything at once. Only opacity, transform and clip-path change,
+  so reveals cause no layout shift.
+- **Longhands only.** The reveal rule sets `animation-name`, `animation-timeline` and the rest one
+  by one. An `animation` shorthand after `animation-timeline` resets the timeline, and a minifier
+  may merge or reorder shorthands. Check the built CSS after changing the rule.
+- **No scroll containers around a reveal.** `view()` follows the nearest scroll container, and
+  `overflow: hidden` makes one. A box that crops a revealed photograph uses `overflow: clip`
+  instead (the project card's cover does), or the reveal would track that box and finish at once.
+- **Page transitions.** `@view-transition { navigation: auto; }` cross-fades every same-origin
+  navigation in browsers that support it. A project's photograph carries
+  `view-transition-name: project-<id>` (from `projectTransitionName()` in
+  [`src/lib/motion.ts`](../src/lib/motion.ts)) on its card, on the home page hero and on its page's
+  cover, so it moves from one to the other, cropped rather than stretched (`view-transition-class:
+project-photo`). A name must be unique on a page, so a page shows each project at most once; a
+  browser test checks the home, portfolio and interior design pages.
+- **The header** has its own scroll-driven animation (see [Header](#header)); the reveals use a
+  different keyframe name and do not touch it.
+
 ## Brand assets
 
 The full logo (`src/assets/brand/logo-full.webp`) is too detailed for small sizes, so the site uses
@@ -147,18 +178,18 @@ Shared building blocks live in [`src/components/`](../src/components/). Each fil
 comment that says when to use it and what each prop does. Pages compose these instead of styling
 their own versions.
 
-| Component                  | Use it for                                                                                               |
-| -------------------------- | -------------------------------------------------------------------------------------------------------- |
-| `Button`                   | The main action of a section. `primary` or `quiet`; `<a>` with `href`, else `<button>`                   |
-| `TextLink`                 | An underlined link inside or after a sentence                                                            |
-| `SectionHeading`           | A section's heading with an optional small label; `level` keeps headings in order                        |
-| `Photo`                    | Every photograph: AVIF and WebP, required `alt`, `widths` and `sizes`, optional caption                  |
-| `PullQuote`                | A testimonial or a line from a project story, with optional attribution                                  |
-| `StatList`                 | Label and value facts; missing values are skipped, an empty list renders nothing                         |
-| `ProjectCard`              | A project's cover (3:2, or another `ratio`), category, title and location, linking to `/portfolio/<id>/` |
-| `Wordmark`                 | The brand wordmark in the current text color (used by the header)                                        |
-| `Seo`                      | Title, description, canonical, share tags and JSON-LD (used by the layout)                               |
-| `SiteHeader`, `SiteFooter` | The page frame (used by the layout); see [Header](#header)                                               |
+| Component                  | Use it for                                                                                                        |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `Button`                   | The main action of a section. `primary` or `quiet`; `<a>` with `href`, else `<button>`                            |
+| `TextLink`                 | An underlined link inside or after a sentence                                                                     |
+| `SectionHeading`           | A section's heading with an optional small label; `level` keeps headings in order                                 |
+| `Photo`                    | Every photograph: AVIF and WebP, required `alt`, `widths` and `sizes`, optional caption; lazy ones rise into view |
+| `PullQuote`                | A testimonial or a line from a project story, with optional attribution                                           |
+| `StatList`                 | Label and value facts; missing values are skipped, an empty list renders nothing                                  |
+| `ProjectCard`              | A project's cover (3:2, or another `ratio`), category, title and location, linking to `/portfolio/<id>/`          |
+| `Wordmark`                 | The brand wordmark in the current text color (used by the header)                                                 |
+| `Seo`                      | Title, description, canonical, share tags and JSON-LD (used by the layout)                                        |
+| `SiteHeader`, `SiteFooter` | The page frame (used by the layout); see [Header](#header)                                                        |
 
 Components used by a single page type live in a subfolder named after it. `project/` holds the
 project page's parts: `ProjectArticle` (the whole page body), `ProjectGallery` and
