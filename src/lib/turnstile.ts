@@ -4,6 +4,8 @@
 //
 // https://developers.cloudflare.com/turnstile/get-started/server-side-validation/
 
+import { launched } from './site';
+
 /** The hidden field the widget adds to the form. */
 export const TURNSTILE_FIELD = 'cf-turnstile-response';
 
@@ -103,3 +105,6 @@ export function turnstileSiteKey(configured: string | undefined, launched: boole
   if (key) return key;
   return launched ? null : TEST_KEYS.siteAlwaysPasses;
 }
+
+/** The site key for this build's contact form, or null for no widget. */
+export const formSiteKey = turnstileSiteKey(import.meta.env.PUBLIC_TURNSTILE_SITE_KEY, launched);

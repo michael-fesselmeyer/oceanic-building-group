@@ -23,8 +23,8 @@ import {
   type Notice,
 } from '../../lib/intake';
 import { formatPhone } from '../../lib/seo';
-import { launched, site } from '../../lib/site';
-import { TURNSTILE_SCRIPT, turnstileSiteKey } from '../../lib/turnstile';
+import { site } from '../../lib/site';
+import { TURNSTILE_SCRIPT, formSiteKey } from '../../lib/turnstile';
 
 interface Props {
   /** What the visitor typed, to fill the form in again. */
@@ -49,7 +49,9 @@ const EMAIL_PATTERN = '[^@\\s]+@[^@\\s]+\\.[^@\\s]+';
 
 // Cloudflare Turnstile. Development and preview builds use Cloudflare's
 // always-pass test key; a launched build without a key renders no widget.
-const siteKey = turnstileSiteKey(import.meta.env.PUBLIC_TURNSTILE_SITE_KEY, launched);
+// The page that renders this component allows Turnstile in its content
+// security policy (allowTurnstile in src/lib/security-headers.ts).
+const siteKey = formSiteKey;
 
 // The answers the server sent back, in form order, for the summary. Each
 // links to the control it is about (the first option for the project type).
