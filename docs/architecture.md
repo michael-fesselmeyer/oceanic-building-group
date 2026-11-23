@@ -1007,9 +1007,14 @@ practices and SEO. A page that misses the budget is fixed, never excused.
   gallery, a five-stage "How it was built" story and the design partner credit), so the audit
   measures every part a finished project can have. No deployment sets the variable, and no real project
   is published for the audit.
-- **One run per page.** Twelve pages at one run each keep the job to a few minutes. Scores sit at
-  99 to 100, well clear of the budget; if a page starts to hover near 95, raise `numberOfRuns`
-  rather than accept a flaky result.
+- **Three runs per page, judged on the median.** One run per page kept the job to a few minutes
+  while the repository was private and minutes were limited, but a single sample on a shared
+  runner is noisy: pages that score 97 to 100 missed the budget several times on runs where the
+  runner itself was slow (its benchmark index halved, or a second of browser-internal work with
+  the site's scripts unchanged). Each page now runs three times and the assertions use the median
+  run (`aggregationMethod: "median-run"`). The budget is unchanged and every assertion is still an
+  error. The job takes about eleven minutes; its time limit is 25. A page that misses on the
+  median of three is a real regression.
 - **Warm runner.** The first audit in a job ran on a cold runner and measured 7 to 15 times the
   style and layout work of the same page audited right after it (issue #72), so whichever page
   came first could miss the budget. Before the audits, the job opens headless Chrome once on
