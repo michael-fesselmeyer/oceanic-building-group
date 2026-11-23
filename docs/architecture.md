@@ -28,7 +28,7 @@ field fails the build.
 | `projects`      | Photographs, stats, story, category, town                      | Portfolio, project pages, home, towns |
 | `services`      | One page per service line                                      | Services pages, home                  |
 | `towns`         | One page per service-area town                                 | Town pages, project filters           |
-| `team`          | Name, role, photo, biography                                   | About                                 |
+| `team`          | Name, role, optional portrait and biography; licensee details  | About                                 |
 | `testimonials`  | Quote and attribution; `aboutDesignPartner` marks partner ones | Home, project pages, Interior Design  |
 | `processSteps`  | The stages of a build, in order                                | Our Process, home                     |
 | `designPartner` | One file: the partner's summary, places, biography             | Interior Design                       |
@@ -182,7 +182,8 @@ project page's parts: `ProjectArticle` (the whole page body), `ProjectGallery` a
 `ProjectPager`; see [Project pages](#project-pages). `design-partner/` holds
 `DesignPartnerArticle`, the body of the interior design page; see
 [Interior design page](#interior-design-page). `home/` holds `HomeHero` and `FeaturedProjects`;
-see [Home page](#home-page).
+see [Home page](#home-page). `about/` holds `TeamList`, the team on the About page; see
+[About page](#about-page).
 
 Rules they share: optional data that is missing renders nothing (no empty wrappers, no
 placeholders), styles come only from tokens, and a parent spaces a component with its own layout
@@ -225,7 +226,8 @@ fields. `/style-guide/interior-design/` shows the interior design page with a ma
 credited projects, testimonials and a long biography, and `/style-guide/interior-design/no-partner/`
 shows it with no partner set. `/style-guide/home/`, `/style-guide/home/one/` and
 `/style-guide/home/none/` show the top of the home page with four, one and no featured projects
-(one with a long title, one with no location). Their made-up data is in
+(one with a long title, one with no location). The main style guide page shows the team list with
+a portrait, a licensee and a long name. Their made-up data is in
 [`src/lib/examples.ts`](../src/lib/examples.ts). These pages exist
 in development and preview builds only: their `getStaticPaths` return no pages when
 `PUBLIC_SITE_LAUNCHED` is `true`, and they are always marked `noindex`.
@@ -364,6 +366,34 @@ collection in order. One Markdown file per stage in `src/content/process/`: the 
 - **Layout.** A numeral column, a vertical rule with a marker at each stage, and the stage text.
   The rule and markers drop out at 520px, where the stages become a plain ordered list.
 - **No JavaScript.**
+
+## About page
+
+`/about/` ([`src/pages/about.astro`](../src/pages/about.astro)) tells the company story and lists
+the team.
+
+- **The story uses confirmed facts only.** The text is in the page file: what the company builds
+  (custom homes, renovations, commercial work, investor partnerships), help from site selection
+  and architectural help through to interior design, and a plan, budget and realistic timeline at
+  the start. Experience is always the principals' (`site.principalsExperienceYears`, shown as
+  "30+ years"), never the company's age. The office town and service area come from
+  [`src/lib/site.ts`](../src/lib/site.ts) through [`src/lib/about.ts`](../src/lib/about.ts).
+- **One file per person** in `src/content/team/`, copied from `_template.md`: name, role, an
+  optional portrait and an optional biography as plain paragraphs in the body (Markdown
+  formatting is not supported there). [`src/lib/team.ts`](../src/lib/team.ts) shapes each entry for
+  [`TeamList`](../src/components/about/TeamList.astro).
+- **Text-only first.** Without portraits each person is a name and role on a rule, three to a row
+  (two at 1100px, one at 520px). When anyone has a portrait, each entry spans a portrait row and a
+  text row through `subgrid`, so names still line up across a row. The portrait's alt text is
+  "Portrait of" and the name.
+- **Real estate licensees.** Florida requires a licensee's advertising to give the licensed name
+  of their brokerage, and to use the licensee's name as registered. A team member with
+  `realEstateLicensee: true` therefore needs `brokerage`, shown under the role, and `name` must be
+  the registered name. The schema refuses to publish a licensee without a brokerage with a plain
+  message, and `getTeam()` never returns one, even in previews. A brokerage on someone who is not a
+  licensee is also refused. The business should confirm these details with the brokerage before
+  launch.
+- **Empty team.** With no published member the team section is left out.
 
 ## Interior design page
 
