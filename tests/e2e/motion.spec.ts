@@ -80,7 +80,8 @@ test.describe('scroll-driven reveals', () => {
   });
 
   test('never touch the photograph a page opens with', async ({ page }) => {
-    await page.goto(await page.locator('.project-card a').first().getAttribute('href')!);
+    const href = await page.locator('.project-card a').first().getAttribute('href');
+    await page.goto(href!);
     await expect(page.locator('.project .cover [data-reveal]')).toHaveCount(0);
   });
 });
