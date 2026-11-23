@@ -2,8 +2,19 @@
   "ci": {
     "collect": {
       "staticDistDir": "./dist/client",
-      "url": ["http://localhost/"],
-      "numberOfRuns": 3,
+      "url": [
+        "http://localhost/",
+        "http://localhost/portfolio/",
+        "http://localhost/portfolio/audit-example/",
+        "http://localhost/services/",
+        "http://localhost/services/custom-homes/",
+        "http://localhost/process/",
+        "http://localhost/interior-design/",
+        "http://localhost/contact/",
+        "http://localhost/privacy/",
+        "http://localhost/terms/"
+      ],
+      "numberOfRuns": 1,
       "settings": {
         "chromeFlags": "--no-sandbox --headless=new",
         "blockedUrlPatterns": ["*cloudflareinsights.com/cdn-cgi/rum*"]

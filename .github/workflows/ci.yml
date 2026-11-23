@@ -76,12 +76,22 @@ jobs:
           cache: npm
       - run: npm ci
       # Audit the site as it will be at launch: indexable, drafts hidden, and with the analytics
-      # beacon on. The token is a made-up test value, so lighthouserc.json blocks the beacon's
-      # report to Cloudflare; the script itself still downloads and runs, so its cost is measured.
+      # beacon on. The analytics token is a made-up test value, so lighthouserc.json blocks the
+      # beacon's report to Cloudflare; the script itself still downloads and runs, so its cost is
+      # measured. PUBLIC_AUDIT_FIXTURES adds one made-up project page (/portfolio/audit-example/),
+      # so the project template is audited while every real project is a draft. Deployments never
+      # set it.
+      #
+      # One page of every type is audited, one run each, at 95 in every category:
+      #   lighthouserc.json          pages meant to be indexed
+      #   lighthouserc.noindex.json  pages that are noindex on purpose (404, form thanks); these
+      #                              skip only the "is-crawlable" audit, which checks for noindex
+      # Add when merged: /about/ (About), /areas/ and one /areas/<town>/ (Areas We Serve).
       - run: npm run build
         env:
           PUBLIC_SITE_LAUNCHED: 'true'
           PUBLIC_CF_ANALYTICS_TOKEN: lighthouse-test-token
+          PUBLIC_AUDIT_FIXTURES: 'true'
       # Drafts are not built here, so no page may link to one.
       - name: Internal links (launched build)
         run: npm run check:links
@@ -90,7 +100,13 @@ jobs:
         run: npx playwright test tests/e2e/sitemap.spec.ts --project=desktop
         env:
           PUBLIC_SITE_LAUNCHED: 'true'
-      - run: npx --yes @lhci/cli@0.16.1 autorun
+      - name: Check the audited pages against the build
+        run: node scripts/check-audit-pages.mjs
+      - name: Audit indexed pages
+        run: npx --yes @lhci/cli@0.16.1 autorun
+      - name: Audit noindex pages
+        if: success() || failure()
+        run: npx --yes @lhci/cli@0.16.1 autorun --config=lighthouserc.noindex.json
       - name: Save reports
         if: always()
         uses: actions/upload-artifact@v7
