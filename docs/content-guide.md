@@ -274,8 +274,10 @@ name becomes `/areas/<name>/`) and rewrite it for the new town:
 
 ```yaml
 ---
-name: Stuart
-county: Martin County
+name: Example Shores
+county: Palm Beach County
+latitude: 26.8901
+longitude: -80.0712
 summary: One or two sentences about building in this town, 40 to 220 characters.
 seoDescription: What a search result should say about building in this town, 50 to 160 characters.
 order: 80
@@ -284,9 +286,19 @@ draft: true
 Paragraphs about the town: its setting, the building rules that apply there and how permits work.
 ```
 
+`latitude` and `longitude` place the town's mark on the map on the Areas page. Both are required
+and written in decimal degrees: latitude is the number of degrees north (around 26.9 here), and
+longitude is negative because the town is west of Greenwich (around -80.1 here). Use the town's
+commonly published center, for example its "internal point" in the US Census Bureau's Gazetteer
+files or the coordinates at the top of its encyclopedia article, rounded to four decimals. The map
+covers latitude 26.62 to 27.1 and longitude -80.3 to -80.03, from Hobe Sound to Wellington; a
+town outside that box, or a longitude written without its minus sign, stops the build with a
+message saying so. A town farther away needs the map extended first (see the Areas pages section of
+`docs/architecture.md`).
+
 Write each town's text for that town; do not copy paragraphs between towns. Check every statement
 about a code, a permit or a town office against that office's own website. Then link projects to
-the town with `town: stuart` in their files.
+the town with `town: example-shores` in their files.
 
 ### Update the team
 

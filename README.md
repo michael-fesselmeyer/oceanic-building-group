@@ -28,7 +28,9 @@ into enquiries through a short intake form that notifies the office straight awa
 - **Areas We Serve.** `/areas/` and one page per town (Jupiter, Jupiter Inlet Colony, Tequesta,
   Juno Beach, Palm Beach Gardens, Hobe Sound and Wellington), each with copy written for the town:
   flood and coastal rules, permits, and its own projects from the portfolio. A town with no
-  projects yet still reads well.
+  projects yet still reads well. The index has a drawn map of the coast from Hobe Sound to
+  Wellington, drawn at build time as inline SVG from public-domain Census data, with a linked mark
+  and project count for each town; no map service, tiles or script.
 - **A process page that reads like a sequence.** The stages of a build are one Markdown file
   each, shown in order with large numerals on a vertical rule (a plain ordered list on phones). A
   typical duration appears only on a stage whose file supplies one.
