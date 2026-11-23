@@ -84,6 +84,7 @@ export function isServiceFailure(errorCodes: string[]): boolean {
   const ours = new Set([
     'missing-input-secret',
     'invalid-input-secret',
+    'bad-request',
     'internal-error',
     'unreachable',
     'unknown',
