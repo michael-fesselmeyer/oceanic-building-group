@@ -524,10 +524,11 @@ calls only `notifier.notify(lead)`; [`notify/index.ts`](../src/lib/notify/index.
 channels are on.
 
 - **Channels** have a name, a `required` flag and `send(lead)`, which returns a result instead of
-  throwing. A lead counts as delivered when every required channel succeeds. Email is the one
-  required channel. SMS (issue #22) joins the list in `notify/index.ts` behind `SMS_ENABLED` as an
-  optional channel, so its failures are logged without failing the enquiry, and the endpoint does
-  not change.
+  throwing. All channels run at the same time, and a channel that fails or throws does not stop
+  the others. A lead counts as delivered when every required channel succeeds. Email is the one
+  required channel; SMS is optional, so a failed text is logged (`[intake] sms failed: ...`) and
+  the enquiry still counts as sent. Failures name the provider's error code and how many
+  recipients failed, never the recipients.
 - **Email transports.** `resend` calls Resend's API with `fetch` (no SDK), with an 8-second
   timeout and one retry on a passing failure. `log` sends nothing and writes one redacted line.
   `EMAIL_TRANSPORT` picks one; the development server defaults to `log`, a built site to
@@ -536,6 +537,42 @@ channels are on.
 - **The email** has the visitor's address as its reply-to, so the office answers with a plain
   reply. Its text depends only on the answers, never the time, so a resend is recognised as the
   same request.
+
+### SMS
+
+A text message to the office phone when an enquiry arrives, through Twilio
+([`notify/sms.ts`](../src/lib/notify/sms.ts), [`notify/twilio.ts`](../src/lib/notify/twilio.ts)).
+**It is off, and stays off until the owner approves the cost.**
+
+- **The switch.** `SMS_ENABLED` must be exactly `true`. With anything else no other SMS variable is
+  read, none is required, and no SMS code runs. With `true` but a missing or malformed value, SMS
+  stays off and the log says which variables to fix (`[intake] SMS is off: ...`); the email is
+  never held up by a broken text setup.
+- **What the text says.** "New website enquiry: <project type>. The details are in the office
+  email." No name, address, phone number or message, so the visitor's details never pass through
+  the text provider and the privacy policy needs no change. Each number in
+  `LEAD_NOTIFICATION_PHONE` gets its own text. There is no retry, so a slow answer never becomes
+  a second charge or a duplicate text.
+- **Turning it on** (owner's approval first, outside this repository):
+  1. Create a Twilio account and upgrade it from the trial (a trial can text only verified
+     numbers, and toll-free verification needs a paid account).
+  2. Buy a number and register it: a local number needs US A2P 10DLC registration (a brand and a
+     campaign); a toll-free number needs toll-free verification. Unregistered numbers cannot text
+     US phones.
+  3. Store `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER` (for example
+     `+15615550100`) and `LEAD_NOTIFICATION_PHONE` (comma-separated, same form) as encrypted
+     Worker settings, then set `SMS_ENABLED=true`.
+  4. Send a test enquiry and check the log for `[intake] sms failed` lines.
+- **Cost** (Twilio's US pricing page, November 2026): $0.0083 per message segment plus a carrier
+  fee of $0.0035 to $0.005 per message, and $1.15 a month for a local number ($2.15 for
+  toll-free). A2P 10DLC also charges a one-time brand registration fee and a campaign vetting fee,
+  plus a monthly campaign fee; Twilio shows the amounts during registration rather than on its
+  public pages, so confirm them then (earlier published figures were roughly $20 one-time and a
+  few dollars a month; treat that as an estimate). At a handful of enquiries a day, the running
+  cost is a few dollars a month.
+- **How long it takes.** Twilio's documentation gives up to 72 hours to approve the business
+  profile, seven business days or more for a brand that goes to manual review, and up to five
+  business days for the campaign. Allow one to three weeks before the first text.
 
 ### Settings and logs
 

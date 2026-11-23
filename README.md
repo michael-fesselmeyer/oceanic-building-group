@@ -49,7 +49,8 @@ into enquiries through a short intake form that notifies the office straight awa
   Cloudflare Turnstile spam check and emails the office through Resend. Without JavaScript the form
   still posts and the visitor lands on a thank-you page; if an answer needs fixing or the email
   cannot be sent, the form comes back with everything they typed. Logs never hold a full address,
-  phone number or message.
+  phone number or message. A text-message alert to the office is built in behind `SMS_ENABLED`
+  and stays off until its cost is approved ([how to turn it on](docs/architecture.md#sms)).
 - **A header that gets out of the way.** On pages that open with a full-bleed photograph it floats
   transparent over the image and turns solid once the page scrolls past it, in CSS alone. The
   current page and its section are marked in the navigation.
