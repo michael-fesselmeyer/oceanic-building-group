@@ -744,10 +744,15 @@ with the endpoint so it can show the form again, filled in.
    build without a key renders no widget (a test key would fail every visitor against a real
    secret).
 7. **No JavaScript, no token.** Without JavaScript the widget never runs, so the post has no
-   token. By default the endpoint still sends it, relying on the honeypot, and marks the email's
-   subject `[spam check not run]`. If spam arrives that way, set `TURNSTILE_REQUIRED=true`: posts
-   without a token then get the form back with a notice asking the visitor to turn JavaScript on
-   or use the office details. A token that is present and fails (forged, expired or already used)
+   token, and a spam program that posts the form directly sends none either. The launched site
+   (`PUBLIC_SITE_LAUNCHED=true`) refuses such a post: the visitor gets the form back, with what
+   they typed, and a notice asking them to turn JavaScript on or use the office details. Without
+   this, the honeypot would be the only check on a token-less post, and each one would spend the
+   email quota. `TURNSTILE_REQUIRED=false` turns the requirement off; then the post is sent,
+   relying on the honeypot, with `[spam check not run]` in the email's subject. Development and
+   preview builds work that way by default, and `TURNSTILE_REQUIRED=true` requires the token
+   there too. A launched build without `PUBLIC_TURNSTILE_SITE_KEY` renders no widget, so every
+   post would be refused: set both keys before launch. A token that is present and fails (forged, expired or already used)
    is always refused, with the form kept and a fresh widget.
 8. **Leads are not stored.** The email to the office is the record.
 

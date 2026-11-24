@@ -376,6 +376,23 @@ describe('readIntakeConfig', () => {
     expect(on.ok && on.config.turnstile.required).toBe(true);
     expect(off.ok && off.config.turnstile.required).toBe(false);
   });
+
+  it('requires the spam check on a launched site unless it is switched off with "false"', () => {
+    const launched = { dev: false, launched: true };
+    const unset = readIntakeConfig(production, launched);
+    const blank = readIntakeConfig({ ...production, TURNSTILE_REQUIRED: ' ' }, launched);
+    const other = readIntakeConfig({ ...production, TURNSTILE_REQUIRED: 'no' }, launched);
+    const off = readIntakeConfig({ ...production, TURNSTILE_REQUIRED: 'false' }, launched);
+    expect(unset.ok && unset.config.turnstile.required).toBe(true);
+    expect(blank.ok && blank.config.turnstile.required).toBe(true);
+    expect(other.ok && other.config.turnstile.required).toBe(true);
+    expect(off.ok && off.config.turnstile.required).toBe(false);
+  });
+
+  it('leaves the spam check optional by default before launch', () => {
+    const preview = readIntakeConfig(production, { dev: false });
+    expect(preview.ok && preview.config.turnstile.required).toBe(false);
+  });
 });
 
 describe('redaction', () => {

@@ -61,9 +61,10 @@ The site stores no leads, so it cannot count sends itself. It relies on the prov
 - **Rate limited or provider down** (`429` rate limit, `5xx`, timeout): one retry with the same
   idempotency key, then the same error page.
 - **Spam pressure.** Turnstile and the honeypot stop most automated posts before they spend
-  quota. If spam still reaches the cap, the next steps are setting `TURNSTILE_REQUIRED=true`
-  (posts without a spam-check token are refused) and a Cloudflare rate-limiting rule on
-  `/api/intake/`; both are documented in [architecture](../architecture.md#intake-form).
+  quota. The launched site refuses posts without a spam-check token (`TURNSTILE_REQUIRED`
+  switches this off only when set to `false`), and a Cloudflare rate-limiting rule on
+  `/api/intake/` slows a flood; both are documented in
+  [architecture](../architecture.md#intake-form).
 
 Other free-tier limits that apply to the endpoint: Workers Free allows 100,000 requests a day and
 10 ms of CPU per request; the endpoint does little computing and mostly waits on two `fetch`

@@ -198,14 +198,14 @@ type Secret, then Deploy. The command-line equivalent is
 command line). It needs the Worker to exist and you to be signed in with `npx wrangler login`.
 Each change creates and deploys a new version at once.
 
-| Name                      | What it does                                                                                                | Where the value comes from                                                                              |
-| ------------------------- | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| `RESEND_API_KEY`          | Lets the Worker send the enquiry email.                                                                     | Resend, an API key created for this site only (section 5).                                              |
-| `LEAD_FROM_EMAIL`         | The sender shown on the email, on the verified sending domain: `Website <website@send.example.test>`.       | You choose it; the domain part must be the one verified in Resend.                                      |
-| `LEAD_NOTIFICATION_EMAIL` | The inbox that receives enquiries. Several addresses may be separated by commas.                            | The business. **Set only here. Never write it in the repository, an issue or a pull request.**          |
-| `TURNSTILE_SECRET_KEY`    | Lets the Worker check the spam-check token with Cloudflare.                                                 | Turnstile widget's secret key (section 4).                                                              |
-| `TURNSTILE_REQUIRED`      | Optional. `true` refuses posts that have no spam-check token (visitors without JavaScript). Leave it unset. | Set it only if spam arrives without a token; see the [architecture notes](architecture.md#intake-form). |
-| `EMAIL_TRANSPORT`         | Optional. `resend` or `log`. A built site defaults to `resend`.                                             | Leave it unset. Setting `log` would send nothing.                                                       |
+| Name                      | What it does                                                                                                                                                                                                | Where the value comes from                                                                             |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `RESEND_API_KEY`          | Lets the Worker send the enquiry email.                                                                                                                                                                     | Resend, an API key created for this site only (section 5).                                             |
+| `LEAD_FROM_EMAIL`         | The sender shown on the email, on the verified sending domain: `Website <website@send.example.test>`.                                                                                                       | You choose it; the domain part must be the one verified in Resend.                                     |
+| `LEAD_NOTIFICATION_EMAIL` | The inbox that receives enquiries. Several addresses may be separated by commas.                                                                                                                            | The business. **Set only here. Never write it in the repository, an issue or a pull request.**         |
+| `TURNSTILE_SECRET_KEY`    | Lets the Worker check the spam-check token with Cloudflare.                                                                                                                                                 | Turnstile widget's secret key (section 4).                                                             |
+| `TURNSTILE_REQUIRED`      | Optional. The launched site refuses posts that have no spam-check token (visitors without JavaScript, and spam programs that post directly). `false` accepts them, relying on the honeypot. Leave it unset. | Set `false` only with the owner's approval; see the [architecture notes](architecture.md#intake-form). |
+| `EMAIL_TRANSPORT`         | Optional. `resend` or `log`. A built site defaults to `resend`.                                                                                                                                             | Leave it unset. Setting `log` would send nothing.                                                      |
 
 **Text messages stay off.** `SMS_ENABLED`, `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`,
 `TWILIO_FROM_NUMBER` and `LEAD_NOTIFICATION_PHONE` are not set at launch. Texting costs money and
@@ -531,8 +531,11 @@ again before launch, since providers change them. [ADR 2](adr/0002-lead-email-tr
 | Single redirect rules   | 10 per zone.                                                                                                                                        | One is used.                                                                                                                                                                                                                                                                                |
 | Workers Logs (optional) | 200,000 events a day with 3 days of history today. Cloudflare says its logs move to a new pricing model on 2026-12-01 with 0.5 GB a day and 7 days. | The site does not depend on stored logs. `wrangler tail` and the dashboard's live logs are enough to test. Check the current numbers before relying on stored logs.                                                                                                                         |
 
-If spam reaches the Resend cap even with the rate-limiting rule (section 7.3), follow ADR 2: set
-`TURNSTILE_REQUIRED=true`. Anything beyond the free tiers (an upgrade, text messages,
+The launched site already refuses posts without a spam-check token, so spam that reaches the
+Resend cap has solved the Turnstile check or comes from many addresses at once. If that happens
+even with the rate-limiting rule (section 7.3), follow ADR 2: review volume in the logs and
+Turnstile's analytics in the Cloudflare dashboard before choosing a next step. Anything beyond
+the free tiers (an upgrade, text messages,
 a paid plan) needs the owner's approval first.
 
 ## What was not verified
