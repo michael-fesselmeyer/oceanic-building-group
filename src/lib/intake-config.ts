@@ -38,7 +38,10 @@ export interface SmsConfig {
 export interface IntakeConfig {
   turnstile: {
     secret: string;
-    /** When true, a post without a spam-check token is refused instead of sent flagged. */
+    /**
+     * When true, a post without a spam-check token is refused instead of sent
+     * flagged. On by default on a launched site; see turnstileRequired.
+     */
     required: boolean;
   };
   email: EmailConfig;
@@ -121,6 +124,18 @@ const TEST_SECRETS: ReadonlySet<string> = new Set([
 ]);
 
 /**
+ * Whether a post without a spam-check token is refused. Turnstile needs
+ * JavaScript, so a post without a token was never checked: on a launched site
+ * that is the path a spam program takes, and each post it sends spends the
+ * email quota. A launched site therefore requires the token unless
+ * TURNSTILE_REQUIRED is exactly "false"; anywhere else it is required only
+ * when the value is exactly "true".
+ */
+export function turnstileRequired(setting: string | undefined, launched: boolean): boolean {
+  return launched ? setting !== 'false' : setting === 'true';
+}
+
+/**
  * Turns the environment into settings. `dev` (the development server) fills
  * in safe defaults: the log transport and Cloudflare's always-pass test
  * secret. A built site gets no defaults, so a missing secret in production
@@ -178,7 +193,7 @@ export function readIntakeConfig(
   return {
     ok: true,
     config: {
-      turnstile: { secret, required: value('TURNSTILE_REQUIRED') === 'true' },
+      turnstile: { secret, required: turnstileRequired(value('TURNSTILE_REQUIRED'), launched) },
       email,
       sms,
     },
