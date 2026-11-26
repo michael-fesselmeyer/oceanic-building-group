@@ -456,7 +456,8 @@ content files by relative path. Astro generates responsive sizes in modern forma
 and writes width and height attributes, which prevents layout shift. Components must pass
 `widths` and `sizes` so phones download a small file.
 
-The photograph a page opens with (the home hero and the project cover) is its Largest
+The photograph a page opens with (the home hero, the project cover and the portfolio's first
+project card) is its Largest
 Contentful Paint. The browser would only find it in the body, after the font preloads in the
 head, and on a slow connection it would wait behind about 160KB of fonts. So
 [`src/lib/hero-photo.ts`](../src/lib/hero-photo.ts) computes the photograph's sources once:

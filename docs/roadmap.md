@@ -41,7 +41,9 @@ Project setup, design tokens, page shell, content schemas, tests, CI and reposit
 
 1. Portfolio index with category and status filters that work without JavaScript.
 2. Project page template: hero, gallery with a lightbox, stats, story, credits, next and previous.
-3. Project content: every completed project, with its photographs sized and described.
+3. Project content: every completed project, with its photographs sized and described (done for
+   the eight homes, using the photographs from the company's previous website; the Wellington
+   Horse Barn waits for photographs).
 4. Under-construction projects with progress photographs (template and display done; waiting for
    real projects and photographs).
 
@@ -110,7 +112,10 @@ checking the site and rolling back.
 
 ## Content still needed from the business
 
-- High-resolution photographs for each project, and drone footage where it exists.
+- High-resolution photographs for each project, and drone footage where it exists. The current
+  photographs come from the company's previous website and are at most 1500px wide, so the
+  originals would look sharper on large screens. Replace them with
+  `npm run photos:import -- <folder> <project-id> --force`.
 - Stage-by-stage construction photographs for finished projects (three or more each), and
   before-and-after pairs, taken from the same spot, for renovations.
 - Commercial projects: at least three, with photographs and a short description.

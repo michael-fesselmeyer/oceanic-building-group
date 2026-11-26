@@ -10,6 +10,7 @@ import ProjectCard from '../components/ProjectCard.astro';
 import TextLink from '../components/TextLink.astro';
 import BaseLayout from './BaseLayout.astro';
 import { getProjects } from '../lib/content';
+import { cardPreload } from '../lib/hero-photo';
 import {
   availableFilters,
   filterProjects,
@@ -52,10 +53,16 @@ const slots = [
   { span: 7, sizes: '(max-width: 800px) 100vw, (max-width: 1100px) 58vw, 44rem' },
 ];
 
+// The first card's photograph is the largest image at the top of the page, so its AVIF sources
+// are preloaded ahead of the fonts, as on the home and project pages.
+const preloadImages = projects[0]
+  ? [await cardPreload(projects[0].data.cover, slots[0].sizes)]
+  : [];
+
 const countLabel = `${projects.length} ${projects.length === 1 ? 'project' : 'projects'}`;
 ---
 
-<BaseLayout title={title} description={description} noindex={noindex}>
+<BaseLayout title={title} description={description} noindex={noindex} preloadImages={preloadImages}>
   <div class="container portfolio">
     <header class="head">
       <p class="label kicker">{filter ? <a href={portfolioPath()}>Portfolio</a> : 'Our work'}</p>

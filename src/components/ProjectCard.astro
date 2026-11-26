@@ -21,6 +21,7 @@
 // Wrap cards in <ul role="list"> with one <li> per card.
 import Photo from './Photo.astro';
 import { PROJECT_CATEGORY_LABELS, type Project } from '../lib/content';
+import { CARD_WIDTHS } from '../lib/hero-photo';
 import { PROJECT_TRANSITION_CLASS, projectTransitionName } from '../lib/motion';
 import { formatProgressDate, isoDay, latestProgressDate } from '../lib/project-page';
 
@@ -53,7 +54,7 @@ const lastUpdate = latestProgressDate(project.data);
     <Photo
       src={cover}
       alt={coverAlt}
-      widths={[480, 800, 1200, 1600]}
+      widths={CARD_WIDTHS}
       sizes={sizes}
       ratio={ratio}
       eager={eager}
