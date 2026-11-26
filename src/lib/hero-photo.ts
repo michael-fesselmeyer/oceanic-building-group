@@ -33,6 +33,18 @@ export function preloadsFor(sources: readonly PhotoSource[]): ImagePreload[] {
 export const COVER_WIDTHS = [640, 960, 1280, 1920, 2400];
 export const COVER_SIZES = '100vw';
 
+/** A project card's cover (ProjectCard.astro), whatever its slot's width. */
+export const CARD_WIDTHS = [480, 800, 1200, 1600];
+
+/**
+ * The first project card's AVIF candidates, exactly as `<Picture>` writes them in Photo.astro, for
+ * the portfolio page's preload: the first card is the largest image at the top of the page.
+ */
+export async function cardPreload(cover: Source, sizes: string): Promise<ImagePreload> {
+  const image = await getImage({ src: cover, widths: CARD_WIDTHS, format: 'avif' });
+  return { srcset: image.srcSet.attribute, sizes };
+}
+
 /**
  * The cover's AVIF candidates exactly as `<Picture>` writes them in Photo.astro for the same
  * widths, for the project page's preload.

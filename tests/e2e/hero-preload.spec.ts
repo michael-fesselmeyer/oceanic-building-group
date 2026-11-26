@@ -52,10 +52,21 @@ async function expectPreloadedHero(page: Page, path: string) {
   }
 
   // Whatever the browser picked, it fetched that photograph once, not once per address.
-  await page
-    .locator('main picture img')
-    .first()
-    .evaluate((img: HTMLImageElement) => img.decode());
+  // decode() can reject while the browser is still switching to the source it picked, so it is
+  // retried until the photograph it settles on has decoded.
+  await expect
+    .poll(() =>
+      page
+        .locator('main picture img')
+        .first()
+        .evaluate((img: HTMLImageElement) =>
+          img.decode().then(
+            () => true,
+            () => false,
+          ),
+        ),
+    )
+    .toBe(true);
   const shown = new URL(
     await page
       .locator('main picture img')
@@ -73,6 +84,10 @@ async function expectPreloadedHero(page: Page, path: string) {
 test.describe('the photograph a page opens with', () => {
   test('is preloaded on the home page', async ({ page }) => {
     await expectPreloadedHero(page, '/');
+  });
+
+  test('is preloaded on the portfolio', async ({ page }) => {
+    await expectPreloadedHero(page, '/portfolio/');
   });
 
   test('is preloaded on a project page', async ({ page }) => {
